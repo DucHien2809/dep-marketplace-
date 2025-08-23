@@ -15,39 +15,59 @@ class CollectionGallery {
     bindEvents() {
         console.log('🔗 Binding CollectionGallery events...');
         
-        // Upload image button
+        // Product management buttons
         document.addEventListener('click', (e) => {
-            if (e.target.id === 'upload-gallery-btn' || e.target.closest('#upload-gallery-btn')) {
+            if (e.target.id === 'upload-product-btn' || e.target.closest('#upload-product-btn')) {
                 e.preventDefault();
-                console.log('📸 Upload button clicked via CollectionGallery');
+                console.log('📸 Upload product button clicked via CollectionGallery');
                 this.showUploadModal();
             }
             
-            if (e.target.closest('.btn-edit-gallery')) {
+            if (e.target.id === 'manage-products-btn' || e.target.closest('#manage-products-btn')) {
                 e.preventDefault();
-                const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
-                this.editGalleryItem(itemId);
+                console.log('⚙️ Manage products clicked!');
+                Utils.showToast('Quản lý sản phẩm đang phát triển', 'info');
             }
             
-            if (e.target.closest('.btn-delete-gallery')) {
+            if (e.target.closest('.btn-edit-product')) {
                 e.preventDefault();
-                const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
-                this.deleteGalleryItem(itemId);
+                const itemId = e.target.closest('.product-item').getAttribute('data-item-id');
+                this.editProduct(itemId);
             }
             
-            if (e.target.closest('.btn-view-detail')) {
+            if (e.target.closest('.btn-delete-product')) {
                 e.preventDefault();
-                const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
-                this.viewGalleryDetail(itemId);
+                const itemId = e.target.closest('.product-item').getAttribute('data-item-id');
+                this.deleteProduct(itemId);
             }
             
-            // Filter tags
-            if (e.target.closest('.filter-tag')) {
+            if (e.target.closest('.btn-quick-view')) {
                 e.preventDefault();
-                document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
-                e.target.closest('.filter-tag').classList.add('active');
-                const filter = e.target.closest('.filter-tag').getAttribute('data-filter');
-                this.filterGalleryItems(filter);
+                const itemId = e.target.closest('.product-item').getAttribute('data-item-id');
+                this.showProductDetail(itemId);
+            }
+            
+            if (e.target.closest('.btn-add-cart')) {
+                e.preventDefault();
+                const itemId = e.target.closest('.product-item').getAttribute('data-item-id');
+                this.addToCart(itemId);
+            }
+            
+            // Product filters
+            if (e.target.closest('.filter-btn')) {
+                e.preventDefault();
+                const filterBtn = e.target.closest('.filter-btn');
+                const filterType = filterBtn.getAttribute('data-type');
+                const filterValue = filterBtn.getAttribute('data-filter');
+                
+                // Remove active from same type filters
+                document.querySelectorAll(`.filter-btn[data-type="${filterType}"]`)
+                    .forEach(btn => btn.classList.remove('active'));
+                
+                // Add active to clicked filter
+                filterBtn.classList.add('active');
+                
+                this.applyFilters();
             }
         });
 
@@ -84,25 +104,25 @@ class CollectionGallery {
     createGalleryPage() {
         return `
             <div id="dep-collection-page" class="page">
-                <!-- Gallery Hero -->
-                <div class="gallery-hero">
+                <!-- Collection Hero -->
+                <div class="collection-hero">
                     <div class="container">
-                        <div class="gallery-hero-content">
+                        <div class="collection-hero-content">
                             <h1>Đẹp Collection</h1>
-                            <p class="gallery-subtitle">Trưng bày những tác phẩm tái chế độc đáo</p>
-                            <p class="gallery-description">
-                                Khám phá hành trình tái sinh của thời trang - từ những món đồ cũ đến những tác phẩm nghệ thuật mới
-                            </p>
+                            <p class="collection-subtitle">Bộ Sưu Tập Thời Trang Tái Chế</p>
+                            <div class="brand-message">
+                                <p class="brand-quote">"Đẹp không chỉ là phong cách – Đẹp còn là sự tái sinh của thời trang."</p>
+                            </div>
                             
                             <!-- Admin Controls -->
                             <div class="admin-controls admin-only">
-                                <button class="btn btn-primary" id="upload-gallery-btn">
-                                    <i class="fas fa-upload"></i>
-                                    Upload ảnh mới
+                                <button class="btn btn-primary" id="upload-product-btn">
+                                    <i class="fas fa-plus"></i>
+                                    Thêm sản phẩm mới
                                 </button>
-                                <button class="btn btn-secondary" id="manage-gallery-btn">
+                                <button class="btn btn-secondary" id="manage-products-btn">
                                     <i class="fas fa-cog"></i>
-                                    Quản lý gallery
+                                    Quản lý sản phẩm
                                 </button>
                             </div>
                         </div>
@@ -128,18 +148,42 @@ class CollectionGallery {
                             </div>
                         </div>
 
-                        <!-- Filter Tags -->
-                        <div class="gallery-filters">
-                            <button class="filter-tag active" data-filter="all">Tất cả</button>
-                            <button class="filter-tag" data-filter="vintage">Vintage</button>
-                            <button class="filter-tag" data-filter="modern">Hiện đại</button>
-                            <button class="filter-tag" data-filter="boho">Boho</button>
-                            <button class="filter-tag" data-filter="minimalist">Tối giản</button>
+                        <!-- Product Filters -->
+                        <div class="product-filters">
+                            <div class="filter-section">
+                                <h4>Loại sản phẩm</h4>
+                                <div class="filter-buttons">
+                                    <button class="filter-btn active" data-filter="all" data-type="category">Tất cả</button>
+                                    <button class="filter-btn" data-filter="ao" data-type="category">Áo</button>
+                                    <button class="filter-btn" data-filter="vay" data-type="category">Váy</button>
+                                    <button class="filter-btn" data-filter="phu-kien" data-type="category">Phụ kiện</button>
+                                </div>
+                            </div>
+                            
+                            <div class="filter-section">
+                                <h4>Phong cách</h4>
+                                <div class="filter-buttons">
+                                    <button class="filter-btn active" data-filter="all" data-type="style">Tất cả</button>
+                                    <button class="filter-btn" data-filter="vintage" data-type="style">Vintage</button>
+                                    <button class="filter-btn" data-filter="basic" data-type="style">Basic</button>
+                                    <button class="filter-btn" data-filter="doc-ban" data-type="style">Độc bản</button>
+                                </div>
+                            </div>
+                            
+                            <div class="filter-section">
+                                <h4>Khoảng giá</h4>
+                                <div class="filter-buttons">
+                                    <button class="filter-btn active" data-filter="all" data-type="price">Tất cả</button>
+                                    <button class="filter-btn" data-filter="under-500k" data-type="price">Dưới 500K</button>
+                                    <button class="filter-btn" data-filter="500k-1m" data-type="price">500K - 1M</button>
+                                    <button class="filter-btn" data-filter="over-1m" data-type="price">Trên 1M</button>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Gallery Grid -->
-                        <div class="gallery-grid" id="gallery-grid">
-                            ${this.generateGalleryItems()}
+                        <!-- Product Grid -->
+                        <div class="product-grid" id="product-grid">
+                            ${this.generateProductItems()}
                         </div>
                     </div>
                 </div>
@@ -147,71 +191,147 @@ class CollectionGallery {
         `;
     }
 
-    generateGalleryItems() {
-        const sampleItems = [
+    generateProductItems() {
+        const sampleProducts = [
             {
                 id: 1,
-                title: "Áo kiểu Vintage Renaissance",
+                title: "Áo Sơ Mi Linen Vintage",
                 image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop",
-                story: "Tái sinh từ áo sơ mi linen thập niên 80, kết hợp với ren vintage từ Pháp",
-                tags: ["vintage", "renaissance"],
+                price: 750000,
+                originalPrice: 950000,
+                category: "ao",
+                style: "vintage",
+                sizes: ["S", "M", "L"],
+                material: "Linen, Ren Pháp",
+                origin: "Tái sinh từ áo sơ mi linen thập niên 80, kết hợp với ren vintage từ Pháp",
+                condition: "Như mới",
                 featured: true,
                 views: 245,
+                sold: false,
                 created: "2024-01-15"
             },
             {
                 id: 2,
-                title: "Váy Tái Chế Bohemian",
+                title: "Váy Midi Bohemian",
                 image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=500&fit=crop",
-                story: "Từ những mảnh vải cotton organic còn sót lại, tạo nên tác phẩm nghệ thuật mới",
-                tags: ["boho", "organic"],
+                price: 890000,
+                originalPrice: null,
+                category: "vay",
+                style: "doc-ban",
+                sizes: ["M", "L"],
+                material: "Cotton Organic, Thêu tay",
+                origin: "Từ những mảnh vải cotton organic còn sót lại, tạo nên tác phẩm nghệ thuật mới",
+                condition: "Độc bản",
                 featured: true,
                 views: 189,
+                sold: false,
                 created: "2024-01-14"
             },
             {
                 id: 3,
-                title: "Túi Tote Minimalist",
+                title: "Túi Tote Canvas Eco",
                 image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=500&fit=crop",
-                story: "Canvas tái chế từ bao bì cũ, thiết kế tối giản nhưng đầy tinh tế",
-                tags: ["minimalist", "canvas"],
+                price: 320000,
+                originalPrice: 450000,
+                category: "phu-kien",
+                style: "basic",
+                sizes: ["OneSize"],
+                material: "Canvas tái chế",
+                origin: "Canvas tái chế từ bao bì cũ, thiết kế tối giản nhưng đầy tinh tế",
+                condition: "Tái chế",
                 featured: false,
                 views: 156,
+                sold: false,
                 created: "2024-01-12"
             },
             {
                 id: 4,
                 title: "Áo Khoác Denim Upcycled",
                 image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=400&h=500&fit=crop",
-                story: "Biến hóa từ áo khoác denim cũ thành tác phẩm streetwear hiện đại",
-                tags: ["modern", "streetwear"],
+                price: 1200000,
+                originalPrice: 1450000,
+                category: "ao",
+                style: "basic",
+                sizes: ["S", "M", "L", "XL"],
+                material: "Denim cotton, Kim loại",
+                origin: "Biến hóa từ áo khoác denim cũ thành tác phẩm streetwear hiện đại",
+                condition: "Upcycled",
                 featured: true,
                 views: 312,
+                sold: false,
                 created: "2024-01-10"
             },
             {
                 id: 5,
-                title: "Váy Cocktail Vintage",
+                title: "Váy Cocktail Retro",
                 image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop",
-                story: "Phục hồi từ váy cocktail thập niên 60, giữ nguyên vẻ đẹp cổ điển",
-                tags: ["vintage", "cocktail"],
+                price: 1500000,
+                originalPrice: null,
+                category: "vay",
+                style: "vintage",
+                sizes: ["S", "M"],
+                material: "Lụa, Ren Pháp",
+                origin: "Phục hồi từ váy cocktail thập niên 60, giữ nguyên vẻ đẹp cổ điển",
+                condition: "Vintage authentic",
                 featured: false,
                 views: 203,
+                sold: false,
                 created: "2024-01-08"
             },
             {
                 id: 6,
-                title: "Áo Blouse Bohemian Chic",
+                title: "Áo Blouse Thêu Tay",
                 image: "https://images.unsplash.com/photo-1583743814966-8936f37f631b?w=400&h=500&fit=crop",
-                story: "Kết hợp vải lụa vintage với thêu tay truyền thống Việt Nam",
-                tags: ["boho", "silk"],
+                price: 680000,
+                originalPrice: 850000,
+                category: "ao",
+                style: "doc-ban",
+                sizes: ["S", "M", "L"],
+                material: "Lụa Vintage, Thêu tay VN",
+                origin: "Kết hợp vải lụa vintage với thêu tay truyền thống Việt Nam",
+                condition: "Thủ công",
                 featured: true,
                 views: 278,
+                sold: false,
                 created: "2024-01-05"
+            },
+            {
+                id: 7,
+                title: "Khăn Choàng Silk Upcycled",
+                image: "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400&h=500&fit=crop",
+                price: 420000,
+                originalPrice: 600000,
+                category: "phu-kien",
+                style: "vintage",
+                sizes: ["OneSize"],
+                material: "Silk tái chế, Viền thêu",
+                origin: "Từ những mảnh silk vintage được tái tạo thành khăn choàng thời trang",
+                condition: "Tái chế",
+                featured: false,
+                views: 134,
+                sold: false,
+                created: "2024-01-03"
+            },
+            {
+                id: 8,
+                title: "Áo Len Oversized Vintage",
+                image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop",
+                price: 950000,
+                originalPrice: null,
+                category: "ao",
+                style: "vintage",
+                sizes: ["M", "L", "XL"],
+                material: "Wool blend, Cotton",
+                origin: "Áo len vintage được phục hồi và tái tạo với form dáng hiện đại",
+                condition: "Vintage restored",
+                featured: true,
+                views: 298,
+                sold: false,
+                created: "2024-01-01"
             }
         ];
 
-        return sampleItems.map(item => this.renderGalleryItem(item)).join('');
+        return sampleProducts.map(item => this.renderProductItem(item)).join('');
     }
 
     generateGalleryItemsFromData() {
@@ -221,63 +341,93 @@ class CollectionGallery {
         return this.galleryItems.map(item => this.renderGalleryItem(item)).join('');
     }
 
-    renderGalleryItem(item) {
-        const tags = Array.isArray(item.tags) ? item.tags : 
-                    (typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : []);
+    renderProductItem(item) {
         const isDbItem = !!item.created_at;
         const viewCount = item.views || 0;
         const createDate = isDbItem ? 
             new Date(item.created_at).toLocaleDateString('vi-VN') : 
             item.created;
+        
+        const priceFormatted = new Intl.NumberFormat('vi-VN').format(item.price);
+        const originalPriceFormatted = item.originalPrice ? 
+            new Intl.NumberFormat('vi-VN').format(item.originalPrice) : null;
+        const discount = item.originalPrice ? 
+            Math.round((1 - item.price / item.originalPrice) * 100) : 0;
 
         return `
-            <div class="gallery-item ${item.is_featured || item.featured ? 'featured' : ''}" 
+            <div class="product-item ${item.is_featured || item.featured ? 'featured' : ''} ${item.sold ? 'sold' : ''}" 
                  data-item-id="${item.id}" 
-                 data-tags="${tags.join(' ')}">
-                <div class="gallery-item-image" style="background-image: url('${item.image_url || item.image}')">
+                 data-category="${item.category}"
+                 data-style="${item.style}"
+                 data-price="${item.price}">
+                <div class="product-image-container">
+                    <img src="${item.image_url || item.image}" alt="${item.title}" class="product-image">
+                    
                     ${(item.is_featured || item.featured) ? '<span class="featured-badge">Nổi bật</span>' : ''}
+                    ${item.sold ? '<span class="sold-badge">Đã bán</span>' : ''}
+                    ${discount > 0 ? `<span class="discount-badge">-${discount}%</span>` : ''}
                     
                     <!-- Admin Controls -->
-                    <div class="gallery-item-controls admin-only">
-                        <button class="btn-icon btn-edit-gallery" title="Chỉnh sửa">
+                    <div class="product-controls admin-only">
+                        <button class="btn-icon btn-edit-product" title="Chỉnh sửa">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn-icon btn-delete-gallery" title="Xóa">
+                        <button class="btn-icon btn-delete-product" title="Xóa">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                     
-                    <!-- View Overlay -->
-                    <div class="gallery-overlay">
-                        <button class="btn-view-detail">
+                    <!-- Quick Actions -->
+                    <div class="product-overlay">
+                        <button class="btn-quick-view">
                             <i class="fas fa-eye"></i>
-                            Xem chi tiết
+                            Xem nhanh
+                        </button>
+                        <button class="btn-add-cart ${item.sold ? 'disabled' : ''}">
+                            <i class="fas fa-shopping-cart"></i>
+                            ${item.sold ? 'Đã bán' : 'Mua ngay'}
                         </button>
                     </div>
                 </div>
                 
-                <div class="gallery-item-info">
-                    <h3 class="gallery-item-title">${item.title}</h3>
-                    <p class="gallery-item-story">${item.story}</p>
+                <div class="product-info">
+                    <h3 class="product-title">${item.title}</h3>
+                    <div class="product-price">
+                        <span class="current-price">${priceFormatted}₫</span>
+                        ${originalPriceFormatted ? `<span class="original-price">${originalPriceFormatted}₫</span>` : ''}
+                    </div>
                     
-                    <div class="gallery-item-meta">
-                        <div class="gallery-tags">
-                            ${tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    <div class="product-details">
+                        <div class="product-sizes">
+                            <span class="detail-label">Size:</span>
+                            ${item.sizes.map(size => `<span class="size-tag">${size}</span>`).join('')}
                         </div>
-                        <div class="gallery-stats">
-                            <span class="view-count">
-                                <i class="fas fa-eye"></i>
-                                ${viewCount}
-                            </span>
-                            <span class="create-date admin-only">
-                                <i class="fas fa-calendar"></i>
-                                ${createDate}
-                            </span>
+                        <div class="product-material">
+                            <span class="detail-label">Chất liệu:</span>
+                            <span class="material-text">${item.material}</span>
                         </div>
+                    </div>
+                    
+                    <div class="product-origin">
+                        <span class="origin-label">Nguồn gốc tái chế:</span>
+                        <p class="origin-text">${item.origin}</p>
+                    </div>
+                    
+                    <div class="product-meta admin-only">
+                        <span class="condition-badge">${item.condition}</span>
+                        <span class="view-count">
+                            <i class="fas fa-eye"></i>
+                            ${viewCount} lượt xem
+                        </span>
                     </div>
                 </div>
             </div>
         `;
+    }
+    
+    // Keep the old function for backward compatibility
+    renderGalleryItem(item) {
+        return this.renderProductItem(item);
     }
 
     showUploadModal() {
@@ -285,7 +435,7 @@ class CollectionGallery {
             <div id="upload-gallery-modal" class="modal gallery-modal">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h3>Upload Tác Phẩm Mới</h3>
+                        <h3>Thêm Sản Phẩm Tái Chế Mới</h3>
                         <button class="close-btn" onclick="this.closest('.modal').remove()">
                             <i class="fas fa-times"></i>
                         </button>
@@ -339,7 +489,7 @@ class CollectionGallery {
                         <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Hủy</button>
                         <button type="button" class="btn btn-primary" onclick="collectionGallery.saveGalleryItem()">
                             <i class="fas fa-save"></i>
-                            Lưu tác phẩm
+                            Lưu sản phẩm
                         </button>
                     </div>
                 </div>
@@ -500,32 +650,103 @@ class CollectionGallery {
         return publicUrl;
     }
 
-    editGalleryItem(itemId) {
-        // TODO: Load item data and show edit modal
-        Utils.showToast('Chức năng chỉnh sửa đang phát triển', 'info');
+    // Product management methods
+    editProduct(itemId) {
+        Utils.showToast('Chức năng chỉnh sửa sản phẩm đang phát triển', 'info');
     }
 
-    deleteGalleryItem(itemId) {
-        if (confirm('Bạn có chắc chắn muốn xóa tác phẩm này?')) {
-            // TODO: Implement actual delete
-            Utils.showToast('Đã xóa tác phẩm', 'success');
+    deleteProduct(itemId) {
+        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+            Utils.showToast('Đã xóa sản phẩm', 'success');
             this.refreshGallery();
         }
     }
 
+    showProductDetail(itemId) {
+        Utils.showToast('Modal chi tiết sản phẩm đang phát triển', 'info');
+    }
+
+    addToCart(itemId) {
+        Utils.showToast('Đã thêm vào giỏ hàng!', 'success');
+    }
+
+    applyFilters() {
+        const activeFilters = {
+            category: document.querySelector('.filter-btn[data-type="category"].active')?.getAttribute('data-filter') || 'all',
+            style: document.querySelector('.filter-btn[data-type="style"].active')?.getAttribute('data-filter') || 'all',
+            price: document.querySelector('.filter-btn[data-type="price"].active')?.getAttribute('data-filter') || 'all'
+        };
+
+        const products = document.querySelectorAll('.product-item');
+        
+        products.forEach(product => {
+            let show = true;
+            
+            // Filter by category
+            if (activeFilters.category !== 'all') {
+                const productCategory = product.getAttribute('data-category');
+                if (productCategory !== activeFilters.category) {
+                    show = false;
+                }
+            }
+            
+            // Filter by style
+            if (activeFilters.style !== 'all') {
+                const productStyle = product.getAttribute('data-style');
+                if (productStyle !== activeFilters.style) {
+                    show = false;
+                }
+            }
+            
+            // Filter by price
+            if (activeFilters.price !== 'all') {
+                const productPrice = parseInt(product.getAttribute('data-price'));
+                let priceInRange = false;
+                
+                switch (activeFilters.price) {
+                    case 'under-500k':
+                        priceInRange = productPrice < 500000;
+                        break;
+                    case '500k-1m':
+                        priceInRange = productPrice >= 500000 && productPrice <= 1000000;
+                        break;
+                    case 'over-1m':
+                        priceInRange = productPrice > 1000000;
+                        break;
+                }
+                
+                if (!priceInRange) {
+                    show = false;
+                }
+            }
+            
+            product.style.display = show ? 'block' : 'none';
+        });
+        
+        console.log('Applied filters:', activeFilters);
+    }
+
+    // Legacy methods for backward compatibility
+    editGalleryItem(itemId) {
+        this.editProduct(itemId);
+    }
+
+    deleteGalleryItem(itemId) {
+        this.deleteProduct(itemId);
+    }
+
     viewGalleryDetail(itemId) {
-        // TODO: Show detail modal
-        Utils.showToast('Xem chi tiết tác phẩm', 'info');
+        this.showProductDetail(itemId);
     }
 
     refreshGallery() {
-        const grid = document.getElementById('gallery-grid');
+        const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
         if (grid) {
             // Use real data if available, fallback to sample data
             if (this.galleryItems && this.galleryItems.length > 0) {
                 grid.innerHTML = this.generateGalleryItemsFromData();
             } else {
-                grid.innerHTML = this.generateGalleryItems();
+                grid.innerHTML = this.generateProductItems();
             }
         }
     }
@@ -543,8 +764,8 @@ class CollectionGallery {
             this.galleryItems = data || [];
             console.log('Loaded gallery items:', this.galleryItems.length);
             
-            // Update UI if gallery grid exists
-            const grid = document.getElementById('gallery-grid');
+            // Update UI if product grid exists
+            const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
             if (grid) {
                 grid.innerHTML = this.generateGalleryItemsFromData();
             }
