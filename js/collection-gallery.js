@@ -324,11 +324,18 @@ class CollectionGallery {
                                     <input type="text" id="item-tags" placeholder="vintage, renaissance, linen">
                                 </div>
                                 
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" id="item-featured"> 
-                                        Đặt làm nổi bật
-                                    </label>
+                                <div class="form-group featured-toggle-group">
+                                    <label class="featured-toggle-label">Đặt làm nổi bật</label>
+                                    <div class="featured-toggle-container">
+                                        <input type="checkbox" id="item-featured" class="featured-toggle-input">
+                                        <label for="item-featured" class="featured-toggle-switch">
+                                            <span class="featured-toggle-slider"></span>
+                                            <span class="featured-toggle-text">
+                                                <span class="toggle-on">✨ Nổi bật</span>
+                                                <span class="toggle-off">Bình thường</span>
+                                            </span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </form>

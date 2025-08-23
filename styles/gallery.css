@@ -547,12 +547,137 @@
     margin-bottom: 0;
 }
 
-.upload-form .form-group:has(input[type="checkbox"]) label {
-    margin-bottom: 0;
+/* Featured Toggle Switch */
+.featured-toggle-group {
+    background: linear-gradient(135deg, #f8fffe 0%, var(--soft-white) 100%);
+    border: 2px solid var(--border-light);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 25px !important;
+    transition: all 0.3s ease;
+}
+
+.featured-toggle-group:hover {
+    border-color: var(--light-green);
+    box-shadow: 0 5px 20px rgba(74, 155, 142, 0.1);
+    transform: translateY(-2px);
+}
+
+.featured-toggle-label {
+    display: block !important;
+    margin-bottom: 15px !important;
+    font-weight: 600;
+    color: var(--primary-green);
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.featured-toggle-container {
     display: flex;
     align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.featured-toggle-input {
+    display: none;
+}
+
+.featured-toggle-switch {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
     cursor: pointer;
-    font-size: 1rem;
+    user-select: none;
+    padding: 8px;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.featured-toggle-slider {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background: #ddd;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.featured-toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.featured-toggle-input:checked + .featured-toggle-switch .featured-toggle-slider {
+    background: linear-gradient(135deg, var(--light-green), var(--accent-green));
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1), 0 0 0 2px rgba(74, 155, 142, 0.2);
+}
+
+.featured-toggle-input:checked + .featured-toggle-switch .featured-toggle-slider::before {
+    transform: translateX(30px);
+    box-shadow: 0 2px 12px rgba(74, 155, 142, 0.4);
+}
+
+.featured-toggle-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+}
+
+.toggle-on,
+.toggle-off {
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    opacity: 0.5;
+    transform: scale(0.9);
+}
+
+.featured-toggle-input:checked + .featured-toggle-switch .toggle-on {
+    opacity: 1;
+    transform: scale(1);
+    color: var(--light-green);
+}
+
+.featured-toggle-input:not(:checked) + .featured-toggle-switch .toggle-off {
+    opacity: 1;
+    transform: scale(1);
+    color: var(--text-dark);
+}
+
+.featured-toggle-input:checked + .featured-toggle-switch .toggle-off {
+    opacity: 0.3;
+    transform: scale(0.85);
+}
+
+.featured-toggle-input:not(:checked) + .featured-toggle-switch .toggle-on {
+    opacity: 0.3;
+    transform: scale(0.85);
+}
+
+/* Hover effects */
+.featured-toggle-switch:hover .featured-toggle-slider {
+    transform: scale(1.05);
+}
+
+.featured-toggle-switch:hover .featured-toggle-text {
+    transform: scale(1.02);
+}
+
+/* Active state */
+.featured-toggle-switch:active .featured-toggle-slider {
+    transform: scale(0.98);
 }
 
 /* Enhanced button styles for modal */
@@ -692,5 +817,46 @@
     
     .upload-form .form-group label {
         font-size: 1rem;
+    }
+    
+    /* Mobile responsive for featured toggle */
+    .featured-toggle-group {
+        padding: 15px;
+        border-radius: 12px;
+    }
+    
+    .featured-toggle-label {
+        font-size: 1rem;
+        margin-bottom: 12px !important;
+    }
+    
+    .featured-toggle-container {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .featured-toggle-slider {
+        width: 50px;
+        height: 26px;
+    }
+    
+    .featured-toggle-slider::before {
+        width: 20px;
+        height: 20px;
+        top: 3px;
+        left: 3px;
+    }
+    
+    .featured-toggle-input:checked + .featured-toggle-switch .featured-toggle-slider::before {
+        transform: translateX(24px);
+    }
+    
+    .featured-toggle-text {
+        min-width: 80px;
+    }
+    
+    .toggle-on,
+    .toggle-off {
+        font-size: 0.9rem;
     }
 }
