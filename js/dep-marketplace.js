@@ -82,159 +82,200 @@ class DepMarketplace {
     loadDepCollectionPage() {
         console.log('🚀 Loading Dep Collection Page...');
         
-        try {
-            const mainContent = document.querySelector('.main-content');
-            console.log('Main content found:', !!mainContent);
+        // Check if page already exists in HTML (static version)
+        const existingPage = document.getElementById('dep-collection-page');
+        if (existingPage) {
+            console.log('✅ Using existing static gallery page');
             
-            if (!mainContent) {
-                console.error('❌ Main content not found!');
-                return;
+            // Show the page
+            this.showPage('dep-collection');
+            
+            // Load gallery items into existing grid
+            this.initializeGalleryContent();
+            return;
+        }
+        
+        console.log('⚠️ Static page not found, creating dynamic version...');
+        // Fallback to dynamic creation if static doesn't exist
+        this.createDynamicGalleryPage();
+    }
+
+    showPage(pageId) {
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+        
+        // Show target page
+        const targetPage = document.getElementById(`${pageId}-page`);
+        if (targetPage) {
+            targetPage.classList.add('active');
+            console.log(`👁️ Showing page: ${pageId}`);
+        }
+        
+        // Update navigation
+        this.updateNavigation(pageId);
+    }
+
+    updateNavigation(activePageId) {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        const navItem = document.querySelector(`[data-page="${activePageId}"]`);
+        if (navItem) {
+            navItem.classList.add('active');
+            console.log('🧭 Navigation updated');
+        }
+    }
+
+    initializeGalleryContent() {
+        console.log('🔧 Initializing gallery content...');
+        
+        // Initialize filter events
+        this.initGalleryFilters();
+        
+        // Load sample gallery items
+        this.loadSampleGalleryItems();
+        
+        // Refresh auth permissions to show/hide admin controls
+        setTimeout(() => {
+            if (window.authManager && window.authManager.refreshUIPermissions) {
+                console.log('🔐 Refreshing UI permissions...');
+                window.authManager.refreshUIPermissions();
             }
-            
-            // Remove existing dep-collection page if any
-            const existing = document.getElementById('dep-collection-page');
-            if (existing) {
-                existing.remove();
-                console.log('🗑️ Removed existing page');
+        }, 100);
+        
+        console.log('✅ Gallery content initialized');
+    }
+
+    loadSampleGalleryItems() {
+        const galleryGrid = document.getElementById('gallery-grid');
+        if (!galleryGrid) {
+            console.log('❌ Gallery grid not found');
+            return;
+        }
+
+        // Use CollectionGallery class to generate items
+        if (window.collectionGallery && window.collectionGallery.generateGalleryItems) {
+            console.log('📊 Using CollectionGallery to generate items');
+            galleryGrid.innerHTML = window.collectionGallery.generateGalleryItems();
+        } else {
+            console.log('📊 Using fallback gallery items');
+            galleryGrid.innerHTML = this.generateFallbackGalleryItems();
+        }
+    }
+
+    generateFallbackGalleryItems() {
+        const sampleItems = [
+            {
+                id: 1,
+                title: "Áo kiểu Vintage Renaissance",
+                image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop",
+                story: "Tái sinh từ áo sơ mi linen thập niên 80, kết hợp với ren vintage từ Pháp",
+                tags: ["vintage", "renaissance"],
+                featured: true,
+                views: 245,
+                created: "2024-01-15"
+            },
+            {
+                id: 2,
+                title: "Váy Tái Chế Bohemian",
+                image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=500&fit=crop",
+                story: "Từ những mảnh vải cotton organic còn sót lại, tạo nên tác phẩm nghệ thuật mới",
+                tags: ["boho", "organic"],
+                featured: true,
+                views: 189,
+                created: "2024-01-14"
+            },
+            {
+                id: 3,
+                title: "Túi Tote Minimalist",
+                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=500&fit=crop",
+                story: "Canvas tái chế từ bao bì cũ, thiết kế tối giản nhưng đầy tinh tế",
+                tags: ["minimalist", "canvas"],
+                featured: false,
+                views: 156,
+                created: "2024-01-12"
             }
-            
-            // Force create gallery page with simplified HTML
-            const galleryHTML = `
-                <div id="dep-collection-page" class="page">
-                    <div class="gallery-hero" style="padding: 80px 0; text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
-                        <div class="container">
-                            <h1 style="font-size: 3rem; margin-bottom: 20px; color: #2d5a5a;">Đẹp Collection</h1>
-                            <p style="font-size: 1.2rem; color: #6c757d; margin-bottom: 30px;">Trưng bày những tác phẩm tái chế độc đáo</p>
-                            
-                            <!-- Admin Controls -->
-                            <div class="admin-controls admin-only" style="display: flex !important; gap: 15px; justify-content: center;">
-                                <button class="btn btn-primary" id="upload-gallery-btn" style="padding: 15px 25px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
-                                    <i class="fas fa-upload"></i> Upload ảnh mới
-                                </button>
-                                <button class="btn btn-secondary" id="manage-gallery-btn" style="padding: 15px 25px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
-                                    <i class="fas fa-cog"></i> Quản lý gallery
-                                </button>
-                            </div>
-                        </div>
+        ];
+
+        return sampleItems.map(item => this.renderGalleryItem(item)).join('');
+    }
+
+    renderGalleryItem(item) {
+        const tags = Array.isArray(item.tags) ? item.tags : [];
+        
+        return `
+            <div class="gallery-item ${item.featured ? 'featured' : ''}" 
+                 data-item-id="${item.id}" 
+                 data-tags="${tags.join(' ')}">
+                <div class="gallery-item-image" style="background-image: url('${item.image}')">
+                    ${item.featured ? '<span class="featured-badge">Nổi bật</span>' : ''}
+                    
+                    <!-- Admin Controls -->
+                    <div class="gallery-item-controls admin-only">
+                        <button class="btn-icon btn-edit-gallery" title="Chỉnh sửa">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete-gallery" title="Xóa">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                     
-                    <div class="gallery-content" style="padding: 50px 0;">
-                        <div class="container">
-                            <!-- Gallery Stats (Admin only) -->
-                            <div class="gallery-stats admin-only" style="display: grid !important; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
-                                <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
-                                    <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">6</span>
-                                    <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Tổng tác phẩm</span>
-                                </div>
-                                <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
-                                    <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">4</span>
-                                    <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Nổi bật</span>
-                                </div>
-                                <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
-                                    <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">1,234</span>
-                                    <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Lượt xem</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Filter Tags -->
-                            <div class="gallery-filters" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap;">
-                                <button class="filter-tag active" data-filter="all" style="padding: 10px 20px; border: 2px solid #28a745; background: #28a745; color: white; border-radius: 25px; cursor: pointer;">Tất cả</button>
-                                <button class="filter-tag" data-filter="vintage" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Vintage</button>
-                                <button class="filter-tag" data-filter="modern" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Hiện đại</button>
-                                <button class="filter-tag" data-filter="boho" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Boho</button>
-                            </div>
-                            
-                            <!-- Gallery Grid -->
-                            <div class="gallery-grid" id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px;">
-                                <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;">
-                                    <h3>🎨 Gallery items đang tải...</h3>
-                                    <p>Database items sẽ hiển thị ở đây</p>
-                                </div>
-                            </div>
+                    <!-- View Overlay -->
+                    <div class="gallery-overlay">
+                        <button class="btn-view-detail">
+                            <i class="fas fa-eye"></i>
+                            Xem chi tiết
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="gallery-item-info">
+                    <h3 class="gallery-item-title">${item.title}</h3>
+                    <p class="gallery-item-story">${item.story}</p>
+                    
+                    <div class="gallery-item-meta">
+                        <div class="gallery-tags">
+                            ${tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="gallery-stats">
+                            <span class="view-count">
+                                <i class="fas fa-eye"></i>
+                                ${item.views}
+                            </span>
+                            <span class="create-date admin-only">
+                                <i class="fas fa-calendar"></i>
+                                ${item.created}
+                            </span>
                         </div>
                     </div>
                 </div>
-            `;
-            
-            console.log('📝 Gallery HTML length:', galleryHTML.length);
-            mainContent.insertAdjacentHTML('beforeend', galleryHTML);
-            
-            const depCollectionPage = document.getElementById('dep-collection-page');
-            console.log('✅ dep-collection-page created:', !!depCollectionPage);
-            
-            // CRITICAL: Make sure page is visible by adding active class
-            if (depCollectionPage) {
-                // Hide all other pages first
-                document.querySelectorAll('.page').forEach(page => {
-                    page.classList.remove('active');
-                    page.style.display = 'none';
-                });
-                
-                // Show this page
-                depCollectionPage.classList.add('active');
-                depCollectionPage.style.display = 'block !important';
-                depCollectionPage.style.visibility = 'visible';
-                depCollectionPage.style.opacity = '1';
-                console.log('👁️ Page visibility set to active');
-                
-                // Update navigation
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                const navItem = document.querySelector('[data-page="dep-collection"]');
-                if (navItem) {
-                    navItem.classList.add('active');
-                    console.log('🧭 Navigation updated');
-                }
-            }
-            
-            // Initialize immediately
-            setTimeout(() => {
-                console.log('🔧 Initializing gallery...');
-                
-                // Force show admin controls
-                const adminControls = document.querySelectorAll('.admin-only');
-                console.log('👤 Admin elements found:', adminControls.length);
-                
-                adminControls.forEach(el => {
-                    el.style.display = 'block';
-                    el.style.visibility = 'visible';
-                    console.log('👀 Showing admin control:', el.className);
-                });
-                
-                // Add upload button event
-                const uploadBtn = document.getElementById('upload-gallery-btn');
-                if (uploadBtn) {
-                    uploadBtn.addEventListener('click', () => {
-                        console.log('📸 Upload button clicked!');
-                        if (window.collectionGallery && window.collectionGallery.showUploadModal) {
-                            window.collectionGallery.showUploadModal();
-                        } else {
-                            alert('🎯 Upload modal sẽ mở ở đây! (CollectionGallery chưa ready)');
-                        }
-                    });
-                    console.log('✅ Upload button event added');
-                }
-                
-                // Load gallery items from database
-                if (window.collectionGallery && window.collectionGallery.loadGalleryItems) {
-                    console.log('📊 Loading gallery items from database...');
-                    window.collectionGallery.loadGalleryItems();
-                }
-                
-                // Refresh auth permissions
-                if (window.authManager && window.authManager.refreshUIPermissions) {
-                    console.log('🔐 Refreshing UI permissions...');
-                    window.authManager.refreshUIPermissions();
-                }
-                
-                console.log('🎉 Gallery initialization complete!');
-                
-            }, 200);
-            
-        } catch (error) {
-            console.error('💥 Error loading Dep Collection page:', error);
+            </div>
+        `;
+    }
+
+    createDynamicGalleryPage() {
+        console.log('⚠️ Creating dynamic gallery page (fallback)');
+        const mainContent = document.querySelector('.main-content');
+        
+        if (!mainContent) {
+            console.error('❌ Main content not found!');
+            return;
         }
+        
+        // Use CollectionGallery class if available
+        let galleryHTML = '';
+        if (window.collectionGallery && window.collectionGallery.createGalleryPage) {
+            galleryHTML = window.collectionGallery.createGalleryPage();
+        } else {
+            galleryHTML = this.createGalleryPageFallback();
+        }
+        
+        mainContent.insertAdjacentHTML('beforeend', galleryHTML);
+        this.showPage('dep-collection');
+        this.initializeGalleryContent();
     }
     
     createGalleryPageFallback() {
@@ -414,8 +455,9 @@ class DepMarketplace {
             </div>
         `).join('');
     }
-    
     initGalleryFilters() {
+        console.log('🔧 Setting up gallery filters...');
+        
         // Filter by tags
         document.querySelectorAll('.filter-tag').forEach(tag => {
             tag.addEventListener('click', (e) => {
@@ -428,6 +470,31 @@ class DepMarketplace {
                 this.filterGalleryItems(filter);
             });
         });
+
+        // Add upload button event listener
+        const uploadBtn = document.getElementById('upload-gallery-btn');
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', () => {
+                console.log('📸 Upload button clicked!');
+                if (window.collectionGallery && window.collectionGallery.showUploadModal) {
+                    window.collectionGallery.showUploadModal();
+                } else {
+                    Utils.showToast('Upload modal sẽ mở ở đây! (Đang phát triển)', 'info');
+                }
+            });
+            console.log('✅ Upload button event added');
+        }
+
+        // Add manage gallery button event
+        const manageBtn = document.getElementById('manage-gallery-btn');
+        if (manageBtn) {
+            manageBtn.addEventListener('click', () => {
+                console.log('⚙️ Manage gallery clicked!');
+                Utils.showToast('Quản lý gallery đang phát triển', 'info');
+            });
+        }
+
+        console.log('✅ Gallery filters initialized');
     }
     
     filterGalleryItems(filter) {

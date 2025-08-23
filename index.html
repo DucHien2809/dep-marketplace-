@@ -309,71 +309,54 @@
 
             <!-- Đẹp Collection Page -->
             <div id="dep-collection-page" class="page">
-                <div class="page-header">
-                    <h1>Dashboard</h1>
-                    <p>Tổng quan hoạt động kinh doanh</p>
-                </div>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-box"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="total-products">0</h3>
-                            <p>Tổng sản phẩm</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="total-orders">0</h3>
-                            <p>Đơn hàng</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="total-customers">0</h3>
-                            <p>Khách hàng</p>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                        <div class="stat-content">
-                            <h3 id="total-revenue">0đ</h3>
-                            <p>Doanh thu</p>
+                <!-- Gallery Hero -->
+                <div class="gallery-hero" style="padding: 80px 0; text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                    <div class="container">
+                        <h1 style="font-size: 3rem; margin-bottom: 20px; color: #2d5a5a;">Đẹp Collection</h1>
+                        <p style="font-size: 1.2rem; color: #6c757d; margin-bottom: 30px;">Trưng bày những tác phẩm tái chế độc đáo</p>
+                        
+                        <!-- Admin Controls -->
+                        <div class="admin-controls admin-only" style="margin-bottom: 30px;">
+                            <button class="btn btn-primary" id="upload-gallery-btn" style="margin-right: 15px;">
+                                <i class="fas fa-upload"></i> Upload ảnh mới
+                            </button>
+                            <button class="btn btn-secondary" id="manage-gallery-btn">
+                                <i class="fas fa-cog"></i> Quản lý gallery
+                            </button>
                         </div>
                     </div>
                 </div>
                 
-                <div class="dashboard-content">
-                    <div class="recent-orders">
-                        <h3>Đơn hàng gần đây</h3>
-                        <div class="table-container">
-                            <table id="recent-orders-table">
-                                <thead>
-                                    <tr>
-                                        <th>Mã đơn hàng</th>
-                                        <th>Khách hàng</th>
-                                        <th>Tổng tiền</th>
-                                        <th>Trạng thái</th>
-                                        <th>Ngày tạo</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Dynamic content -->
-                                </tbody>
-                            </table>
+                <!-- Gallery Content -->
+                <div class="gallery-content" style="padding: 50px 0;">
+                    <div class="container">
+                        <!-- Gallery Stats (Admin only) -->
+                        <div class="gallery-stats admin-only" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+                            <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
+                                <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">6</span>
+                                <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Tổng tác phẩm</span>
+                            </div>
+                            <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
+                                <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">4</span>
+                                <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Nổi bật</span>
+                            </div>
+                            <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
+                                <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">1,234</span>
+                                <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Lượt xem</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Filter Tags -->
+                        <div class="gallery-filters" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap;">
+                            <button class="filter-tag active" data-filter="all" style="padding: 10px 20px; border: 2px solid #28a745; background: #28a745; color: white; border-radius: 25px; cursor: pointer;">Tất cả</button>
+                            <button class="filter-tag" data-filter="vintage" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Vintage</button>
+                            <button class="filter-tag" data-filter="modern" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Hiện đại</button>
+                            <button class="filter-tag" data-filter="boho" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Boho</button>
+                        </div>
+                        
+                        <!-- Gallery Grid -->
+                        <div class="gallery-grid" id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px;">
+                            <!-- Gallery items will be loaded here -->
                         </div>
                     </div>
                 </div>

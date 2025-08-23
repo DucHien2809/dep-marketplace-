@@ -7,30 +7,47 @@ class CollectionGallery {
     }
 
     async init() {
-        await this.loadGalleryItems();
+        console.log('🎨 Initializing CollectionGallery...');
         this.bindEvents();
+        await this.loadGalleryItems();
     }
 
     bindEvents() {
+        console.log('🔗 Binding CollectionGallery events...');
+        
         // Upload image button
         document.addEventListener('click', (e) => {
-            if (e.target.id === 'upload-gallery-btn') {
+            if (e.target.id === 'upload-gallery-btn' || e.target.closest('#upload-gallery-btn')) {
+                e.preventDefault();
+                console.log('📸 Upload button clicked via CollectionGallery');
                 this.showUploadModal();
             }
             
             if (e.target.closest('.btn-edit-gallery')) {
+                e.preventDefault();
                 const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
                 this.editGalleryItem(itemId);
             }
             
             if (e.target.closest('.btn-delete-gallery')) {
+                e.preventDefault();
                 const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
                 this.deleteGalleryItem(itemId);
             }
             
-            if (e.target.closest('.gallery-item-image')) {
+            if (e.target.closest('.btn-view-detail')) {
+                e.preventDefault();
                 const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
                 this.viewGalleryDetail(itemId);
+            }
+            
+            // Filter tags
+            if (e.target.closest('.filter-tag')) {
+                e.preventDefault();
+                document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                e.target.closest('.filter-tag').classList.add('active');
+                const filter = e.target.closest('.filter-tag').getAttribute('data-filter');
+                this.filterGalleryItems(filter);
             }
         });
 
@@ -40,6 +57,28 @@ class CollectionGallery {
                 this.handleImageUpload(e.target.files);
             }
         });
+    }
+
+    filterGalleryItems(filter) {
+        console.log('🔍 Filtering gallery items:', filter);
+        const items = document.querySelectorAll('.gallery-item');
+        
+        items.forEach(item => {
+            if (filter === 'all') {
+                item.style.display = 'block';
+            } else {
+                const tags = item.getAttribute('data-tags');
+                if (tags && tags.includes(filter)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            }
+        });
+        
+        if (window.Utils) {
+            Utils.showToast(`Lọc theo: ${filter === 'all' ? 'Tất cả' : filter}`, 'info');
+        }
     }
 
     createGalleryPage() {
