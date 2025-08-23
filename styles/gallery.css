@@ -29,10 +29,16 @@
 
 /* Admin Controls */
 .admin-controls {
-    display: flex;
+    display: flex !important;
     gap: 15px;
     justify-content: center;
     flex-wrap: wrap;
+}
+
+/* Override admin-only for gallery temporarily */
+.gallery-hero .admin-only,
+.gallery-content .admin-only {
+    display: flex !important;
 }
 
 /* Gallery Stats */

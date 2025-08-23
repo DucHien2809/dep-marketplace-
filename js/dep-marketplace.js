@@ -80,8 +80,10 @@ class DepMarketplace {
     }
 
     loadDepCollectionPage() {
+        console.log('Loading Dep Collection Page...');
         // Create and show Đẹp Collection gallery page
         const mainContent = document.querySelector('.main-content');
+        console.log('Main content found:', mainContent);
         if (mainContent) {
             // Clear existing content
             mainContent.innerHTML = '';
@@ -100,6 +102,14 @@ class DepMarketplace {
             setTimeout(() => {
                 this.initGalleryFilters();
                 this.bindGalleryEvents();
+                
+                // Debug: Show what's loaded
+                console.log('Gallery loaded:', document.getElementById('gallery-grid'));
+                console.log('Upload button:', document.getElementById('upload-gallery-btn'));
+                
+                // Force show admin controls for testing
+                const adminControls = document.querySelectorAll('.admin-only');
+                console.log('Admin elements found:', adminControls.length);
             }, 100);
         }
     }
