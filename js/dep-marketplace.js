@@ -135,8 +135,13 @@ class DepMarketplace {
         // Initialize filter events
         this.initGalleryFilters();
         
-        // Load sample gallery items
-        this.loadSampleGalleryItems();
+        // Only load sample items if CollectionGallery hasn't already loaded database items
+        if (window.collectionGallery && window.collectionGallery.galleryItems && window.collectionGallery.galleryItems.length > 0) {
+            console.log('📊 CollectionGallery already loaded database items, skipping fallback');
+        } else {
+            console.log('📊 Loading sample gallery items as fallback');
+            this.loadSampleGalleryItems();
+        }
         
         // Refresh auth permissions to show/hide admin controls
         setTimeout(() => {
@@ -150,18 +155,22 @@ class DepMarketplace {
     }
 
     loadSampleGalleryItems() {
-        const galleryGrid = document.getElementById('gallery-grid');
+        // Try both new product-grid and old gallery-grid
+        const galleryGrid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
         if (!galleryGrid) {
-            console.log('❌ Gallery grid not found');
+            console.log('❌ Gallery grid not found (tried both product-grid and gallery-grid)');
             return;
         }
 
-        // Use CollectionGallery class to generate items
-        if (window.collectionGallery && window.collectionGallery.generateGalleryItems) {
-            console.log('📊 Using CollectionGallery to generate items');
+        // Use CollectionGallery class if available (preferred)
+        if (window.collectionGallery && window.collectionGallery.generateProductItems) {
+            console.log('📊 Using CollectionGallery to generate product items');
+            galleryGrid.innerHTML = window.collectionGallery.generateProductItems();
+        } else if (window.collectionGallery && window.collectionGallery.generateGalleryItems) {
+            console.log('📊 Using CollectionGallery to generate gallery items (legacy)');
             galleryGrid.innerHTML = window.collectionGallery.generateGalleryItems();
         } else {
-            console.log('📊 Using fallback gallery items');
+            console.log('📊 Using dep-marketplace fallback gallery items');
             galleryGrid.innerHTML = this.generateFallbackGalleryItems();
         }
     }
@@ -282,24 +291,24 @@ class DepMarketplace {
         return `
             <div id="dep-collection-page" class="page">
                 <!-- Gallery Hero -->
-                <div class="gallery-hero">
+                <div class="collection-hero">
                     <div class="container">
-                        <div class="gallery-hero-content">
+                        <div class="collection-hero-content">
                             <h1>Đẹp Collection</h1>
-                            <p class="gallery-subtitle">Trưng bày những tác phẩm tái chế độc đáo</p>
-                            <p class="gallery-description">
-                                Khám phá hành trình tái sinh của thời trang - từ những món đồ cũ đến những tác phẩm nghệ thuật mới
-                            </p>
+                            <p class="collection-subtitle">Bộ Sưu Tập Thời Trang Tái Chế</p>
+                            <div class="brand-message">
+                                <p class="brand-quote">"Đẹp không chỉ là phong cách – Đẹp còn là sự tái sinh của thời trang."</p>
+                            </div>
                             
                             <!-- Admin Controls -->
                             <div class="admin-controls admin-only">
-                                <button class="btn btn-primary" id="upload-gallery-btn">
-                                    <i class="fas fa-upload"></i>
-                                    Upload ảnh mới
+                                <button class="btn btn-primary" id="upload-product-btn">
+                                    <i class="fas fa-plus"></i>
+                                    Thêm sản phẩm mới
                                 </button>
-                                <button class="btn btn-secondary" id="manage-gallery-btn">
+                                <button class="btn btn-secondary" id="manage-products-btn">
                                     <i class="fas fa-cog"></i>
-                                    Quản lý gallery
+                                    Quản lý sản phẩm
                                 </button>
                             </div>
                         </div>
@@ -325,17 +334,41 @@ class DepMarketplace {
                             </div>
                         </div>
 
-                        <!-- Filter Tags -->
-                        <div class="gallery-filters">
-                            <button class="filter-tag active" data-filter="all">Tất cả</button>
-                            <button class="filter-tag" data-filter="vintage">Vintage</button>
-                            <button class="filter-tag" data-filter="modern">Hiện đại</button>
-                            <button class="filter-tag" data-filter="boho">Boho</button>
-                            <button class="filter-tag" data-filter="minimalist">Tối giản</button>
+                        <!-- Product Filters -->
+                        <div class="product-filters">
+                            <div class="filter-section">
+                                <h4>Loại sản phẩm</h4>
+                                <div class="filter-buttons">
+                                    <button class="filter-btn active" data-filter="all" data-type="category">Tất cả</button>
+                                    <button class="filter-btn" data-filter="ao" data-type="category">Áo</button>
+                                    <button class="filter-btn" data-filter="vay" data-type="category">Váy</button>
+                                    <button class="filter-btn" data-filter="phu-kien" data-type="category">Phụ kiện</button>
+                                </div>
+                            </div>
+                            
+                            <div class="filter-section">
+                                <h4>Phong cách</h4>
+                                <div class="filter-buttons">
+                                    <button class="filter-btn active" data-filter="all" data-type="style">Tất cả</button>
+                                    <button class="filter-btn" data-filter="vintage" data-type="style">Vintage</button>
+                                    <button class="filter-btn" data-filter="basic" data-type="style">Basic</button>
+                                    <button class="filter-btn" data-filter="doc-ban" data-type="style">Độc bản</button>
+                                </div>
+                            </div>
+                            
+                            <div class="filter-section">
+                                <h4>Khoảng giá</h4>
+                                <div class="filter-buttons">
+                                    <button class="filter-btn active" data-filter="all" data-type="price">Tất cả</button>
+                                    <button class="filter-btn" data-filter="under-500k" data-type="price">Dưới 500K</button>
+                                    <button class="filter-btn" data-filter="500k-1m" data-type="price">500K - 1M</button>
+                                    <button class="filter-btn" data-filter="over-1m" data-type="price">Trên 1M</button>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Gallery Grid -->
-                        <div class="gallery-grid" id="gallery-grid">
+                        <!-- Product Grid -->
+                        <div class="product-grid" id="product-grid">
                             ${this.generateGalleryItemsFallback()}
                         </div>
                     </div>
@@ -458,39 +491,50 @@ class DepMarketplace {
     initGalleryFilters() {
         console.log('🔧 Setting up gallery filters...');
         
-        // Filter by tags
-        document.querySelectorAll('.filter-tag').forEach(tag => {
-            tag.addEventListener('click', (e) => {
-                // Remove active from all
-                document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
-                // Add active to clicked
-                e.target.classList.add('active');
+        // Filter by product attributes
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filterBtn = e.target;
+                const filterType = filterBtn.getAttribute('data-type');
+                const filterValue = filterBtn.getAttribute('data-filter');
                 
-                const filter = e.target.getAttribute('data-filter');
-                this.filterGalleryItems(filter);
+                // Remove active from same type filters
+                document.querySelectorAll(`.filter-btn[data-type="${filterType}"]`)
+                    .forEach(b => b.classList.remove('active'));
+                
+                // Add active to clicked filter
+                filterBtn.classList.add('active');
+                
+                // Apply filters (delegate to CollectionGallery if available)
+                if (window.collectionGallery && window.collectionGallery.applyFilters) {
+                    window.collectionGallery.applyFilters();
+                } else {
+                    // Fallback to simple filter
+                    this.filterGalleryItems(filterValue);
+                }
             });
         });
 
-        // Add upload button event listener
-        const uploadBtn = document.getElementById('upload-gallery-btn');
+        // Add product management button event listeners
+        const uploadBtn = document.getElementById('upload-product-btn') || document.getElementById('upload-gallery-btn');
         if (uploadBtn) {
             uploadBtn.addEventListener('click', () => {
-                console.log('📸 Upload button clicked!');
+                console.log('📸 Upload product button clicked!');
                 if (window.collectionGallery && window.collectionGallery.showUploadModal) {
                     window.collectionGallery.showUploadModal();
                 } else {
                     Utils.showToast('Upload modal sẽ mở ở đây! (Đang phát triển)', 'info');
                 }
             });
-            console.log('✅ Upload button event added');
+            console.log('✅ Upload product button event added');
         }
 
-        // Add manage gallery button event
-        const manageBtn = document.getElementById('manage-gallery-btn');
+        // Add manage products button event
+        const manageBtn = document.getElementById('manage-products-btn') || document.getElementById('manage-gallery-btn');
         if (manageBtn) {
             manageBtn.addEventListener('click', () => {
-                console.log('⚙️ Manage gallery clicked!');
-                Utils.showToast('Quản lý gallery đang phát triển', 'info');
+                console.log('⚙️ Manage products clicked!');
+                Utils.showToast('Quản lý sản phẩm đang phát triển', 'info');
             });
         }
 
@@ -517,11 +561,15 @@ class DepMarketplace {
     }
     
     bindGalleryEvents() {
-        // Upload button
-        const uploadBtn = document.getElementById('upload-gallery-btn');
+        // Upload product button (prefer new id, fallback to old)
+        const uploadBtn = document.getElementById('upload-product-btn') || document.getElementById('upload-gallery-btn');
         if (uploadBtn) {
             uploadBtn.addEventListener('click', () => {
-                this.showUploadModal();
+                if (window.collectionGallery && window.collectionGallery.showUploadModal) {
+                    window.collectionGallery.showUploadModal();
+                } else {
+                    this.showUploadModal();
+                }
             });
         }
         
