@@ -1071,6 +1071,74 @@
     box-shadow: 0 8px 25px rgba(192, 57, 43, 0.4);
 }
 
+/* Empty Collection State */
+.empty-collection {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    padding: 60px 20px;
+}
+
+.empty-content {
+    text-align: center;
+    max-width: 500px;
+    padding: 40px;
+    background: linear-gradient(135deg, var(--soft-white) 0%, #f8fffe 100%);
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    border: 2px solid rgba(74, 155, 142, 0.1);
+}
+
+.empty-content i {
+    font-size: 4rem;
+    color: var(--light-green);
+    margin-bottom: 24px;
+    opacity: 0.8;
+}
+
+.empty-content h3 {
+    font-size: 1.8rem;
+    color: var(--primary-green);
+    margin-bottom: 16px;
+    font-weight: 700;
+}
+
+.empty-content p {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+.empty-content .btn {
+    padding: 16px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--light-green), var(--accent-green));
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(74, 155, 142, 0.3);
+}
+
+.empty-content .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(74, 155, 142, 0.4);
+    background: linear-gradient(135deg, var(--accent-green), var(--primary-green));
+}
+
+.empty-content .btn i {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .collection-hero-content h1 {
@@ -1149,6 +1217,32 @@
     /* Enhanced mobile product styling */
     .product-item {
         border-radius: 16px;
+    }
+    
+    .empty-content {
+        padding: 30px 20px;
+        margin: 0 10px;
+    }
+    
+    .empty-content i {
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+    
+    .empty-content h3 {
+        font-size: 1.5rem;
+        margin-bottom: 12px;
+    }
+    
+    .empty-content p {
+        font-size: 1rem;
+        margin-bottom: 24px;
+    }
+    
+    .empty-content .btn {
+        padding: 14px 24px;
+        font-size: 1rem;
+        gap: 8px;
     }
     
     .product-image-container {

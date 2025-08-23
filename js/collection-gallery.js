@@ -192,144 +192,8 @@ class CollectionGallery {
     }
 
     getSampleProducts() {
-        return [
-            {
-                id: 1,
-                title: "Áo Sơ Mi Linen Vintage",
-                image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop",
-                price: 750000,
-                originalPrice: 950000,
-                category: "ao",
-                style: "vintage",
-                sizes: ["S", "M", "L"],
-                material: "Linen, Ren Pháp",
-                origin: "Tái sinh từ áo sơ mi linen thập niên 80, kết hợp với ren vintage từ Pháp",
-                condition: "Như mới",
-                featured: true,
-                views: 245,
-                sold: false,
-                created: "2024-01-15"
-            },
-            {
-                id: 2,
-                title: "Váy Midi Bohemian",
-                image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=500&fit=crop",
-                price: 890000,
-                originalPrice: null,
-                category: "vay",
-                style: "doc-ban",
-                sizes: ["M", "L"],
-                material: "Cotton Organic, Thêu tay",
-                origin: "Từ những mảnh vải cotton organic còn sót lại, tạo nên tác phẩm nghệ thuật mới",
-                condition: "Độc bản",
-                featured: true,
-                views: 189,
-                sold: false,
-                created: "2024-01-14"
-            },
-            {
-                id: 3,
-                title: "Túi Tote Canvas Eco",
-                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=500&fit=crop",
-                price: 320000,
-                originalPrice: 450000,
-                category: "phu-kien",
-                style: "basic",
-                sizes: ["OneSize"],
-                material: "Canvas tái chế",
-                origin: "Canvas tái chế từ bao bì cũ, thiết kế tối giản nhưng đầy tinh tế",
-                condition: "Tái chế",
-                featured: false,
-                views: 156,
-                sold: false,
-                created: "2024-01-12"
-            },
-            {
-                id: 4,
-                title: "Áo Khoác Denim Upcycled",
-                image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=400&h=500&fit=crop",
-                price: 1200000,
-                originalPrice: 1450000,
-                category: "ao",
-                style: "basic",
-                sizes: ["S", "M", "L", "XL"],
-                material: "Denim cotton, Kim loại",
-                origin: "Biến hóa từ áo khoác denim cũ thành tác phẩm streetwear hiện đại",
-                condition: "Upcycled",
-                featured: true,
-                views: 312,
-                sold: false,
-                created: "2024-01-10"
-            },
-            {
-                id: 5,
-                title: "Váy Cocktail Retro",
-                image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop",
-                price: 1500000,
-                originalPrice: null,
-                category: "vay",
-                style: "vintage",
-                sizes: ["S", "M"],
-                material: "Lụa, Ren Pháp",
-                origin: "Phục hồi từ váy cocktail thập niên 60, giữ nguyên vẻ đẹp cổ điển",
-                condition: "Vintage authentic",
-                featured: false,
-                views: 203,
-                sold: false,
-                created: "2024-01-08"
-            },
-            {
-                id: 6,
-                title: "Áo Blouse Thêu Tay",
-                image: "https://images.unsplash.com/photo-1583743814966-8936f37f631b?w=400&h=500&fit=crop",
-                price: 680000,
-                originalPrice: 850000,
-                category: "ao",
-                style: "doc-ban",
-                sizes: ["S", "M", "L"],
-                material: "Lụa Vintage, Thêu tay VN",
-                origin: "Kết hợp vải lụa vintage với thêu tay truyền thống Việt Nam",
-                condition: "Thủ công",
-                featured: true,
-                views: 278,
-                sold: false,
-                created: "2024-01-05"
-            },
-            {
-                id: 7,
-                title: "Khăn Choàng Silk Upcycled",
-                image: "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400&h=500&fit=crop",
-                price: 420000,
-                originalPrice: 600000,
-                category: "phu-kien",
-                style: "vintage",
-                sizes: ["OneSize"],
-                material: "Silk tái chế, Viền thêu",
-                origin: "Từ những mảnh silk vintage được tái tạo thành khăn choàng thời trang",
-                condition: "Tái chế",
-                featured: false,
-                views: 134,
-                sold: false,
-                created: "2024-01-03"
-            },
-            {
-                id: 8,
-                title: "Áo Len Oversized Vintage",
-                image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop",
-                price: 950000,
-                originalPrice: null,
-                category: "ao",
-                style: "vintage",
-                sizes: ["M", "L", "XL"],
-                material: "Wool blend, Cotton",
-                origin: "Áo len vintage được phục hồi và tái tạo với form dáng hiện đại",
-                condition: "Vintage restored",
-                featured: true,
-                views: 298,
-                sold: false,
-                created: "2024-01-01"
-            }
-        ];
+        // Không còn sample products - để admin tự thêm
+        return [];
     }
 
     generateProductItems() {
@@ -338,7 +202,19 @@ class CollectionGallery {
 
     generateGalleryItemsFromData() {
         if (!this.galleryItems || this.galleryItems.length === 0) {
-            return '<div class="no-items">Chưa có tác phẩm nào</div>';
+            return `
+                <div class="empty-collection">
+                    <div class="empty-content">
+                        <i class="fas fa-box-open"></i>
+                        <h3>Bộ sưu tập đang trống</h3>
+                        <p>Hãy bắt đầu thêm những sản phẩm tái chế độc đáo của bạn!</p>
+                        <button class="btn btn-primary" onclick="collectionGallery.showUploadModal()">
+                            <i class="fas fa-plus"></i>
+                            Thêm sản phẩm đầu tiên
+                        </button>
+                    </div>
+                </div>
+            `;
         }
         return this.galleryItems.map(item => this.renderGalleryItem(item)).join('');
     }
@@ -1162,8 +1038,12 @@ class CollectionGallery {
         try {
             // Check if supabase is available
             if (typeof supabase === 'undefined' || !TABLES || !TABLES.GALLERY_ITEMS) {
-                console.log('Database not available, using sample data');
+                console.log('Database not available - showing empty state');
                 this.galleryItems = [];
+                const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
+                if (grid) {
+                    grid.innerHTML = this.generateGalleryItemsFromData();
+                }
                 return [];
             }
 
@@ -1181,23 +1061,19 @@ class CollectionGallery {
             // Update UI if product grid exists
             const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
             if (grid) {
-                if (this.galleryItems.length > 0) {
                 grid.innerHTML = this.generateGalleryItemsFromData();
-                } else {
-                    grid.innerHTML = this.generateProductItems();
-                }
             }
             
             return this.galleryItems;
         } catch (error) {
             console.error('Error loading gallery items:', error);
-            console.log('Falling back to sample data');
+            console.log('Database unavailable - showing empty state');
             
-            // Fallback to sample data
+            // Show empty state instead of sample data
             this.galleryItems = [];
             const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
             if (grid) {
-                grid.innerHTML = this.generateProductItems();
+                grid.innerHTML = this.generateGalleryItemsFromData();
             }
             
             return [];

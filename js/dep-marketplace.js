@@ -155,24 +155,21 @@ class DepMarketplace {
     }
 
     loadSampleGalleryItems() {
-        // Try both new product-grid and old gallery-grid
+        // No longer load sample items - let admin add real products
         const galleryGrid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
         if (!galleryGrid) {
             console.log('❌ Gallery grid not found (tried both product-grid and gallery-grid)');
             return;
         }
 
-        // Use CollectionGallery class if available (preferred)
-        if (window.collectionGallery && window.collectionGallery.generateProductItems) {
-            console.log('📊 Using CollectionGallery to generate product items');
-            galleryGrid.innerHTML = window.collectionGallery.generateProductItems();
-        } else if (window.collectionGallery && window.collectionGallery.generateGalleryItems) {
-            console.log('📊 Using CollectionGallery to generate gallery items (legacy)');
-            galleryGrid.innerHTML = window.collectionGallery.generateGalleryItems();
-        } else {
-            console.log('📊 Using dep-marketplace fallback gallery items');
-            galleryGrid.innerHTML = this.generateFallbackGalleryItems();
+        // Check if CollectionGallery has already loaded database items
+        if (window.collectionGallery && window.collectionGallery.galleryItems && window.collectionGallery.galleryItems.length > 0) {
+            console.log('📊 CollectionGallery already has database items');
+            return; // Don't override with sample data
         }
+
+        console.log('📊 Collection is empty - admin can add products');
+        // Don't load any sample data - let it show empty state
     }
 
     generateFallbackGalleryItems() {
