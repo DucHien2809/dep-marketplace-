@@ -162,6 +162,32 @@ class DepMarketplace {
             const depCollectionPage = document.getElementById('dep-collection-page');
             console.log('✅ dep-collection-page created:', !!depCollectionPage);
             
+            // CRITICAL: Make sure page is visible by adding active class
+            if (depCollectionPage) {
+                // Hide all other pages first
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                    page.style.display = 'none';
+                });
+                
+                // Show this page
+                depCollectionPage.classList.add('active');
+                depCollectionPage.style.display = 'block !important';
+                depCollectionPage.style.visibility = 'visible';
+                depCollectionPage.style.opacity = '1';
+                console.log('👁️ Page visibility set to active');
+                
+                // Update navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                const navItem = document.querySelector('[data-page="dep-collection"]');
+                if (navItem) {
+                    navItem.classList.add('active');
+                    console.log('🧭 Navigation updated');
+                }
+            }
+            
             // Initialize immediately
             setTimeout(() => {
                 console.log('🔧 Initializing gallery...');
