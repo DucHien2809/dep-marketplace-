@@ -126,7 +126,7 @@ class App {
                     window.depMarketplace.loadDepCollectionPage();
                     break;
                 case 'marketplace':
-                    this.loadMarketplace();
+                    window.depMarketplace.loadMarketplacePage();
                     break;
                 case 'consign':
                     this.loadConsignmentForm();
@@ -445,7 +445,8 @@ class App {
     // Blog page
     loadBlog() {
         console.log('Loading blog page...');
-        const mainContent = document.getElementById('main-content');
+        const mainContent = document.querySelector('.main-content');
+        if (!mainContent) return;
         mainContent.innerHTML = `
             <div class="page-header">
                 <h1>Blog Lifestyle</h1>
@@ -483,7 +484,8 @@ class App {
     // Support page
     loadSupport() {
         console.log('Loading support page...');
-        const mainContent = document.getElementById('main-content');
+        const mainContent = document.querySelector('.main-content');
+        if (!mainContent) return;
         mainContent.innerHTML = `
             <div class="page-header">
                 <h1>Hỗ trợ khách hàng</h1>
@@ -539,7 +541,8 @@ class App {
     // Profile page  
     loadProfile() {
         console.log('Loading profile page...');
-        const mainContent = document.getElementById('main-content');
+        const mainContent = document.querySelector('.main-content');
+        if (!mainContent) return;
         const currentUser = authManager.getCurrentUser();
         
         mainContent.innerHTML = `

@@ -373,6 +373,21 @@ class DepMarketplace {
         Utils.showToast(`Xem chi tiết tác phẩm ${itemId}`, 'info');
         // TODO: Show detail modal
     }
+    
+    loadMarketplacePage() {
+        // Create and show Marketplace page
+        this.createPage('marketplace');
+        
+        // Initialize marketplace functionality
+        setTimeout(() => {
+            this.initMarketplaceFilters();
+        }, 100);
+    }
+    
+    initMarketplaceFilters() {
+        // TODO: Add marketplace filter functionality
+        Utils.showToast('Marketplace đang phát triển...', 'info');
+    }
 
     initCollectionFilters() {
         // Bind filter events
@@ -444,8 +459,7 @@ class DepMarketplace {
         switch (page) {
             case 'dep-collection':
                 // Use gallery instead
-                return;
-                break;
+                return '';
             case 'marketplace':
                 pageHTML = this.createMarketplacePage();
                 break;
