@@ -80,14 +80,53 @@ class DepMarketplace {
     }
 
     loadDepCollectionPage() {
-        // Create and show Đẹp Collection page
-        this.createPage('dep-collection');
+        // Create and show Đẹp Collection gallery page
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            // Clear existing content
+            mainContent.innerHTML = '';
+            
+            // Add gallery page
+            const galleryHTML = window.collectionGallery.createGalleryPage();
+            mainContent.insertAdjacentHTML('beforeend', galleryHTML);
+            
+            // Initialize gallery filters
+            this.initGalleryFilters();
+        }
+    }
+    
+    initGalleryFilters() {
+        // Filter by tags
+        document.querySelectorAll('.filter-tag').forEach(tag => {
+            tag.addEventListener('click', (e) => {
+                // Remove active from all
+                document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+                // Add active to clicked
+                e.target.classList.add('active');
+                
+                const filter = e.target.getAttribute('data-filter');
+                this.filterGalleryItems(filter);
+            });
+        });
+    }
+    
+    filterGalleryItems(filter) {
+        const items = document.querySelectorAll('.gallery-item');
         
-        // Initialize filters functionality after a short delay to ensure DOM is ready
-        setTimeout(() => {
-            this.initCollectionFilters();
-            this.updateResultsCount();
-        }, 100);
+        items.forEach(item => {
+            if (filter === 'all') {
+                item.style.display = 'block';
+            } else {
+                const tags = item.getAttribute('data-tags');
+                if (tags && tags.includes(filter)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            }
+        });
+        
+        Utils.showToast(`Lọc theo: ${filter === 'all' ? 'Tất cả' : filter}`, 'info');
     }
 
     initCollectionFilters() {
@@ -159,7 +198,8 @@ class DepMarketplace {
 
         switch (page) {
             case 'dep-collection':
-                pageHTML = this.createDepCollectionPage();
+                // Use gallery instead
+                return;
                 break;
             case 'marketplace':
                 pageHTML = this.createMarketplacePage();
