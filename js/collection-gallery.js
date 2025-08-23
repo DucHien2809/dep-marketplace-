@@ -191,8 +191,8 @@ class CollectionGallery {
         `;
     }
 
-    generateProductItems() {
-        const sampleProducts = [
+    getSampleProducts() {
+        return [
             {
                 id: 1,
                 title: "Áo Sơ Mi Linen Vintage",
@@ -330,8 +330,10 @@ class CollectionGallery {
                 created: "2024-01-01"
             }
         ];
+    }
 
-        return sampleProducts.map(item => this.renderProductItem(item)).join('');
+    generateProductItems() {
+        return this.getSampleProducts().map(item => this.renderProductItem(item)).join('');
     }
 
     generateGalleryItemsFromData() {
@@ -679,13 +681,391 @@ class CollectionGallery {
 
     // Product management methods
     editProduct(itemId) {
-        Utils.showToast('Chức năng chỉnh sửa sản phẩm đang phát triển', 'info');
+        console.log('✏️ Editing product:', itemId);
+        
+        // Find product in data
+        let product = null;
+        if (this.galleryItems && this.galleryItems.length > 0) {
+            product = this.galleryItems.find(item => item.id == itemId);
+        } else {
+            // Find in sample data
+            const sampleProducts = this.getSampleProducts();
+            product = sampleProducts.find(item => item.id == itemId);
+        }
+        
+        if (!product) {
+            Utils.showToast('Không tìm thấy sản phẩm để chỉnh sửa', 'error');
+            return;
+        }
+        
+        this.showEditModal(product);
     }
 
     deleteProduct(itemId) {
-        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-            Utils.showToast('Đã xóa sản phẩm', 'success');
+        console.log('🗑️ Deleting product:', itemId);
+        
+        // Create a more detailed confirmation modal
+        const confirmDelete = this.showDeleteConfirmation(itemId);
+        if (!confirmDelete) return;
+    }
+
+    showDeleteConfirmation(itemId) {
+        // Find product for confirmation
+        let product = null;
+        if (this.galleryItems && this.galleryItems.length > 0) {
+            product = this.galleryItems.find(item => item.id == itemId);
+        } else {
+            const sampleProducts = this.getSampleProducts();
+            product = sampleProducts.find(item => item.id == itemId);
+        }
+
+        const productName = product ? product.title : 'sản phẩm này';
+        
+        const confirmModal = `
+            <div id="delete-confirmation-modal" class="modal gallery-modal">
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3>⚠️ Xác nhận xóa sản phẩm</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body" style="text-align: center; padding: 30px;">
+                        <div class="delete-warning">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #e74c3c; margin-bottom: 20px;"></i>
+                            <p style="font-size: 1.1rem; margin-bottom: 15px;">
+                                Bạn có chắc chắn muốn xóa sản phẩm:
+                            </p>
+                            <p style="font-weight: 600; color: var(--primary-green); font-size: 1.2rem; margin-bottom: 20px;">
+                                "${productName}"
+                            </p>
+                            <p style="color: var(--text-light); font-size: 0.9rem;">
+                                Hành động này không thể hoàn tác!
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                            Hủy
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="collectionGallery.confirmDelete('${itemId}')">
+                            <i class="fas fa-trash"></i>
+                            Xóa sản phẩm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', confirmModal);
+        document.getElementById('delete-confirmation-modal').classList.add('show');
+    }
+
+    async confirmDelete(itemId) {
+        try {
+            Utils.showLoading(true);
+            
+            // Remove from database if available
+            if (typeof supabase !== 'undefined' && TABLES && TABLES.GALLERY_ITEMS) {
+                const { error } = await supabase
+                    .from(TABLES.GALLERY_ITEMS)
+                    .delete()
+                    .eq('id', itemId);
+                    
+                if (error) throw error;
+                
+                // Remove from local array
+                this.galleryItems = this.galleryItems.filter(item => item.id != itemId);
+            } else {
+                // For sample data, just refresh (can't actually delete)
+                console.log('Sample data - cannot delete permanently');
+            }
+            
+            // Close modal
+            document.getElementById('delete-confirmation-modal').remove();
+            
+            // Refresh gallery
             this.refreshGallery();
+            
+            Utils.showToast('✅ Đã xóa sản phẩm thành công!', 'success');
+            
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            Utils.showToast('❌ Có lỗi xảy ra khi xóa sản phẩm: ' + error.message, 'error');
+        } finally {
+            Utils.showLoading(false);
+        }
+    }
+
+    showEditModal(product) {
+        console.log('📝 Showing edit modal for:', product.title);
+        
+        // Ensure sizes is array
+        const sizes = Array.isArray(product.sizes) ? product.sizes : [];
+        const sizesString = sizes.join(', ');
+        
+        const modalHTML = `
+            <div id="edit-product-modal" class="modal gallery-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>✏️ Chỉnh Sửa Sản Phẩm</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <form class="upload-form" id="edit-product-form">
+                            <!-- Current Image Display -->
+                            <div class="current-image-section" style="margin-bottom: 25px;">
+                                <label style="display: block; margin-bottom: 12px; font-weight: 600; color: var(--primary-green);">Ảnh hiện tại:</label>
+                                <div class="current-image-preview" style="width: 150px; height: 200px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border-light);">
+                                    <img src="${product.image}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                                <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 8px;">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Upload ảnh mới bên dưới để thay đổi (tùy chọn)
+                                </p>
+                            </div>
+                            
+                            <!-- Image Upload Area (Optional) -->
+                            <div class="upload-area">
+                                <div class="upload-zone" id="edit-upload-zone">
+                                    <i class="fas fa-image"></i>
+                                    <h4>Thay đổi ảnh sản phẩm (tùy chọn)</h4>
+                                    <p>Kéo thả ảnh mới vào đây hoặc click để chọn</p>
+                                    <input type="file" id="edit-image-input" accept="image/*" hidden>
+                                </div>
+                                
+                                <div class="image-preview" id="edit-image-preview"></div>
+                            </div>
+                            
+                            <!-- Form Fields -->
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Tên sản phẩm *</label>
+                                    <input type="text" id="edit-title" value="${product.title}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Loại sản phẩm *</label>
+                                    <select id="edit-category" required>
+                                        <option value="ao" ${product.category === 'ao' ? 'selected' : ''}>Áo</option>
+                                        <option value="vay" ${product.category === 'vay' ? 'selected' : ''}>Váy</option>
+                                        <option value="phu-kien" ${product.category === 'phu-kien' ? 'selected' : ''}>Phụ kiện</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Giá bán (₫) *</label>
+                                    <input type="number" id="edit-price" value="${product.price}" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Giá gốc (₫)</label>
+                                    <input type="number" id="edit-original-price" value="${product.originalPrice || ''}" min="0">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Sizes có sẵn</label>
+                                    <input type="text" id="edit-sizes" value="${sizesString}" placeholder="S, M, L, XL">
+                                    <small style="color: var(--text-light); font-size: 0.8rem;">Phân cách bằng dấu phẩy</small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Phong cách</label>
+                                    <select id="edit-style">
+                                        <option value="vintage" ${product.style === 'vintage' ? 'selected' : ''}>Vintage</option>
+                                        <option value="basic" ${product.style === 'basic' ? 'selected' : ''}>Basic</option>
+                                        <option value="doc-ban" ${product.style === 'doc-ban' ? 'selected' : ''}>Độc bản</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Chất liệu *</label>
+                                <input type="text" id="edit-material" value="${product.material}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Nguồn gốc tái chế *</label>
+                                <textarea id="edit-origin" rows="3" required>${product.origin}</textarea>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Tình trạng</label>
+                                    <input type="text" id="edit-condition" value="${product.condition}">
+                                </div>
+                                <div class="form-group featured-checkbox-group">
+                                    <label class="featured-checkbox-label">
+                                        <input type="checkbox" id="edit-featured" class="featured-checkbox" ${product.featured ? 'checked' : ''}>
+                                        <span class="checkmark"></span>
+                                        <span class="checkbox-text">✨ Đặt làm nổi bật</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                            Hủy
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="collectionGallery.saveEditedProduct('${product.id}')">
+                            <i class="fas fa-save"></i>
+                            Cập nhật sản phẩm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.getElementById('edit-product-modal').classList.add('show');
+        
+        // Setup drag and drop for new image upload
+        this.setupEditImageUpload();
+    }
+
+    setupEditImageUpload() {
+        const uploadZone = document.getElementById('edit-upload-zone');
+        const fileInput = document.getElementById('edit-image-input');
+        
+        if (!uploadZone || !fileInput) return;
+        
+        uploadZone.addEventListener('click', () => fileInput.click());
+        
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+        
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            this.handleEditImageUpload(e.dataTransfer.files);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            this.handleEditImageUpload(e.target.files);
+        });
+    }
+
+    handleEditImageUpload(files) {
+        const preview = document.getElementById('edit-image-preview');
+        preview.innerHTML = '';
+        
+        Array.from(files).forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'image-preview-item';
+                    imageContainer.innerHTML = `
+                        <img src="${e.target.result}" alt="New preview ${index + 1}">
+                        <button class="remove-image" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    preview.appendChild(imageContainer);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    async saveEditedProduct(productId) {
+        try {
+            Utils.showLoading(true);
+            
+            // Get form data
+            const title = document.getElementById('edit-title').value.trim();
+            const category = document.getElementById('edit-category').value;
+            const price = parseInt(document.getElementById('edit-price').value);
+            const originalPrice = document.getElementById('edit-original-price').value ? 
+                parseInt(document.getElementById('edit-original-price').value) : null;
+            const sizesInput = document.getElementById('edit-sizes').value.trim();
+            const style = document.getElementById('edit-style').value;
+            const material = document.getElementById('edit-material').value.trim();
+            const origin = document.getElementById('edit-origin').value.trim();
+            const condition = document.getElementById('edit-condition').value.trim();
+            const featured = document.getElementById('edit-featured').checked;
+            
+            // Validation
+            if (!title || !category || !price || !material || !origin) {
+                Utils.showToast('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
+                return;
+            }
+            
+            // Parse sizes
+            const sizes = sizesInput ? sizesInput.split(',').map(s => s.trim()).filter(s => s) : [];
+            
+            // Check if new image was uploaded
+            const fileInput = document.getElementById('edit-image-input');
+            let imageUrl = null;
+            if (fileInput.files && fileInput.files.length > 0) {
+                imageUrl = await this.uploadImage(fileInput.files[0], 'edit');
+            }
+            
+            const updatedData = {
+                title,
+                category,
+                price,
+                originalPrice,
+                sizes,
+                style,
+                material,
+                origin,
+                condition,
+                featured,
+                updated_at: new Date().toISOString()
+            };
+            
+            if (imageUrl) {
+                updatedData.image_url = imageUrl;
+            }
+            
+            // Update in database if available
+            if (typeof supabase !== 'undefined' && TABLES && TABLES.GALLERY_ITEMS) {
+                const { error } = await supabase
+                    .from(TABLES.GALLERY_ITEMS)
+                    .update(updatedData)
+                    .eq('id', productId);
+                    
+                if (error) throw error;
+                
+                // Update local array
+                const itemIndex = this.galleryItems.findIndex(item => item.id == productId);
+                if (itemIndex !== -1) {
+                    this.galleryItems[itemIndex] = { ...this.galleryItems[itemIndex], ...updatedData };
+                }
+            } else {
+                console.log('Sample data - changes will not persist');
+            }
+            
+            // Close modal
+            document.getElementById('edit-product-modal').remove();
+            
+            // Refresh gallery
+            this.refreshGallery();
+            
+            Utils.showToast('✅ Đã cập nhật sản phẩm thành công!', 'success');
+            
+        } catch (error) {
+            console.error('Error updating product:', error);
+            Utils.showToast('❌ Có lỗi xảy ra khi cập nhật: ' + error.message, 'error');
+        } finally {
+            Utils.showLoading(false);
         }
     }
 
@@ -802,7 +1182,7 @@ class CollectionGallery {
             const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
             if (grid) {
                 if (this.galleryItems.length > 0) {
-                    grid.innerHTML = this.generateGalleryItemsFromData();
+                grid.innerHTML = this.generateGalleryItemsFromData();
                 } else {
                     grid.innerHTML = this.generateProductItems();
                 }

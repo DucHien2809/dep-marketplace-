@@ -869,6 +869,8 @@
 }
 
 .upload-form input[type="text"],
+.upload-form input[type="number"],
+.upload-form select,
 .upload-form textarea {
     width: 100%;
     padding: 16px 20px;
@@ -883,10 +885,24 @@
 }
 
 .upload-form input[type="text"]:focus,
+.upload-form input[type="number"]:focus,
+.upload-form select:focus,
 .upload-form textarea:focus {
     border-color: var(--light-green);
     box-shadow: 0 0 0 4px rgba(74, 155, 142, 0.1), 0 4px 12px rgba(0,0,0,0.08);
     transform: translateY(-1px);
+}
+
+.upload-form select {
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--light-green) 50%), 
+                      linear-gradient(135deg, var(--light-green) 50%, transparent 50%);
+    background-position: calc(100% - 20px) calc(50% - 2px), calc(100% - 15px) calc(50% - 2px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 }
 
 .upload-form input[type="text"]::placeholder,
@@ -1041,6 +1057,18 @@
 .modal-footer .btn-secondary:hover {
     background: var(--border-light);
     transform: translateY(-2px);
+}
+
+.modal-footer .btn-danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: 2px solid #c0392b;
+}
+
+.modal-footer .btn-danger:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(192, 57, 43, 0.4);
 }
 
 /* Responsive */
