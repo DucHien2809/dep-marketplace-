@@ -348,20 +348,44 @@ class CollectionGallery {
             new Date(item.created_at).toLocaleDateString('vi-VN') : 
             item.created;
         
-        const priceFormatted = new Intl.NumberFormat('vi-VN').format(item.price);
-        const originalPriceFormatted = item.originalPrice ? 
-            new Intl.NumberFormat('vi-VN').format(item.originalPrice) : null;
-        const discount = item.originalPrice ? 
-            Math.round((1 - item.price / item.originalPrice) * 100) : 0;
+        // Safety checks for properties
+        const price = item.price || 0;
+        const originalPrice = item.originalPrice || item.original_price || null;
+        
+        // Handle sizes - can be array, string, or undefined
+        let sizes = [];
+        if (Array.isArray(item.sizes)) {
+            sizes = item.sizes;
+        } else if (typeof item.sizes === 'string') {
+            try {
+                sizes = JSON.parse(item.sizes);
+                if (!Array.isArray(sizes)) sizes = [];
+            } catch (e) {
+                // If parsing fails, treat as comma-separated string
+                sizes = item.sizes.split(',').map(s => s.trim()).filter(s => s);
+            }
+        }
+        
+        const material = item.material || item.chất_liệu || 'Chưa cập nhật';
+        const origin = item.origin || item.nguồn_gốc || item.story || 'Chưa có thông tin nguồn gốc';
+        const condition = item.condition || item.tình_trạng || 'Tái chế';
+        const category = item.category || item.loại || 'khac';
+        const style = item.style || item.phong_cách || 'basic';
+        
+        const priceFormatted = new Intl.NumberFormat('vi-VN').format(price);
+        const originalPriceFormatted = originalPrice ? 
+            new Intl.NumberFormat('vi-VN').format(originalPrice) : null;
+        const discount = originalPrice ? 
+            Math.round((1 - price / originalPrice) * 100) : 0;
 
         return `
             <div class="product-item ${item.is_featured || item.featured ? 'featured' : ''} ${item.sold ? 'sold' : ''}" 
                  data-item-id="${item.id}" 
-                 data-category="${item.category}"
-                 data-style="${item.style}"
-                 data-price="${item.price}">
+                 data-category="${category}"
+                 data-style="${style}"
+                 data-price="${price}">
                 <div class="product-image-container">
-                    <img src="${item.image_url || item.image}" alt="${item.title}" class="product-image">
+                    <img src="${item.image_url || item.image}" alt="${item.title || 'Sản phẩm'}" class="product-image">
                     
                     ${(item.is_featured || item.featured) ? '<span class="featured-badge">Nổi bật</span>' : ''}
                     ${item.sold ? '<span class="sold-badge">Đã bán</span>' : ''}
@@ -391,7 +415,7 @@ class CollectionGallery {
                 </div>
                 
                 <div class="product-info">
-                    <h3 class="product-title">${item.title}</h3>
+                    <h3 class="product-title">${item.title || 'Sản phẩm không có tên'}</h3>
                     <div class="product-price">
                         <span class="current-price">${priceFormatted}₫</span>
                         ${originalPriceFormatted ? `<span class="original-price">${originalPriceFormatted}₫</span>` : ''}
@@ -400,21 +424,24 @@ class CollectionGallery {
                     <div class="product-details">
                         <div class="product-sizes">
                             <span class="detail-label">Size:</span>
-                            ${item.sizes.map(size => `<span class="size-tag">${size}</span>`).join('')}
+                            ${Array.isArray(sizes) && sizes.length > 0 ? 
+                                sizes.map(size => `<span class="size-tag">${size}</span>`).join('') : 
+                                '<span class="size-tag">OneSize</span>'
+                            }
                         </div>
                         <div class="product-material">
                             <span class="detail-label">Chất liệu:</span>
-                            <span class="material-text">${item.material}</span>
+                            <span class="material-text">${material}</span>
                         </div>
                     </div>
                     
                     <div class="product-origin">
                         <span class="origin-label">Nguồn gốc tái chế:</span>
-                        <p class="origin-text">${item.origin}</p>
+                        <p class="origin-text">${origin}</p>
                     </div>
                     
                     <div class="product-meta admin-only">
-                        <span class="condition-badge">${item.condition}</span>
+                        <span class="condition-badge">${condition}</span>
                         <span class="view-count">
                             <i class="fas fa-eye"></i>
                             ${viewCount} lượt xem
@@ -753,6 +780,13 @@ class CollectionGallery {
 
     async loadGalleryItems() {
         try {
+            // Check if supabase is available
+            if (typeof supabase === 'undefined' || !TABLES || !TABLES.GALLERY_ITEMS) {
+                console.log('Database not available, using sample data');
+                this.galleryItems = [];
+                return [];
+            }
+
             const { data, error } = await supabase
                 .from(TABLES.GALLERY_ITEMS)
                 .select('*')
@@ -762,18 +796,30 @@ class CollectionGallery {
             if (error) throw error;
 
             this.galleryItems = data || [];
-            console.log('Loaded gallery items:', this.galleryItems.length);
+            console.log('Loaded gallery items from database:', this.galleryItems.length);
             
             // Update UI if product grid exists
             const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
             if (grid) {
-                grid.innerHTML = this.generateGalleryItemsFromData();
+                if (this.galleryItems.length > 0) {
+                    grid.innerHTML = this.generateGalleryItemsFromData();
+                } else {
+                    grid.innerHTML = this.generateProductItems();
+                }
             }
             
             return this.galleryItems;
         } catch (error) {
             console.error('Error loading gallery items:', error);
-            Utils.showToast('Không thể tải gallery items', 'error');
+            console.log('Falling back to sample data');
+            
+            // Fallback to sample data
+            this.galleryItems = [];
+            const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
+            if (grid) {
+                grid.innerHTML = this.generateProductItems();
+            }
+            
             return [];
         }
     }

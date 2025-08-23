@@ -246,10 +246,18 @@ class App {
     }
 
     updateStatsDisplay() {
-        document.getElementById('total-products').textContent = this.data.stats.totalProducts;
-        document.getElementById('total-orders').textContent = this.data.stats.totalOrders;
-        document.getElementById('total-customers').textContent = this.data.stats.totalCustomers;
-        document.getElementById('total-revenue').textContent = Utils.formatCurrency(this.data.stats.totalRevenue);
+        // Safety checks - only update if elements and stats exist
+        if (!this.data.stats) return;
+        
+        const totalProductsEl = document.getElementById('total-products');
+        const totalOrdersEl = document.getElementById('total-orders');
+        const totalCustomersEl = document.getElementById('total-customers');
+        const totalRevenueEl = document.getElementById('total-revenue');
+        
+        if (totalProductsEl) totalProductsEl.textContent = this.data.stats.totalProducts;
+        if (totalOrdersEl) totalOrdersEl.textContent = this.data.stats.totalOrders;
+        if (totalCustomersEl) totalCustomersEl.textContent = this.data.stats.totalCustomers;
+        if (totalRevenueEl) totalRevenueEl.textContent = Utils.formatCurrency(this.data.stats.totalRevenue);
     }
 
     renderProducts(products = this.data.products) {
