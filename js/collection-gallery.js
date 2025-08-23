@@ -349,8 +349,8 @@ class CollectionGallery {
             item.created;
         
         // Safety checks for properties
-        const price = item.price || 0;
-        const originalPrice = item.originalPrice || item.original_price || null;
+        const price = item.price || item.giá || 750000; // Default price if not available
+        const originalPrice = item.originalPrice || item.original_price || item.giá_gốc || null;
         
         // Handle sizes - can be array, string, or undefined
         let sizes = [];
