@@ -228,6 +228,9 @@
     position: relative;
     border: 1px solid rgba(74, 155, 142, 0.1);
     backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    height: auto;
 }
 
 .product-item:hover {
@@ -270,9 +273,8 @@
     aspect-ratio: 3/4;
     background: linear-gradient(135deg, var(--soft-white) 0%, #f8fffe 100%);
     border-radius: 20px 20px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 100%;
+    height: auto;
 }
 
 .product-image {
@@ -285,6 +287,12 @@
     position: absolute;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px 20px 0 0;
+    margin: 0;
+    padding: 0;
+    border: none;
 }
 
 .product-item:hover .product-image {
@@ -405,11 +413,11 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.9));
-    padding: 20px 12px 12px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    padding: 15px 10px 10px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     opacity: 0;
     transform: translateY(100%);
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -425,19 +433,20 @@
 .btn-quick-view,
 .btn-add-cart {
     border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 6px 12px;
+    border-radius: 18px;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
     transition: all 0.3s ease;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    min-height: 36px;
+    min-height: 32px;
+    flex-shrink: 0;
 }
 
 .btn-quick-view {
@@ -448,8 +457,8 @@
 
 .btn-quick-view:hover {
     background: white;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255,255,255,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255,255,255,0.3);
 }
 
 .btn-add-cart {
@@ -460,8 +469,8 @@
 }
 
 .btn-add-cart:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(74, 155, 142, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 155, 142, 0.5);
     background: linear-gradient(135deg, var(--accent-green), var(--primary-green));
 }
 
@@ -1117,16 +1126,17 @@
     
     .product-overlay {
         border-radius: 0 0 16px 16px;
-        padding: 16px 10px 10px;
-        gap: 6px;
+        padding: 12px 8px 8px;
+        gap: 4px;
     }
     
     .btn-quick-view,
     .btn-add-cart {
-        padding: 8px 12px;
-        font-size: 0.8rem;
-        min-height: 32px;
-        border-radius: 16px;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        min-height: 28px;
+        border-radius: 14px;
+        gap: 3px;
     }
     
     .product-controls {
