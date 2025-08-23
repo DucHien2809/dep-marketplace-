@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Đẹp Collection</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .info { background: #e3f2fd; color: #1565c0; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug Đẹp Collection</h1>
+    
+    <div id="debug-output"></div>
+    
+    <script>
+        function debugLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `debug ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            document.getElementById('debug-output').appendChild(div);
+            console.log(message);
+        }
+        
+        debugLog('🚀 Bắt đầu debug...', 'info');
+        
+        // Check if scripts are loaded
+        try {
+            debugLog('✅ Checking scripts...', 'info');
+            
+            if (typeof window.supabase === 'undefined') {
+                debugLog('❌ Supabase not loaded', 'error');
+            } else {
+                debugLog('✅ Supabase loaded', 'success');
+            }
+            
+            if (typeof CONFIG === 'undefined') {
+                debugLog('❌ CONFIG not loaded', 'error');
+            } else {
+                debugLog('✅ CONFIG loaded', 'success');
+            }
+            
+            if (typeof window.authManager === 'undefined') {
+                debugLog('❌ AuthManager not loaded', 'error');
+            } else {
+                debugLog('✅ AuthManager loaded', 'success');
+            }
+            
+            if (typeof window.collectionGallery === 'undefined') {
+                debugLog('❌ CollectionGallery not loaded', 'error');
+            } else {
+                debugLog('✅ CollectionGallery loaded', 'success');
+            }
+            
+            if (typeof window.depMarketplace === 'undefined') {
+                debugLog('❌ DepMarketplace not loaded', 'error');
+            } else {
+                debugLog('✅ DepMarketplace loaded', 'success');
+            }
+            
+            // Test gallery page creation
+            debugLog('🧪 Testing gallery page creation...', 'info');
+            if (window.collectionGallery && window.collectionGallery.createGalleryPage) {
+                try {
+                    const html = window.collectionGallery.createGalleryPage();
+                    debugLog(`✅ Gallery HTML length: ${html.length} characters`, 'success');
+                    
+                    // Test if HTML contains expected elements
+                    if (html.includes('upload-gallery-btn')) {
+                        debugLog('✅ Upload button found in HTML', 'success');
+                    } else {
+                        debugLog('❌ Upload button NOT found in HTML', 'error');
+                    }
+                    
+                    if (html.includes('gallery-grid')) {
+                        debugLog('✅ Gallery grid found in HTML', 'success');
+                    } else {
+                        debugLog('❌ Gallery grid NOT found in HTML', 'error');
+                    }
+                    
+                } catch (error) {
+                    debugLog(`❌ Error creating gallery HTML: ${error.message}`, 'error');
+                }
+            }
+            
+            // Test fallback method
+            debugLog('🧪 Testing fallback method...', 'info');
+            if (window.depMarketplace && window.depMarketplace.createGalleryPageFallback) {
+                try {
+                    const html = window.depMarketplace.createGalleryPageFallback();
+                    debugLog(`✅ Fallback HTML length: ${html.length} characters`, 'success');
+                } catch (error) {
+                    debugLog(`❌ Error creating fallback HTML: ${error.message}`, 'error');
+                }
+            }
+            
+            // Test database connection
+            debugLog('🧪 Testing database connection...', 'info');
+            if (window.supabase) {
+                window.supabase.from('gallery_items').select('count').then(({data, error}) => {
+                    if (error) {
+                        debugLog(`❌ Database error: ${error.message}`, 'error');
+                    } else {
+                        debugLog(`✅ Database connected successfully`, 'success');
+                    }
+                });
+            }
+            
+        } catch (error) {
+            debugLog(`💥 Unexpected error: ${error.message}`, 'error');
+        }
+    </script>
+    
+    <!-- Load all the scripts to test -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/collection-gallery.js"></script>
+    <script src="js/dep-marketplace.js"></script>
+</body>
+</html>

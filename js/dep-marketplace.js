@@ -81,40 +81,106 @@ class DepMarketplace {
 
     loadDepCollectionPage() {
         console.log('Loading Dep Collection Page...');
-        // Create and show Đẹp Collection gallery page
-        const mainContent = document.querySelector('.main-content');
-        console.log('Main content found:', mainContent);
-        if (mainContent) {
+        
+        try {
+            // Create and show Đẹp Collection gallery page
+            const mainContent = document.querySelector('.main-content');
+            console.log('Main content found:', mainContent);
+            
+            if (!mainContent) {
+                console.error('Main content not found!');
+                return;
+            }
+            
             // Clear existing content
             mainContent.innerHTML = '';
             
-            // Check if gallery is ready, if not create it inline
-            if (window.collectionGallery && window.collectionGallery.createGalleryPage) {
-                const galleryHTML = window.collectionGallery.createGalleryPage();
-                mainContent.insertAdjacentHTML('beforeend', galleryHTML);
+            let galleryHTML = '';
+            
+            // Try to get HTML from gallery class first
+            if (window.collectionGallery && typeof window.collectionGallery.createGalleryPage === 'function') {
+                console.log('Using CollectionGallery.createGalleryPage()');
+                galleryHTML = window.collectionGallery.createGalleryPage();
+            } else if (typeof this.createGalleryPageFallback === 'function') {
+                console.log('Using fallback method');
+                galleryHTML = this.createGalleryPageFallback();
             } else {
-                // Fallback: create gallery HTML directly
-                const galleryHTML = this.createGalleryPageFallback();
-                mainContent.insertAdjacentHTML('beforeend', galleryHTML);
+                console.error('No gallery page creation method available!');
+                // Create minimal fallback
+                galleryHTML = `
+                    <div id="dep-collection-page" class="page">
+                        <div style="padding: 50px; text-align: center;">
+                            <h1>Đẹp Collection</h1>
+                            <p>Đang tải...</p>
+                            <div class="admin-controls admin-only">
+                                <button class="btn btn-primary" id="upload-gallery-btn">
+                                    <i class="fas fa-upload"></i>
+                                    Upload ảnh mới
+                                </button>
+                            </div>
+                            <div id="gallery-grid">Đang tải gallery items...</div>
+                        </div>
+                    </div>
+                `;
             }
+            
+            console.log('Gallery HTML length:', galleryHTML.length);
+            mainContent.insertAdjacentHTML('beforeend', galleryHTML);
             
             // Initialize gallery filters and events
             setTimeout(() => {
-                this.initGalleryFilters();
-                this.bindGalleryEvents();
+                console.log('Initializing gallery...');
+                
+                if (typeof this.initGalleryFilters === 'function') {
+                    this.initGalleryFilters();
+                }
+                
+                if (typeof this.bindGalleryEvents === 'function') {
+                    this.bindGalleryEvents();
+                }
                 
                 // Refresh UI permissions for newly created elements
-                if (window.authManager) {
+                if (window.authManager && typeof window.authManager.refreshUIPermissions === 'function') {
+                    console.log('Refreshing UI permissions...');
                     window.authManager.refreshUIPermissions();
                 }
                 
+                // Load gallery items from database
+                if (window.collectionGallery && typeof window.collectionGallery.loadGalleryItems === 'function') {
+                    console.log('Loading gallery items...');
+                    window.collectionGallery.loadGalleryItems();
+                }
+                
                 // Debug: Show what's loaded
-                console.log('Gallery loaded:', document.getElementById('gallery-grid'));
-                console.log('Upload button:', document.getElementById('upload-gallery-btn'));
+                console.log('Gallery grid element:', document.getElementById('gallery-grid'));
+                console.log('Upload button element:', document.getElementById('upload-gallery-btn'));
                 
                 const adminControls = document.querySelectorAll('.admin-only');
                 console.log('Admin elements found:', adminControls.length);
+                
+                // Force show admin controls for debugging
+                adminControls.forEach(el => {
+                    el.style.display = 'block';
+                    el.style.visibility = 'visible';
+                    console.log('Showing admin control:', el);
+                });
+                
             }, 100);
+            
+        } catch (error) {
+            console.error('Error loading Dep Collection page:', error);
+            
+            // Emergency fallback
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                mainContent.innerHTML = `
+                    <div style="padding: 50px; text-align: center; color: red;">
+                        <h1>Lỗi tải trang Đẹp Collection</h1>
+                        <p>Chi tiết lỗi: ${error.message}</p>
+                        <button onclick="window.location.reload()">Tải lại trang</button>
+                    </div>
+                `;
+            }
         }
     }
     
