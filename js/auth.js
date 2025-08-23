@@ -3,6 +3,7 @@ class AuthManager {
     constructor() {
         this.currentUser = null;
         this.isLoggedIn = false;
+        this.isInitialLoad = true; // Flag để track initial load
         this.init();
     }
 
@@ -23,13 +24,20 @@ class AuthManager {
                 this.currentUser = session.user;
                 this.isLoggedIn = true;
                 this.showApp();
-                Utils.showToast('Đăng nhập thành công!', 'success');
+                
+                // Chỉ hiện toast khi thực sự đăng nhập mới (không phải initial load)
+                if (!this.isInitialLoad) {
+                    Utils.showToast('Đăng nhập thành công!', 'success');
+                }
             } else if (event === 'SIGNED_OUT') {
                 this.currentUser = null;
                 this.isLoggedIn = false;
                 this.showAuth();
                 Utils.showToast('Đã đăng xuất!', 'info');
             }
+            
+            // Sau lần đầu tiên, set flag thành false
+            this.isInitialLoad = false;
         });
     }
 
