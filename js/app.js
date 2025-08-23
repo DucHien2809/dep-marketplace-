@@ -123,7 +123,7 @@ class App {
                     window.depMarketplace.loadHomePage();
                     break;
                 case 'dep-collection':
-                    this.loadDepCollection();
+                    window.depMarketplace.loadDepCollectionPage();
                     break;
                 case 'marketplace':
                     this.loadMarketplace();

@@ -79,6 +79,79 @@ class DepMarketplace {
         }
     }
 
+    loadDepCollectionPage() {
+        // Create and show Đẹp Collection page
+        this.createPage('dep-collection');
+        
+        // Initialize filters functionality after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            this.initCollectionFilters();
+            this.updateResultsCount();
+        }, 100);
+    }
+
+    initCollectionFilters() {
+        // Bind filter events
+        const categoryFilter = document.getElementById('collection-category');
+        const sizeFilter = document.getElementById('collection-size');
+        const priceFilter = document.getElementById('collection-price');
+        const styleFilter = document.getElementById('collection-style');
+        const sortFilter = document.getElementById('collection-sort');
+        const searchInput = document.getElementById('collection-search');
+
+        if (categoryFilter) {
+            categoryFilter.addEventListener('change', () => this.applyFilters());
+        }
+        if (sizeFilter) {
+            sizeFilter.addEventListener('change', () => this.applyFilters());
+        }
+        if (priceFilter) {
+            priceFilter.addEventListener('change', () => this.applyFilters());
+        }
+        if (styleFilter) {
+            styleFilter.addEventListener('change', () => this.applyFilters());
+        }
+        if (sortFilter) {
+            sortFilter.addEventListener('change', () => this.applySorting());
+        }
+        if (searchInput) {
+            searchInput.addEventListener('input', () => this.applySearch());
+        }
+    }
+
+    applyFilters() {
+        // This would normally filter products from database
+        // For now, just show toast
+        Utils.showToast('Đang áp dụng bộ lọc...', 'info');
+        setTimeout(() => {
+            this.updateResultsCount();
+        }, 500);
+    }
+
+    applySorting() {
+        Utils.showToast('Đang sắp xếp sản phẩm...', 'info');
+        setTimeout(() => {
+            this.updateResultsCount();
+        }, 500);
+    }
+
+    applySearch() {
+        const searchInput = document.getElementById('collection-search');
+        if (searchInput && searchInput.value.length > 2) {
+            Utils.showToast(`Tìm kiếm: "${searchInput.value}"`, 'info');
+            setTimeout(() => {
+                this.updateResultsCount();
+            }, 500);
+        }
+    }
+
+    updateResultsCount() {
+        const countElement = document.getElementById('collection-results-count');
+        if (countElement) {
+            countElement.textContent = 'Hiển thị 6 sản phẩm';
+        }
+    }
+
     // Page Creation Methods
     createPage(page) {
         const mainContent = document.querySelector('.main-content');
