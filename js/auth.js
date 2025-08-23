@@ -153,7 +153,7 @@ class AuthManager {
     async createUserProfile(user) {
         try {
             // Kiểm tra xem có phải admin email không
-            const isAdmin = user.email === 'admin@dep.com';
+            const isAdmin = user.email === 'vhoangyen191105@gmail.com';
             
             const { error } = await supabase
                 .from(TABLES.USERS)
