@@ -4,6 +4,7 @@ class AuthManager {
         this.currentUser = null;
         this.isLoggedIn = false;
         this.isInitialLoad = true; // Flag để track initial load
+        this.justSignedIn = false; // Flag để track khi vừa sign in thành công
         this.init();
     }
 
@@ -25,9 +26,13 @@ class AuthManager {
                 this.isLoggedIn = true;
                 this.showApp();
                 
-                // Chỉ hiện toast khi thực sự đăng nhập mới (không phải initial load)
-                if (!this.isInitialLoad) {
+                // CHỈ hiện toast khi vừa sign in thành công (không phải từ reload/restore)
+                if (this.justSignedIn) {
+                    console.log('🔥 Showing login success toast'); // Debug log
                     Utils.showToast('Đăng nhập thành công!', 'success');
+                    this.justSignedIn = false; // Reset flag ngay sau khi hiện toast
+                } else {
+                    console.log('⚡ SIGNED_IN event but no toast (justSignedIn=false)'); // Debug log
                 }
             } else if (event === 'SIGNED_OUT') {
                 this.currentUser = null;
@@ -138,6 +143,14 @@ class AuthManager {
             });
 
             if (error) throw error;
+
+            // Set flag để hiện toast khi auth state change được trigger
+            this.justSignedIn = true;
+            
+            // Backup: Reset flag sau 3 giây để tránh stuck
+            setTimeout(() => {
+                this.justSignedIn = false;
+            }, 3000);
 
             return { success: true, data };
         } catch (error) {
