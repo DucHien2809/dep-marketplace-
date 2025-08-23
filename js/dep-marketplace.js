@@ -131,50 +131,91 @@ class DepMarketplace {
 
                 <div class="collection-content">
                     <div class="container">
-                        <!-- Filters -->
-                        <div class="collection-filters">
-                            <div class="filter-group">
-                                <label>Danh mục:</label>
-                                <select id="collection-category">
-                                    <option value="all">Tất cả</option>
-                                    <option value="tops">Áo</option>
-                                    <option value="bottoms">Quần</option>
-                                    <option value="dresses">Váy</option>
-                                    <option value="accessories">Phụ kiện</option>
-                                </select>
-                            </div>
-                            
-                            <div class="filter-group">
-                                <label>Sắp xếp:</label>
-                                <select id="collection-sort">
-                                    <option value="newest">Mới nhất</option>
-                                    <option value="price-low">Giá thấp đến cao</option>
-                                    <option value="price-high">Giá cao đến thấp</option>
-                                    <option value="popular">Phổ biến</option>
-                                </select>
+                        <!-- Advanced Filters -->
+                        <div class="collection-filters-advanced">
+                            <div class="filters-row-1">
+                                <div class="filter-group">
+                                    <label>Loại sản phẩm:</label>
+                                    <select id="collection-category">
+                                        <option value="all">Tất cả</option>
+                                        <option value="tops">Áo</option>
+                                        <option value="bottoms">Quần</option>
+                                        <option value="dresses">Váy</option>
+                                        <option value="accessories">Phụ kiện</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label>Size:</label>
+                                    <select id="collection-size">
+                                        <option value="all">Tất cả</option>
+                                        <option value="XS">XS</option>
+                                        <option value="S">S</option>
+                                        <option value="M">M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
+                                        <option value="XXL">XXL</option>
+                                    </select>
+                                </div>
+
+                                <div class="filter-group">
+                                    <label>Khoảng giá:</label>
+                                    <select id="collection-price">
+                                        <option value="all">Tất cả</option>
+                                        <option value="0-200000">Dưới 200k</option>
+                                        <option value="200000-500000">200k - 500k</option>
+                                        <option value="500000-1000000">500k - 1tr</option>
+                                        <option value="1000000-2000000">1tr - 2tr</option>
+                                        <option value="2000000+">Trên 2tr</option>
+                                    </select>
+                                </div>
+
+                                <div class="filter-group">
+                                    <label>Phong cách:</label>
+                                    <select id="collection-style">
+                                        <option value="all">Tất cả</option>
+                                        <option value="vintage">Vintage</option>
+                                        <option value="basic">Basic</option>
+                                        <option value="độc bản">Độc bản</option>
+                                        <option value="minimalist">Minimalist</option>
+                                        <option value="boho">Boho</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <div class="filter-group">
-                                <label>Kích thước:</label>
-                                <select id="collection-size">
-                                    <option value="all">Tất cả</option>
-                                    <option value="XS">XS</option>
-                                    <option value="S">S</option>
-                                    <option value="M">M</option>
-                                    <option value="L">L</option>
-                                    <option value="XL">XL</option>
-                                </select>
+                            <div class="filters-row-2">
+                                <div class="search-filter">
+                                    <input type="text" id="collection-search" placeholder="Tìm kiếm sản phẩm...">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                
+                                <div class="filter-group">
+                                    <label>Sắp xếp:</label>
+                                    <select id="collection-sort">
+                                        <option value="newest">Mới nhất</option>
+                                        <option value="price-low">Giá thấp đến cao</option>
+                                        <option value="price-high">Giá cao đến thấp</option>
+                                        <option value="popular">Phổ biến nhất</option>
+                                        <option value="featured">Nổi bật</option>
+                                    </select>
+                                </div>
+
+                                <div class="results-count">
+                                    <span id="collection-results-count">Đang tải...</span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Products Grid -->
-                        <div class="products-grid" id="collection-products">
-                            <!-- Products will be loaded here -->
+                        <!-- Products Grid 4 Columns -->
+                        <div class="collection-products-grid" id="collection-products">
+                            <!-- Sample products for display -->
+                            ${this.generateSampleProducts()}
                         </div>
 
                         <!-- Load More -->
                         <div class="load-more-section">
                             <button class="btn btn-secondary" id="load-more-collection">
+                                <i class="fas fa-plus"></i>
                                 Xem thêm sản phẩm
                             </button>
                         </div>
@@ -182,6 +223,327 @@ class DepMarketplace {
                 </div>
             </div>
         `;
+    }
+
+    generateSampleProducts() {
+        const sampleProducts = [
+            {
+                id: 1,
+                name: "Áo kiểu Vintage Tái Sinh",
+                price: 450000,
+                originalPrice: 650000,
+                image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop",
+                style: "vintage",
+                origin: "Làm từ áo sơ mi linen cũ, thêu ren vintage",
+                isNew: true
+            },
+            {
+                id: 2,
+                name: "Váy Đẹp Độc Bản",
+                price: 780000,
+                originalPrice: null,
+                image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=500&fit=crop",
+                style: "độc bản",
+                origin: "Tái tạo từ vải cotton organic, phối ren cổ điển",
+                isNew: false
+            },
+            {
+                id: 3,
+                name: "Quần Jean Basic Eco",
+                price: 520000,
+                originalPrice: 720000,
+                image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=500&fit=crop",
+                style: "basic",
+                origin: "Jean tái chế với công nghệ eco-wash",
+                isNew: true
+            },
+            {
+                id: 4,
+                name: "Túi Tote Minimalist",
+                price: 290000,
+                originalPrice: null,
+                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=500&fit=crop",
+                style: "minimalist",
+                origin: "Canvas tái chế từ bao bì cũ, thiết kế tối giản",
+                isNew: false
+            },
+            {
+                id: 5,
+                name: "Áo Sơ Mi Boho Chic",
+                price: 380000,
+                originalPrice: 560000,
+                image: "https://images.unsplash.com/photo-1583743814966-8936f37f631b?w=400&h=500&fit=crop",
+                style: "boho",
+                origin: "Từ áo sơ mi trắng cũ, thêu họa tiết dân tộc",
+                isNew: true
+            },
+            {
+                id: 6,
+                name: "Chân Váy Xoè Vintage",
+                price: 420000,
+                originalPrice: 590000,
+                image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop",
+                style: "vintage",
+                origin: "Vải tweed tái chế, may theo pattern cổ điển",
+                isNew: false
+            }
+        ];
+
+        return sampleProducts.map(product => `
+            <div class="collection-product-card" data-product-id="${product.id}" onclick="depMarketplace.showProductDetail(${product.id})">
+                <div class="product-image-container">
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                    ${product.isNew ? '<span class="new-badge">Mới</span>' : ''}
+                    ${product.originalPrice ? '<span class="sale-badge">Sale</span>' : ''}
+                    <div class="product-overlay">
+                        <button class="quick-view-btn">
+                            <i class="fas fa-eye"></i>
+                            Xem nhanh
+                        </button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">${product.name}</h3>
+                    <p class="product-origin">${product.origin}</p>
+                    <div class="product-price">
+                        <span class="current-price">${this.formatPrice(product.price)}</span>
+                        ${product.originalPrice ? `<span class="original-price">${this.formatPrice(product.originalPrice)}</span>` : ''}
+                    </div>
+                    <div class="product-tags">
+                        <span class="style-tag">${product.style}</span>
+                    </div>
+                    <button class="btn-add-to-cart" onclick="event.stopPropagation()">
+                        <i class="fas fa-shopping-cart"></i>
+                        Mua ngay
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    formatPrice(price) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(price);
+    }
+
+    showProductDetail(productId) {
+        // Create and show product detail modal
+        const product = this.getProductById(productId);
+        if (!product) return;
+
+        const modalHTML = this.createProductDetailModal(product);
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Show modal
+        const modal = document.getElementById('product-detail-modal');
+        modal.classList.add('show');
+        
+        // Initialize image gallery
+        this.initProductGallery();
+        
+        // Bind close events
+        this.bindProductDetailEvents();
+    }
+
+    getProductById(id) {
+        const sampleProducts = [
+            {
+                id: 1,
+                name: "Áo kiểu Vintage Tái Sinh",
+                price: 450000,
+                originalPrice: 650000,
+                images: [
+                    "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&h=700&fit=crop",
+                    "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=600&h=700&fit=crop",
+                    "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&h=700&fit=crop",
+                    "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&h=700&fit=crop"
+                ],
+                style: "vintage",
+                origin: "Làm từ áo sơ mi linen cũ, thêu ren vintage",
+                description: "Một tác phẩm nghệ thuật tái chế độc đáo, được tạo ra từ chiếc áo sơ mi linen vintage. Mỗi chi tiết thêu ren đều được làm thủ công bởi các nghệ nhân có kinh nghiệm.",
+                material: "Linen tái chế 80%, Ren vintage 15%, Cotton organic 5%",
+                sizes: ["S", "M", "L"],
+                care: "Giặt tay với nước lạnh, phơi trong bóng râm",
+                story: "Chiếc áo này được tái sinh từ một chiếc áo sơ mi linen của thập niên 80, được phát hiện tại một cửa hàng đồ cũ ở Paris. Sau quá trình tái tạo tỉ mỉ, nó đã trở thành một tác phẩm hoàn toàn mới với phong cách vintage hiện đại.",
+                isNew: true,
+                mixMatch: [2, 6] // IDs of suggested products
+            },
+            {
+                id: 2,
+                name: "Váy Đẹp Độc Bản",
+                price: 780000,
+                originalPrice: null,
+                images: [
+                    "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=700&fit=crop",
+                    "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=700&fit=crop",
+                    "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=700&fit=crop"
+                ],
+                style: "độc bản",
+                origin: "Tái tạo từ vải cotton organic, phối ren cổ điển",
+                description: "Thiết kế độc bản không thể tìm thấy ở bất kỳ đâu khác. Được tạo ra từ những mảnh vải cotton organic chất lượng cao kết hợp với ren cổ điển.",
+                material: "Cotton organic 90%, Ren cổ điển 10%",
+                sizes: ["XS", "S", "M"],
+                care: "Máy giặt nhẹ nhàng, không sử dụng chất tẩy",
+                story: "Được thiết kế bởi team Đẹp dựa trên cảm hứng từ những bộ váy của phụ nữ Việt Nam xưa, kết hợp với xu hướng thời trang hiện đại.",
+                isNew: false,
+                mixMatch: [1, 4, 5]
+            }
+            // Add more products as needed...
+        ];
+        
+        return sampleProducts.find(p => p.id === id);
+    }
+
+    createProductDetailModal(product) {
+        return `
+            <div id="product-detail-modal" class="modal product-detail-modal">
+                <div class="modal-content product-detail-content">
+                    <div class="modal-header">
+                        <h3>${product.name}</h3>
+                        <button class="close-btn" onclick="this.closest('.modal').remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="product-detail-body">
+                        <div class="product-images-section">
+                            <div class="main-image-container">
+                                <img id="main-product-image" src="${product.images[0]}" alt="${product.name}">
+                                ${product.isNew ? '<span class="detail-new-badge">Mới</span>' : ''}
+                                ${product.originalPrice ? '<span class="detail-sale-badge">Sale</span>' : ''}
+                            </div>
+                            <div class="thumbnail-gallery">
+                                ${product.images.map((img, index) => `
+                                    <img src="${img}" alt="${product.name} - Góc ${index + 1}" 
+                                         class="thumbnail ${index === 0 ? 'active' : ''}"
+                                         onclick="depMarketplace.changeMainImage('${img}', this)">
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="product-info-section">
+                            <div class="price-section">
+                                <span class="detail-current-price">${this.formatPrice(product.price)}</span>
+                                ${product.originalPrice ? `<span class="detail-original-price">${this.formatPrice(product.originalPrice)}</span>` : ''}
+                                ${product.originalPrice ? `<span class="discount-percent">-${Math.round((1 - product.price/product.originalPrice) * 100)}%</span>` : ''}
+                            </div>
+                            
+                            <div class="product-description">
+                                <p>${product.description}</p>
+                            </div>
+                            
+                            <div class="product-details">
+                                <div class="detail-item">
+                                    <strong>Nguồn gốc tái chế:</strong>
+                                    <p>${product.origin}</p>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <strong>Chất liệu:</strong>
+                                    <p>${product.material}</p>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <strong>Size có sẵn:</strong>
+                                    <div class="size-options">
+                                        ${product.sizes.map(size => `
+                                            <button class="size-btn" onclick="this.classList.toggle('selected')">${size}</button>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <strong>Hướng dẫn bảo quản:</strong>
+                                    <p>${product.care}</p>
+                                </div>
+                                
+                                <div class="detail-item sustainability-story">
+                                    <strong>Câu chuyện tái sinh:</strong>
+                                    <p>${product.story}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="product-actions">
+                                <button class="btn-primary btn-buy-now">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    Mua ngay
+                                </button>
+                                <button class="btn-secondary btn-add-cart">
+                                    <i class="fas fa-heart"></i>
+                                    Yêu thích
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mix-match-section">
+                        <h4>Kết hợp cùng sản phẩm Đẹp khác</h4>
+                        <div class="mix-match-products">
+                            ${this.generateMixMatchProducts(product.mixMatch)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    changeMainImage(newSrc, thumbnail) {
+        document.getElementById('main-product-image').src = newSrc;
+        document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+        thumbnail.classList.add('active');
+    }
+
+    generateMixMatchProducts(productIds) {
+        if (!productIds || productIds.length === 0) return '<p>Không có gợi ý kết hợp.</p>';
+        
+        // Simplified mix match products
+        const mixMatchSamples = [
+            { id: 2, name: "Chân Váy Midi", price: 420000, image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=300&h=300&fit=crop" },
+            { id: 4, name: "Túi Tote Canvas", price: 290000, image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop" },
+            { id: 6, name: "Giày Oxford Vintage", price: 650000, image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=300&h=300&fit=crop" }
+        ];
+        
+        return productIds.map(id => {
+            const product = mixMatchSamples.find(p => p.id === id) || mixMatchSamples[0];
+            return `
+                <div class="mix-match-item" onclick="depMarketplace.showProductDetail(${product.id})">
+                    <img src="${product.image}" alt="${product.name}">
+                    <div class="mix-match-info">
+                        <h5>${product.name}</h5>
+                        <span class="mix-match-price">${this.formatPrice(product.price)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    initProductGallery() {
+        // Add zoom functionality
+        const mainImage = document.getElementById('main-product-image');
+        if (mainImage) {
+            mainImage.addEventListener('click', () => {
+                mainImage.classList.toggle('zoomed');
+            });
+        }
+    }
+
+    bindProductDetailEvents() {
+        // Close modal when clicking outside
+        const modal = document.getElementById('product-detail-modal');
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+        
+        // ESC key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal) {
+                modal.remove();
+            }
+        }, { once: true });
     }
 
     createMarketplacePage() {
