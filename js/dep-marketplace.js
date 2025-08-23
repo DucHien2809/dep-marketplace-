@@ -80,107 +80,134 @@ class DepMarketplace {
     }
 
     loadDepCollectionPage() {
-        console.log('Loading Dep Collection Page...');
+        console.log('🚀 Loading Dep Collection Page...');
         
         try {
-            // Create and show Đẹp Collection gallery page
             const mainContent = document.querySelector('.main-content');
-            console.log('Main content found:', mainContent);
+            console.log('Main content found:', !!mainContent);
             
             if (!mainContent) {
-                console.error('Main content not found!');
+                console.error('❌ Main content not found!');
                 return;
             }
             
-            // Clear existing content
-            mainContent.innerHTML = '';
-            
-            let galleryHTML = '';
-            
-            // Try to get HTML from gallery class first
-            if (window.collectionGallery && typeof window.collectionGallery.createGalleryPage === 'function') {
-                console.log('Using CollectionGallery.createGalleryPage()');
-                galleryHTML = window.collectionGallery.createGalleryPage();
-            } else if (typeof this.createGalleryPageFallback === 'function') {
-                console.log('Using fallback method');
-                galleryHTML = this.createGalleryPageFallback();
-            } else {
-                console.error('No gallery page creation method available!');
-                // Create minimal fallback
-                galleryHTML = `
-                    <div id="dep-collection-page" class="page">
-                        <div style="padding: 50px; text-align: center;">
-                            <h1>Đẹp Collection</h1>
-                            <p>Đang tải...</p>
-                            <div class="admin-controls admin-only">
-                                <button class="btn btn-primary" id="upload-gallery-btn">
-                                    <i class="fas fa-upload"></i>
-                                    Upload ảnh mới
-                                </button>
-                            </div>
-                            <div id="gallery-grid">Đang tải gallery items...</div>
-                        </div>
-                    </div>
-                `;
+            // Remove existing dep-collection page if any
+            const existing = document.getElementById('dep-collection-page');
+            if (existing) {
+                existing.remove();
+                console.log('🗑️ Removed existing page');
             }
             
-            console.log('Gallery HTML length:', galleryHTML.length);
+            // Force create gallery page with simplified HTML
+            const galleryHTML = `
+                <div id="dep-collection-page" class="page">
+                    <div class="gallery-hero" style="padding: 80px 0; text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                        <div class="container">
+                            <h1 style="font-size: 3rem; margin-bottom: 20px; color: #2d5a5a;">Đẹp Collection</h1>
+                            <p style="font-size: 1.2rem; color: #6c757d; margin-bottom: 30px;">Trưng bày những tác phẩm tái chế độc đáo</p>
+                            
+                            <!-- Admin Controls -->
+                            <div class="admin-controls admin-only" style="display: flex !important; gap: 15px; justify-content: center;">
+                                <button class="btn btn-primary" id="upload-gallery-btn" style="padding: 15px 25px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                                    <i class="fas fa-upload"></i> Upload ảnh mới
+                                </button>
+                                <button class="btn btn-secondary" id="manage-gallery-btn" style="padding: 15px 25px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                                    <i class="fas fa-cog"></i> Quản lý gallery
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="gallery-content" style="padding: 50px 0;">
+                        <div class="container">
+                            <!-- Gallery Stats (Admin only) -->
+                            <div class="gallery-stats admin-only" style="display: grid !important; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+                                <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
+                                    <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">6</span>
+                                    <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Tổng tác phẩm</span>
+                                </div>
+                                <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
+                                    <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">4</span>
+                                    <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Nổi bật</span>
+                                </div>
+                                <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
+                                    <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">1,234</span>
+                                    <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Lượt xem</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Filter Tags -->
+                            <div class="gallery-filters" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap;">
+                                <button class="filter-tag active" data-filter="all" style="padding: 10px 20px; border: 2px solid #28a745; background: #28a745; color: white; border-radius: 25px; cursor: pointer;">Tất cả</button>
+                                <button class="filter-tag" data-filter="vintage" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Vintage</button>
+                                <button class="filter-tag" data-filter="modern" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Hiện đại</button>
+                                <button class="filter-tag" data-filter="boho" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Boho</button>
+                            </div>
+                            
+                            <!-- Gallery Grid -->
+                            <div class="gallery-grid" id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px;">
+                                <div style="background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;">
+                                    <h3>🎨 Gallery items đang tải...</h3>
+                                    <p>Database items sẽ hiển thị ở đây</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            console.log('📝 Gallery HTML length:', galleryHTML.length);
             mainContent.insertAdjacentHTML('beforeend', galleryHTML);
             
-            // Initialize gallery filters and events
+            const depCollectionPage = document.getElementById('dep-collection-page');
+            console.log('✅ dep-collection-page created:', !!depCollectionPage);
+            
+            // Initialize immediately
             setTimeout(() => {
-                console.log('Initializing gallery...');
+                console.log('🔧 Initializing gallery...');
                 
-                if (typeof this.initGalleryFilters === 'function') {
-                    this.initGalleryFilters();
-                }
-                
-                if (typeof this.bindGalleryEvents === 'function') {
-                    this.bindGalleryEvents();
-                }
-                
-                // Refresh UI permissions for newly created elements
-                if (window.authManager && typeof window.authManager.refreshUIPermissions === 'function') {
-                    console.log('Refreshing UI permissions...');
-                    window.authManager.refreshUIPermissions();
-                }
-                
-                // Load gallery items from database
-                if (window.collectionGallery && typeof window.collectionGallery.loadGalleryItems === 'function') {
-                    console.log('Loading gallery items...');
-                    window.collectionGallery.loadGalleryItems();
-                }
-                
-                // Debug: Show what's loaded
-                console.log('Gallery grid element:', document.getElementById('gallery-grid'));
-                console.log('Upload button element:', document.getElementById('upload-gallery-btn'));
-                
+                // Force show admin controls
                 const adminControls = document.querySelectorAll('.admin-only');
-                console.log('Admin elements found:', adminControls.length);
+                console.log('👤 Admin elements found:', adminControls.length);
                 
-                // Force show admin controls for debugging
                 adminControls.forEach(el => {
                     el.style.display = 'block';
                     el.style.visibility = 'visible';
-                    console.log('Showing admin control:', el);
+                    console.log('👀 Showing admin control:', el.className);
                 });
                 
-            }, 100);
+                // Add upload button event
+                const uploadBtn = document.getElementById('upload-gallery-btn');
+                if (uploadBtn) {
+                    uploadBtn.addEventListener('click', () => {
+                        console.log('📸 Upload button clicked!');
+                        if (window.collectionGallery && window.collectionGallery.showUploadModal) {
+                            window.collectionGallery.showUploadModal();
+                        } else {
+                            alert('🎯 Upload modal sẽ mở ở đây! (CollectionGallery chưa ready)');
+                        }
+                    });
+                    console.log('✅ Upload button event added');
+                }
+                
+                // Load gallery items from database
+                if (window.collectionGallery && window.collectionGallery.loadGalleryItems) {
+                    console.log('📊 Loading gallery items from database...');
+                    window.collectionGallery.loadGalleryItems();
+                }
+                
+                // Refresh auth permissions
+                if (window.authManager && window.authManager.refreshUIPermissions) {
+                    console.log('🔐 Refreshing UI permissions...');
+                    window.authManager.refreshUIPermissions();
+                }
+                
+                console.log('🎉 Gallery initialization complete!');
+                
+            }, 200);
             
         } catch (error) {
-            console.error('Error loading Dep Collection page:', error);
-            
-            // Emergency fallback
-            const mainContent = document.querySelector('.main-content');
-            if (mainContent) {
-                mainContent.innerHTML = `
-                    <div style="padding: 50px; text-align: center; color: red;">
-                        <h1>Lỗi tải trang Đẹp Collection</h1>
-                        <p>Chi tiết lỗi: ${error.message}</p>
-                        <button onclick="window.location.reload()">Tải lại trang</button>
-                    </div>
-                `;
-            }
+            console.error('💥 Error loading Dep Collection page:', error);
         }
     }
     
@@ -538,8 +565,13 @@ class DepMarketplace {
 
         switch (page) {
             case 'dep-collection':
-                // Use gallery instead
-                return '';
+                // Create dep collection page
+                if (window.collectionGallery && typeof window.collectionGallery.createGalleryPage === 'function') {
+                    pageHTML = window.collectionGallery.createGalleryPage();
+                } else {
+                    pageHTML = this.createGalleryPageFallback();
+                }
+                break;
             case 'marketplace':
                 pageHTML = this.createMarketplacePage();
                 break;
@@ -562,7 +594,9 @@ class DepMarketplace {
                 pageHTML = `<div id="${page}-page" class="page"><div class="container"><h1>Trang đang phát triển</h1></div></div>`;
         }
 
-        mainContent.insertAdjacentHTML('beforeend', pageHTML);
+        if (pageHTML && mainContent) {
+            mainContent.insertAdjacentHTML('beforeend', pageHTML);
+        }
     }
 
     createDepCollectionPage() {
