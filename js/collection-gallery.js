@@ -6,8 +6,8 @@ class CollectionGallery {
         this.init();
     }
 
-    init() {
-        this.loadGalleryItems();
+    async init() {
+        await this.loadGalleryItems();
         this.bindEvents();
     }
 
@@ -172,10 +172,31 @@ class CollectionGallery {
             }
         ];
 
-        return sampleItems.map(item => `
-            <div class="gallery-item ${item.featured ? 'featured' : ''}" data-item-id="${item.id}" data-tags="${item.tags.join(' ')}">
-                <div class="gallery-item-image" style="background-image: url('${item.image}')">
-                    ${item.featured ? '<span class="featured-badge">Nổi bật</span>' : ''}
+        return sampleItems.map(item => this.renderGalleryItem(item)).join('');
+    }
+
+    generateGalleryItemsFromData() {
+        if (!this.galleryItems || this.galleryItems.length === 0) {
+            return '<div class="no-items">Chưa có tác phẩm nào</div>';
+        }
+        return this.galleryItems.map(item => this.renderGalleryItem(item)).join('');
+    }
+
+    renderGalleryItem(item) {
+        const tags = Array.isArray(item.tags) ? item.tags : 
+                    (typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : []);
+        const isDbItem = !!item.created_at;
+        const viewCount = item.views || 0;
+        const createDate = isDbItem ? 
+            new Date(item.created_at).toLocaleDateString('vi-VN') : 
+            item.created;
+
+        return `
+            <div class="gallery-item ${item.is_featured || item.featured ? 'featured' : ''}" 
+                 data-item-id="${item.id}" 
+                 data-tags="${tags.join(' ')}">
+                <div class="gallery-item-image" style="background-image: url('${item.image_url || item.image}')">
+                    ${(item.is_featured || item.featured) ? '<span class="featured-badge">Nổi bật</span>' : ''}
                     
                     <!-- Admin Controls -->
                     <div class="gallery-item-controls admin-only">
@@ -202,22 +223,22 @@ class CollectionGallery {
                     
                     <div class="gallery-item-meta">
                         <div class="gallery-tags">
-                            ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                            ${tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                         </div>
                         <div class="gallery-stats">
                             <span class="view-count">
                                 <i class="fas fa-eye"></i>
-                                ${item.views}
+                                ${viewCount}
                             </span>
                             <span class="create-date admin-only">
                                 <i class="fas fa-calendar"></i>
-                                ${item.created}
+                                ${createDate}
                             </span>
                         </div>
                     </div>
                 </div>
             </div>
-        `).join('');
+        `;
     }
 
     showUploadModal() {
@@ -337,23 +358,106 @@ class CollectionGallery {
         });
     }
 
-    saveGalleryItem() {
-        const title = document.getElementById('item-title').value;
-        const story = document.getElementById('item-story').value;
-        const tags = document.getElementById('item-tags').value;
+    async saveGalleryItem() {
+        const title = document.getElementById('item-title').value.trim();
+        const story = document.getElementById('item-story').value.trim();
+        const tags = document.getElementById('item-tags').value.trim();
         const featured = document.getElementById('item-featured').checked;
         
+        // Validation
         if (!title || !story) {
             Utils.showToast('Vui lòng điền đầy đủ thông tin', 'error');
             return;
         }
+
+        const fileInput = document.getElementById('gallery-image-input');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            Utils.showToast('Vui lòng chọn ít nhất một ảnh', 'error');
+            return;
+        }
+
+        try {
+            Utils.showLoading(true);
+            
+            // Upload main image
+            const mainFile = fileInput.files[0];
+            const mainImageUrl = await this.uploadImage(mainFile, 'main');
+            
+            // Upload additional images
+            const additionalImages = [];
+            for (let i = 1; i < fileInput.files.length && i < CONFIG.gallery.maxFiles; i++) {
+                const imageUrl = await this.uploadImage(fileInput.files[i], `additional-${i}`);
+                additionalImages.push(imageUrl);
+            }
+
+            // Parse tags
+            const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+
+            // Save to database
+            const { data, error } = await supabase
+                .from(TABLES.GALLERY_ITEMS)
+                .insert([{
+                    title: title,
+                    story: story,
+                    image_url: mainImageUrl,
+                    gallery: additionalImages,
+                    tags: tagsArray,
+                    is_featured: featured,
+                    status: 'active',
+                    created_by: (await supabase.auth.getUser()).data.user?.id,
+                    published_at: new Date().toISOString()
+                }])
+                .select();
+
+            if (error) throw error;
+
+            Utils.showToast('Đã lưu tác phẩm thành công!', 'success');
+            document.getElementById('upload-gallery-modal').remove();
+            
+            // Refresh gallery
+            await this.loadGalleryItems();
+            this.refreshGallery();
+
+        } catch (error) {
+            console.error('Error saving gallery item:', error);
+            Utils.showToast('Có lỗi xảy ra khi lưu tác phẩm: ' + error.message, 'error');
+        } finally {
+            Utils.showLoading(false);
+        }
+    }
+
+    async uploadImage(file, prefix = '') {
+        // Validate file
+        if (!CONFIG.gallery.allowedTypes.includes(file.type)) {
+            throw new Error(`Định dạng file không hỗ trợ: ${file.type}`);
+        }
         
-        // TODO: Implement actual save to database
-        Utils.showToast('Đã lưu tác phẩm thành công!', 'success');
-        document.getElementById('upload-gallery-modal').remove();
-        
-        // Refresh gallery
-        this.refreshGallery();
+        if (file.size > CONFIG.gallery.maxFileSize) {
+            throw new Error(`File quá lớn. Tối đa ${CONFIG.gallery.maxFileSize / 1024 / 1024}MB`);
+        }
+
+        // Generate unique filename
+        const timestamp = Date.now();
+        const randomStr = Math.random().toString(36).substring(2, 8);
+        const extension = file.name.split('.').pop();
+        const fileName = `${prefix}-${timestamp}-${randomStr}.${extension}`;
+        const filePath = `gallery/${fileName}`;
+
+        // Upload to Supabase Storage
+        const { data, error } = await supabase.storage
+            .from(CONFIG.storage.buckets.gallery)
+            .upload(filePath, file);
+
+        if (error) {
+            throw new Error(`Lỗi upload ảnh: ${error.message}`);
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from(CONFIG.storage.buckets.gallery)
+            .getPublicUrl(filePath);
+
+        return publicUrl;
     }
 
     editGalleryItem(itemId) {
@@ -377,13 +481,40 @@ class CollectionGallery {
     refreshGallery() {
         const grid = document.getElementById('gallery-grid');
         if (grid) {
-            grid.innerHTML = this.generateGalleryItems();
+            // Use real data if available, fallback to sample data
+            if (this.galleryItems && this.galleryItems.length > 0) {
+                grid.innerHTML = this.generateGalleryItemsFromData();
+            } else {
+                grid.innerHTML = this.generateGalleryItems();
+            }
         }
     }
 
-    loadGalleryItems() {
-        // TODO: Load from database
-        console.log('Loading gallery items...');
+    async loadGalleryItems() {
+        try {
+            const { data, error } = await supabase
+                .from(TABLES.GALLERY_ITEMS)
+                .select('*')
+                .eq('status', 'active')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            this.galleryItems = data || [];
+            console.log('Loaded gallery items:', this.galleryItems.length);
+            
+            // Update UI if gallery grid exists
+            const grid = document.getElementById('gallery-grid');
+            if (grid) {
+                grid.innerHTML = this.generateGalleryItemsFromData();
+            }
+            
+            return this.galleryItems;
+        } catch (error) {
+            console.error('Error loading gallery items:', error);
+            Utils.showToast('Không thể tải gallery items', 'error');
+            return [];
+        }
     }
 }
 

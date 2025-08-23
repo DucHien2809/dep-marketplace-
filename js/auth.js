@@ -75,7 +75,13 @@ class AuthManager {
         // Ẩn/hiện các nút admin
         const adminElements = document.querySelectorAll('.admin-only');
         adminElements.forEach(element => {
-            element.style.display = isAdmin ? 'block' : 'none';
+            if (isAdmin) {
+                element.style.display = 'block';
+                element.style.visibility = 'visible';
+            } else {
+                element.style.display = 'none';
+                element.style.visibility = 'hidden';
+            }
         });
 
         // Ẩn/hiện các nút customer

@@ -16,6 +16,23 @@ const CONFIG = {
     },
     toast: {
         duration: 3000 // milliseconds
+    },
+    gallery: {
+        maxFileSize: 5 * 1024 * 1024, // 5MB
+        allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+        maxFiles: 5,
+        imageSizes: {
+            thumbnail: { width: 300, height: 300 },
+            medium: { width: 800, height: 600 },
+            large: { width: 1200, height: 900 }
+        }
+    },
+    storage: {
+        buckets: {
+            gallery: 'gallery-images',
+            products: 'product-images',
+            avatars: 'avatars'
+        }
     }
 };
 
@@ -35,7 +52,8 @@ const TABLES = {
     ORDER_ITEMS: 'order_items',
     CUSTOMERS: 'customers',
     CONSIGNMENTS: 'consignments',
-    BLOG_POSTS: 'blog_posts'
+    BLOG_POSTS: 'blog_posts',
+    GALLERY_ITEMS: 'gallery_items'
 };
 
 // Product Types

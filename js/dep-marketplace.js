@@ -103,11 +103,15 @@ class DepMarketplace {
                 this.initGalleryFilters();
                 this.bindGalleryEvents();
                 
+                // Refresh UI permissions for newly created elements
+                if (window.authManager) {
+                    window.authManager.refreshUIPermissions();
+                }
+                
                 // Debug: Show what's loaded
                 console.log('Gallery loaded:', document.getElementById('gallery-grid'));
                 console.log('Upload button:', document.getElementById('upload-gallery-btn'));
                 
-                // Force show admin controls for testing
                 const adminControls = document.querySelectorAll('.admin-only');
                 console.log('Admin elements found:', adminControls.length);
             }, 100);
