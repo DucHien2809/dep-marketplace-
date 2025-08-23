@@ -86,13 +86,200 @@ class DepMarketplace {
             // Clear existing content
             mainContent.innerHTML = '';
             
-            // Add gallery page
-            const galleryHTML = window.collectionGallery.createGalleryPage();
-            mainContent.insertAdjacentHTML('beforeend', galleryHTML);
+            // Check if gallery is ready, if not create it inline
+            if (window.collectionGallery && window.collectionGallery.createGalleryPage) {
+                const galleryHTML = window.collectionGallery.createGalleryPage();
+                mainContent.insertAdjacentHTML('beforeend', galleryHTML);
+            } else {
+                // Fallback: create gallery HTML directly
+                const galleryHTML = this.createGalleryPageFallback();
+                mainContent.insertAdjacentHTML('beforeend', galleryHTML);
+            }
             
-            // Initialize gallery filters
-            this.initGalleryFilters();
+            // Initialize gallery filters and events
+            setTimeout(() => {
+                this.initGalleryFilters();
+                this.bindGalleryEvents();
+            }, 100);
         }
+    }
+    
+    createGalleryPageFallback() {
+        return `
+            <div id="dep-collection-page" class="page">
+                <!-- Gallery Hero -->
+                <div class="gallery-hero">
+                    <div class="container">
+                        <div class="gallery-hero-content">
+                            <h1>Đẹp Collection</h1>
+                            <p class="gallery-subtitle">Trưng bày những tác phẩm tái chế độc đáo</p>
+                            <p class="gallery-description">
+                                Khám phá hành trình tái sinh của thời trang - từ những món đồ cũ đến những tác phẩm nghệ thuật mới
+                            </p>
+                            
+                            <!-- Admin Controls -->
+                            <div class="admin-controls admin-only">
+                                <button class="btn btn-primary" id="upload-gallery-btn">
+                                    <i class="fas fa-upload"></i>
+                                    Upload ảnh mới
+                                </button>
+                                <button class="btn btn-secondary" id="manage-gallery-btn">
+                                    <i class="fas fa-cog"></i>
+                                    Quản lý gallery
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gallery Grid -->
+                <div class="gallery-content">
+                    <div class="container">
+                        <!-- Gallery Stats (Admin only) -->
+                        <div class="gallery-stats admin-only">
+                            <div class="stat-card">
+                                <span class="stat-number" id="total-items">6</span>
+                                <span class="stat-label">Tổng tác phẩm</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number" id="featured-items">4</span>
+                                <span class="stat-label">Nổi bật</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number" id="total-views">1,234</span>
+                                <span class="stat-label">Lượt xem</span>
+                            </div>
+                        </div>
+
+                        <!-- Filter Tags -->
+                        <div class="gallery-filters">
+                            <button class="filter-tag active" data-filter="all">Tất cả</button>
+                            <button class="filter-tag" data-filter="vintage">Vintage</button>
+                            <button class="filter-tag" data-filter="modern">Hiện đại</button>
+                            <button class="filter-tag" data-filter="boho">Boho</button>
+                            <button class="filter-tag" data-filter="minimalist">Tối giản</button>
+                        </div>
+
+                        <!-- Gallery Grid -->
+                        <div class="gallery-grid" id="gallery-grid">
+                            ${this.generateGalleryItemsFallback()}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    generateGalleryItemsFallback() {
+        const sampleItems = [
+            {
+                id: 1,
+                title: "Áo kiểu Vintage Renaissance",
+                image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop",
+                story: "Tái sinh từ áo sơ mi linen thập niên 80, kết hợp với ren vintage từ Pháp",
+                tags: ["vintage", "renaissance"],
+                featured: true,
+                views: 245,
+                created: "2024-01-15"
+            },
+            {
+                id: 2,
+                title: "Váy Tái Chế Bohemian",
+                image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=500&fit=crop",
+                story: "Từ những mảnh vải cotton organic còn sót lại, tạo nên tác phẩm nghệ thuật mới",
+                tags: ["boho", "organic"],
+                featured: true,
+                views: 189,
+                created: "2024-01-14"
+            },
+            {
+                id: 3,
+                title: "Túi Tote Minimalist",
+                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=500&fit=crop",
+                story: "Canvas tái chế từ bao bì cũ, thiết kế tối giản nhưng đầy tinh tế",
+                tags: ["minimalist", "canvas"],
+                featured: false,
+                views: 156,
+                created: "2024-01-12"
+            },
+            {
+                id: 4,
+                title: "Áo Khoác Denim Upcycled",
+                image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=400&h=500&fit=crop",
+                story: "Biến hóa từ áo khoác denim cũ thành tác phẩm streetwear hiện đại",
+                tags: ["modern", "streetwear"],
+                featured: true,
+                views: 312,
+                created: "2024-01-10"
+            },
+            {
+                id: 5,
+                title: "Váy Cocktail Vintage",
+                image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop",
+                story: "Phục hồi từ váy cocktail thập niên 60, giữ nguyên vẻ đẹp cổ điển",
+                tags: ["vintage", "cocktail"],
+                featured: false,
+                views: 203,
+                created: "2024-01-08"
+            },
+            {
+                id: 6,
+                title: "Áo Blouse Bohemian Chic",
+                image: "https://images.unsplash.com/photo-1583743814966-8936f37f631b?w=400&h=500&fit=crop",
+                story: "Kết hợp vải lụa vintage với thêu tay truyền thống Việt Nam",
+                tags: ["boho", "silk"],
+                featured: true,
+                views: 278,
+                created: "2024-01-05"
+            }
+        ];
+
+        return sampleItems.map(item => `
+            <div class="gallery-item ${item.featured ? 'featured' : ''}" data-item-id="${item.id}" data-tags="${item.tags.join(' ')}">
+                <div class="gallery-item-image" style="background-image: url('${item.image}')">
+                    ${item.featured ? '<span class="featured-badge">Nổi bật</span>' : ''}
+                    
+                    <!-- Admin Controls -->
+                    <div class="gallery-item-controls admin-only">
+                        <button class="btn-icon btn-edit-gallery" title="Chỉnh sửa">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-icon btn-delete-gallery" title="Xóa">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- View Overlay -->
+                    <div class="gallery-overlay">
+                        <button class="btn-view-detail">
+                            <i class="fas fa-eye"></i>
+                            Xem chi tiết
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="gallery-item-info">
+                    <h3 class="gallery-item-title">${item.title}</h3>
+                    <p class="gallery-item-story">${item.story}</p>
+                    
+                    <div class="gallery-item-meta">
+                        <div class="gallery-tags">
+                            ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                        <div class="gallery-stats">
+                            <span class="view-count">
+                                <i class="fas fa-eye"></i>
+                                ${item.views}
+                            </span>
+                            <span class="create-date admin-only">
+                                <i class="fas fa-calendar"></i>
+                                ${item.created}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
     
     initGalleryFilters() {
@@ -127,6 +314,64 @@ class DepMarketplace {
         });
         
         Utils.showToast(`Lọc theo: ${filter === 'all' ? 'Tất cả' : filter}`, 'info');
+    }
+    
+    bindGalleryEvents() {
+        // Upload button
+        const uploadBtn = document.getElementById('upload-gallery-btn');
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', () => {
+                this.showUploadModal();
+            });
+        }
+        
+        // Edit/Delete buttons
+        document.querySelectorAll('.btn-edit-gallery').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
+                this.editGalleryItem(itemId);
+            });
+        });
+        
+        document.querySelectorAll('.btn-delete-gallery').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
+                this.deleteGalleryItem(itemId);
+            });
+        });
+        
+        // View detail buttons
+        document.querySelectorAll('.btn-view-detail').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
+                this.viewGalleryDetail(itemId);
+            });
+        });
+    }
+    
+    showUploadModal() {
+        Utils.showToast('Chức năng upload đang phát triển...', 'info');
+        // TODO: Implement upload modal
+    }
+    
+    editGalleryItem(itemId) {
+        Utils.showToast(`Chỉnh sửa tác phẩm ${itemId}`, 'info');
+        // TODO: Implement edit
+    }
+    
+    deleteGalleryItem(itemId) {
+        if (confirm('Bạn có chắc chắn muốn xóa tác phẩm này?')) {
+            Utils.showToast('Đã xóa tác phẩm', 'success');
+            // TODO: Implement delete
+        }
+    }
+    
+    viewGalleryDetail(itemId) {
+        Utils.showToast(`Xem chi tiết tác phẩm ${itemId}`, 'info');
+        // TODO: Show detail modal
     }
 
     initCollectionFilters() {
