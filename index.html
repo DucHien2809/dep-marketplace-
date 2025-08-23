@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đẹp - Thời trang bền vững</title>
+    <meta name="description" content="Đẹp - Marketplace thời trang bền vững. Đẹp Collection với sản phẩm tái chế độc bản và Marketplace ký gửi minh bạch, giá hợp lý.">
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/swiper/8.4.7/swiper-bundle.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Login/Register Form -->
+    <div id="auth-container" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2 id="auth-title">Đăng nhập</h2>
+                <p>Đẹp - Thời trang bền vững</p>
+            </div>
+            
+            <form id="auth-form" class="auth-form">
+                <div class="form-group">
+                    <input type="email" id="email" placeholder="Email" required>
+                    <i class="fas fa-envelope"></i>
+                </div>
+                
+                <div class="form-group">
+                    <input type="password" id="password" placeholder="Mật khẩu" required>
+                    <i class="fas fa-lock"></i>
+                </div>
+                
+                <div class="form-group" id="confirm-password-group" style="display: none;">
+                    <input type="password" id="confirmPassword" placeholder="Xác nhận mật khẩu">
+                    <i class="fas fa-lock"></i>
+                </div>
+                
+                <button type="submit" id="auth-submit" class="btn btn-primary">
+                    <span>Đăng nhập</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+            
+            <div class="auth-switch">
+                <p id="auth-switch-text">Chưa có tài khoản? 
+                    <a href="#" id="auth-switch-link">Đăng ký ngay</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app-container" class="app-container" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-leaf"></i>
+                    <span>Đẹp</span>
+                </div>
+                
+                <nav class="nav">
+                    <a href="#" class="nav-item active" data-page="home">
+                        <span>Trang chủ</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="dep-collection">
+                        <span>Đẹp Collection</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="marketplace">
+                        <span>Marketplace</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="consign">
+                        <span>Ký gửi ngay</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="blog">
+                        <span>Blog</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="support">
+                        <span>Hỗ trợ</span>
+                    </a>
+                </nav>
+                
+                <div class="header-actions">
+                    <button class="action-btn" id="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div class="user-menu">
+                        <button class="action-btn" id="user-info">
+                            <i class="fas fa-user"></i>
+                        </button>
+                        <div class="dropdown-menu" id="user-dropdown">
+                            <div class="user-info-dropdown">
+                                <div class="user-email" id="user-email">user@example.com</div>
+                                <div class="user-role" id="user-role">Khách hàng</div>
+                            </div>
+                            <hr>
+                            <a href="#" data-page="profile">
+                                <i class="fas fa-user-circle"></i>
+                                Tài khoản
+                            </a>
+                            <a href="#" data-page="orders" class="customer-only">
+                                <i class="fas fa-shopping-bag"></i>
+                                Đơn hàng của tôi
+                            </a>
+                            <a href="#" data-page="consignment-dashboard" class="customer-only">
+                                <i class="fas fa-store"></i>
+                                Quản lý ký gửi
+                            </a>
+                            <a href="#" data-page="admin-dashboard" class="admin-only">
+                                <i class="fas fa-cogs"></i>
+                                Quản trị hệ thống
+                            </a>
+                            <a href="#" data-page="manage-products" class="admin-only">
+                                <i class="fas fa-box"></i>
+                                Quản lý sản phẩm
+                            </a>
+                            <hr>
+                            <a href="#" id="logout-btn">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Đăng xuất
+                            </a>
+                        </div>
+                    </div>
+                    <button class="action-btn cart-btn" id="cart-btn">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" id="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Home Page -->
+            <div id="home-page" class="page active">
+                <!-- Hero Banner -->
+                <section class="hero-banner">
+                    <div class="hero-slider swiper">
+                        <div class="swiper-wrapper">
+                            <!-- Slide 1: Đẹp Collection -->
+                            <div class="swiper-slide hero-slide">
+                                <div class="hero-content">
+                                    <div class="hero-text">
+                                        <h1>Đẹp Collection</h1>
+                                        <p class="hero-subtitle">Độc bản tái sinh – Đẹp vì khác biệt, Đẹp vì bền vững</p>
+                                        <p class="hero-description">Khám phá bộ sưu tập thời trang tái chế độc đáo, được thiết kế với tình yêu và sự sáng tạo</p>
+                                        <button class="btn btn-hero" data-page="dep-collection">
+                                            Khám phá ngay
+                                            <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                    <div class="hero-image">
+                                        <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=800&fit=crop&crop=center" alt="Đẹp Collection">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 2: Marketplace -->
+                            <div class="swiper-slide hero-slide">
+                                <div class="hero-content">
+                                    <div class="hero-text">
+                                        <h1>Marketplace</h1>
+                                        <p class="hero-subtitle">Hàng ký gửi mới về – Minh bạch, giá hợp lý</p>
+                                        <p class="hero-description">Mua bán thời trang second-hand với giá tốt nhất, chất lượng được đảm bảo</p>
+                                        <button class="btn btn-hero buy-now-btn" data-page="marketplace">
+                                            Mua sắm ngay
+                                            <i class="fas fa-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                    <div class="hero-image">
+                                        <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&h=800&fit=crop&crop=center" alt="Marketplace">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="swiper-pagination"></div>
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                    </div>
+                </section>
+
+                <!-- Category Highlight -->
+                <section class="category-highlight">
+                    <div class="container">
+                        <h2>Danh mục nổi bật</h2>
+                        <div class="category-grid">
+                            <div class="category-card featured" data-page="dep-collection">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=300&fit=crop" alt="Bộ sưu tập Đẹp">
+                                </div>
+                                <div class="category-content">
+                                    <h3>Bộ sưu tập Đẹp</h3>
+                                    <p>Sản phẩm tái chế độc bản</p>
+                                </div>
+                            </div>
+                            
+                            <div class="category-card" data-category="sale">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=400&h=300&fit=crop" alt="Markdown hôm nay">
+                                    <span class="sale-badge">-30%</span>
+                                </div>
+                                <div class="category-content">
+                                    <h3>Markdown hôm nay</h3>
+                                    <p>Giảm giá đặc biệt</p>
+                                </div>
+                            </div>
+                            
+                            <div class="category-card" data-category="tops">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1583743814966-8936f37f631b?w=400&h=300&fit=crop" alt="Áo">
+                                </div>
+                                <div class="category-content">
+                                    <h3>Áo</h3>
+                                    <p>Áo sơ mi, áo thun, áo khoác</p>
+                                </div>
+                            </div>
+                            
+                            <div class="category-card" data-category="bottoms">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=300&fit=crop" alt="Quần">
+                                </div>
+                                <div class="category-content">
+                                    <h3>Quần</h3>
+                                    <p>Quần jean, quần tây, quần short</p>
+                                </div>
+                            </div>
+                            
+                            <div class="category-card" data-category="dresses">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=300&fit=crop" alt="Váy">
+                                </div>
+                                <div class="category-content">
+                                    <h3>Váy</h3>
+                                    <p>Váy dài, váy ngắn, váy công sở</p>
+                                </div>
+                            </div>
+                            
+                            <div class="category-card" data-category="accessories">
+                                <div class="category-image">
+                                    <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop" alt="Phụ kiện">
+                                </div>
+                                <div class="category-content">
+                                    <h3>Phụ kiện</h3>
+                                    <p>Túi xách, giày dép, trang sức</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- USP Section -->
+                <section class="usp-section">
+                    <div class="container">
+                        <div class="usp-grid">
+                            <div class="usp-item">
+                                <div class="usp-icon">
+                                    <i class="fas fa-recycle"></i>
+                                </div>
+                                <div class="usp-content">
+                                    <h3>Giảm rác thải thời trang</h3>
+                                    <p>Tái sử dụng và tái chế thời trang, góp phần bảo vệ môi trường</p>
+                                </div>
+                            </div>
+                            
+                            <div class="usp-item">
+                                <div class="usp-icon">
+                                    <i class="fas fa-credit-card"></i>
+                                </div>
+                                <div class="usp-content">
+                                    <h3>Giá minh bạch, dễ tiếp cận</h3>
+                                    <p>Giá cả hợp lý, không phí ẩn, thanh toán an toàn</p>
+                                </div>
+                            </div>
+                            
+                            <div class="usp-item">
+                                <div class="usp-icon">
+                                    <i class="fas fa-seedling"></i>
+                                </div>
+                                <div class="usp-content">
+                                    <h3>Độc bản từ tái chế</h3>
+                                    <p>Sản phẩm độc nhất chỉ có tại Đẹp, được tạo ra từ tình yêu với thời trang bền vững</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Featured Products -->
+                <section class="featured-products">
+                    <div class="container">
+                        <div class="section-header">
+                            <h2>Sản phẩm nổi bật</h2>
+                            <a href="#" class="view-all-btn" data-page="dep-collection">
+                                Xem tất cả
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                        <div class="products-grid" id="featured-products-grid">
+                            <!-- Products will be loaded dynamically -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Đẹp Collection Page -->
+            <div id="dep-collection-page" class="page">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <p>Tổng quan hoạt động kinh doanh</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-products">0</h3>
+                            <p>Tổng sản phẩm</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-orders">0</h3>
+                            <p>Đơn hàng</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-customers">0</h3>
+                            <p>Khách hàng</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-revenue">0đ</h3>
+                            <p>Doanh thu</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-content">
+                    <div class="recent-orders">
+                        <h3>Đơn hàng gần đây</h3>
+                        <div class="table-container">
+                            <table id="recent-orders-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã đơn hàng</th>
+                                        <th>Khách hàng</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày tạo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Page -->
+            <div id="products-page" class="page">
+                <div class="page-header">
+                    <h1>Quản lý Sản phẩm</h1>
+                    <button class="btn btn-primary" id="add-product-btn">
+                        <i class="fas fa-plus"></i>
+                        Thêm sản phẩm
+                    </button>
+                </div>
+                
+                <div class="filters">
+                    <div class="search-box">
+                        <input type="text" id="product-search" placeholder="Tìm kiếm sản phẩm...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="products-table">
+                        <thead>
+                            <tr>
+                                <th>Hình ảnh</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Danh mục</th>
+                                <th>Giá</th>
+                                <th>Tồn kho</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Orders Page -->
+            <div id="orders-page" class="page">
+                <div class="page-header">
+                    <h1>Quản lý Đơn hàng</h1>
+                </div>
+                
+                <div class="filters">
+                    <div class="search-box">
+                        <input type="text" id="order-search" placeholder="Tìm kiếm đơn hàng...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    
+                    <select id="order-status-filter">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="pending">Chờ xử lý</option>
+                        <option value="processing">Đang xử lý</option>
+                        <option value="shipped">Đã gửi</option>
+                        <option value="delivered">Đã giao</option>
+                        <option value="cancelled">Đã hủy</option>
+                    </select>
+                </div>
+                
+                <div class="table-container">
+                    <table id="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn hàng</th>
+                                <th>Khách hàng</th>
+                                <th>Sản phẩm</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Customers Page -->
+            <div id="customers-page" class="page">
+                <div class="page-header">
+                    <h1>Quản lý Khách hàng</h1>
+                </div>
+                
+                <div class="filters">
+                    <div class="search-box">
+                        <input type="text" id="customer-search" placeholder="Tìm kiếm khách hàng...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="customers-table">
+                        <thead>
+                            <tr>
+                                <th>Tên khách hàng</th>
+                                <th>Email</th>
+                                <th>Số điện thoại</th>
+                                <th>Địa chỉ</th>
+                                <th>Tổng đơn hàng</th>
+                                <th>Ngày đăng ký</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="product-modal-title">Thêm sản phẩm mới</h3>
+                <button class="close-btn" id="close-product-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="product-form" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product-name">Tên sản phẩm *</label>
+                        <input type="text" id="product-name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="product-category">Danh mục *</label>
+                        <input type="text" id="product-category" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product-price">Giá (VNĐ) *</label>
+                        <input type="number" id="product-price" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="product-stock">Tồn kho *</label>
+                        <input type="number" id="product-stock" min="0" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-description">Mô tả</label>
+                    <textarea id="product-description" rows="4"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-image">URL hình ảnh</label>
+                    <input type="url" id="product-image" placeholder="https://example.com/image.jpg">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-product">Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="save-product">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swiper/8.4.7/swiper-bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/dep-marketplace.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/customers.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
