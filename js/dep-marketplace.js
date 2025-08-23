@@ -173,40 +173,20 @@ class DepMarketplace {
     }
 
     generateFallbackGalleryItems() {
-        const sampleItems = [
-            {
-                id: 1,
-                title: "Áo kiểu Vintage Renaissance",
-                image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop",
-                story: "Tái sinh từ áo sơ mi linen thập niên 80, kết hợp với ren vintage từ Pháp",
-                tags: ["vintage", "renaissance"],
-                featured: true,
-                views: 245,
-                created: "2024-01-15"
-            },
-            {
-                id: 2,
-                title: "Váy Tái Chế Bohemian",
-                image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=500&fit=crop",
-                story: "Từ những mảnh vải cotton organic còn sót lại, tạo nên tác phẩm nghệ thuật mới",
-                tags: ["boho", "organic"],
-                featured: true,
-                views: 189,
-                created: "2024-01-14"
-            },
-            {
-                id: 3,
-                title: "Túi Tote Minimalist",
-                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=500&fit=crop",
-                story: "Canvas tái chế từ bao bì cũ, thiết kế tối giản nhưng đầy tinh tế",
-                tags: ["minimalist", "canvas"],
-                featured: false,
-                views: 156,
-                created: "2024-01-12"
-            }
-        ];
-
-        return sampleItems.map(item => this.renderGalleryItem(item)).join('');
+        // No more sample items - return empty state
+        return `
+            <div class="empty-collection">
+                <div class="empty-content">
+                    <i class="fas fa-box-open"></i>
+                    <h3>Bộ sưu tập đang trống</h3>
+                    <p>Hãy bắt đầu thêm những sản phẩm tái chế độc đáo của bạn!</p>
+                    <button class="btn btn-primary" onclick="collectionGallery.showUploadModal()">
+                        <i class="fas fa-plus"></i>
+                        Thêm sản phẩm đầu tiên
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
     renderGalleryItem(item) {

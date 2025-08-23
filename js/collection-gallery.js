@@ -10,6 +10,11 @@ class CollectionGallery {
         console.log('🎨 Initializing CollectionGallery...');
         this.bindEvents();
         await this.loadGalleryItems();
+        
+        // Clear any remaining sample data after loading
+        setTimeout(() => {
+            this.clearAllSampleData();
+        }, 1000);
     }
 
     bindEvents() {
@@ -183,7 +188,7 @@ class CollectionGallery {
 
                         <!-- Product Grid -->
                         <div class="product-grid" id="product-grid">
-                            ${this.generateProductItems()}
+                            ${this.generateGalleryItemsFromData()}
                         </div>
                     </div>
                 </div>
@@ -559,14 +564,18 @@ class CollectionGallery {
     editProduct(itemId) {
         console.log('✏️ Editing product:', itemId);
         
-        // Find product in data
+        // Check if this is a sample product (number ID vs UUID)  
+        const isNumericId = !isNaN(parseInt(itemId)) && parseInt(itemId) < 1000;
+        
+        if (isNumericId) {
+            Utils.showToast('❌ Không thể chỉnh sửa sản phẩm mẫu. Vui lòng thêm sản phẩm thật!', 'warning');
+            return;
+        }
+        
+        // Find product in real data only
         let product = null;
         if (this.galleryItems && this.galleryItems.length > 0) {
             product = this.galleryItems.find(item => item.id == itemId);
-        } else {
-            // Find in sample data
-            const sampleProducts = this.getSampleProducts();
-            product = sampleProducts.find(item => item.id == itemId);
         }
         
         if (!product) {
@@ -644,7 +653,18 @@ class CollectionGallery {
         try {
             Utils.showLoading(true);
             
-            // Remove from database if available
+            // Check if this is a sample product (number ID vs UUID)
+            const isNumericId = !isNaN(parseInt(itemId)) && parseInt(itemId) < 1000;
+            
+            if (isNumericId) {
+                // This is sample data - cannot delete from database
+                console.log('Cannot delete sample product with numeric ID:', itemId);
+                Utils.showToast('❌ Không thể xóa sản phẩm mẫu. Vui lòng thêm sản phẩm thật!', 'warning');
+                document.getElementById('delete-confirmation-modal').remove();
+                return;
+            }
+            
+            // Remove from database if available and it's a real UUID
             if (typeof supabase !== 'undefined' && TABLES && TABLES.GALLERY_ITEMS) {
                 const { error } = await supabase
                     .from(TABLES.GALLERY_ITEMS)
@@ -655,9 +675,10 @@ class CollectionGallery {
                 
                 // Remove from local array
                 this.galleryItems = this.galleryItems.filter(item => item.id != itemId);
+                
+                Utils.showToast('✅ Đã xóa sản phẩm thành công!', 'success');
             } else {
-                // For sample data, just refresh (can't actually delete)
-                console.log('Sample data - cannot delete permanently');
+                Utils.showToast('❌ Không thể kết nối database để xóa sản phẩm', 'error');
             }
             
             // Close modal
@@ -665,8 +686,6 @@ class CollectionGallery {
             
             // Refresh gallery
             this.refreshGallery();
-            
-            Utils.showToast('✅ Đã xóa sản phẩm thành công!', 'success');
             
         } catch (error) {
             console.error('Error deleting product:', error);
@@ -1025,13 +1044,20 @@ class CollectionGallery {
     refreshGallery() {
         const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
         if (grid) {
-            // Use real data if available, fallback to sample data
-            if (this.galleryItems && this.galleryItems.length > 0) {
-                grid.innerHTML = this.generateGalleryItemsFromData();
-            } else {
-                grid.innerHTML = this.generateProductItems();
-            }
+            // Always use real data or empty state
+            grid.innerHTML = this.generateGalleryItemsFromData();
         }
+    }
+
+    clearAllSampleData() {
+        // Force clear any remaining sample data
+        this.galleryItems = this.galleryItems ? this.galleryItems.filter(item => {
+            // Keep only items with UUID (database items)
+            return typeof item.id === 'string' && item.id.length > 10;
+        }) : [];
+        
+        this.refreshGallery();
+        console.log('🧹 Cleared all sample data, remaining items:', this.galleryItems.length);
     }
 
     async loadGalleryItems() {
