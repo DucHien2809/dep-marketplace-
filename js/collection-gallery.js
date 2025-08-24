@@ -101,9 +101,7 @@ class CollectionGallery {
             }
         });
         
-        if (window.Utils) {
-            Utils.showToast(`Lọc theo: ${filter === 'all' ? 'Tất cả' : filter}`, 'info');
-        }
+        // Toast notification removed as requested by user
     }
 
     createGalleryPage() {
@@ -140,16 +138,12 @@ class CollectionGallery {
                         <!-- Gallery Stats (Admin only) -->
                         <div class="gallery-stats admin-only">
                             <div class="stat-card">
-                                <span class="stat-number" id="total-items">12</span>
-                                <span class="stat-label">Tổng tác phẩm</span>
+                                <span class="stat-number" id="total-items">0</span>
+                                <span class="stat-label">Tổng sản phẩm</span>
                             </div>
                             <div class="stat-card">
-                                <span class="stat-number" id="featured-items">5</span>
+                                <span class="stat-number" id="featured-items">0</span>
                                 <span class="stat-label">Nổi bật</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-number" id="total-views">1,234</span>
-                                <span class="stat-label">Lượt xem</span>
                             </div>
                         </div>
 
@@ -368,14 +362,14 @@ class CollectionGallery {
                             <!-- Form Fields -->
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>Tiêu đề tác phẩm *</label>
+                                    <label>Tiêu đề sản phẩm *</label>
                                     <input type="text" id="item-title" placeholder="VD: Áo kiểu Vintage Renaissance" required>
                                 </div>
                             </div>
                             
                             <div class="form-group">
                                 <label>Câu chuyện tái chế *</label>
-                                <textarea id="item-story" placeholder="Kể về hành trình tái sinh của tác phẩm này..." rows="4" required></textarea>
+                                <textarea id="item-story" placeholder="Kể về hành trình tái sinh của sản phẩm này..." rows="4" required></textarea>
                             </div>
                             
                             <div class="form-row">
@@ -511,7 +505,7 @@ class CollectionGallery {
 
             if (error) throw error;
 
-            Utils.showToast('Đã lưu tác phẩm thành công!', 'success');
+            Utils.showToast('Đã lưu sản phẩm thành công!', 'success');
             document.getElementById('upload-gallery-modal').remove();
             
             // Refresh gallery
@@ -520,7 +514,7 @@ class CollectionGallery {
 
         } catch (error) {
             console.error('Error saving gallery item:', error);
-            Utils.showToast('Có lỗi xảy ra khi lưu tác phẩm: ' + error.message, 'error');
+            Utils.showToast('Có lỗi xảy ra khi lưu sản phẩm: ' + error.message, 'error');
         } finally {
             Utils.showLoading(false);
         }

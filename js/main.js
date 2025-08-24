@@ -115,6 +115,9 @@ function initAuthForm() {
 }
 
 function initGlobalEvents() {
+    // Initialize gallery filter buttons
+    initGalleryFilters();
+    
     // Handle keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         // Ctrl/Cmd + K for quick search
@@ -215,6 +218,66 @@ function checkUnsavedChanges() {
         }
     }
     return false;
+}
+
+function initGalleryFilters() {
+    console.log('🔧 Initializing gallery filters...');
+    
+    // Handle gallery filter tag clicks
+    document.addEventListener('click', function(e) {
+        console.log('🖱️ Click detected on:', e.target);
+        
+        // Check if clicked element is a filter tag
+        if (e.target.classList.contains('filter-tag')) {
+            console.log('✅ Filter tag clicked!', e.target);
+            e.preventDefault();
+            
+            // Remove active class from all filter tags
+            document.querySelectorAll('.filter-tag').forEach(tag => {
+                tag.classList.remove('active');
+                console.log('🗑️ Removed active from:', tag);
+            });
+            
+            // Add active class to clicked tag
+            e.target.classList.add('active');
+            console.log('✨ Added active to:', e.target);
+            
+            // Get filter value
+            const filterValue = e.target.getAttribute('data-filter');
+            console.log('🔍 Filter value:', filterValue);
+            
+            // Apply filter logic (if available)
+            if (window.collectionGallery && window.collectionGallery.filterGalleryItems) {
+                window.collectionGallery.filterGalleryItems(filterValue);
+            } else if (window.depMarketplace && window.depMarketplace.filterGalleryItems) {
+                window.depMarketplace.filterGalleryItems(filterValue);
+            } else {
+                // Fallback: simple filter by data-tags attribute
+                filterGalleryItems(filterValue);
+            }
+            
+            console.log('🔍 Gallery filter applied:', filterValue);
+        }
+    });
+}
+
+function filterGalleryItems(filter) {
+    const items = document.querySelectorAll('.gallery-item');
+    
+    items.forEach(item => {
+        if (filter === 'all') {
+            item.style.display = 'block';
+        } else {
+            const tags = item.getAttribute('data-tags');
+            if (tags && tags.includes(filter)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        }
+    });
+    
+    // Toast notification removed as requested by user
 }
 
 function debounce(func, wait, immediate) {

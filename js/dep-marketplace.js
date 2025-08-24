@@ -298,16 +298,12 @@ class DepMarketplace {
                         <!-- Gallery Stats (Admin only) -->
                         <div class="gallery-stats admin-only">
                             <div class="stat-card">
-                                <span class="stat-number" id="total-items">6</span>
-                                <span class="stat-label">Tổng tác phẩm</span>
+                                <span class="stat-number" id="total-items">0</span>
+                                <span class="stat-label">Tổng sản phẩm</span>
                             </div>
                             <div class="stat-card">
-                                <span class="stat-number" id="featured-items">4</span>
+                                <span class="stat-number" id="featured-items">0</span>
                                 <span class="stat-label">Nổi bật</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-number" id="total-views">1,234</span>
-                                <span class="stat-label">Lượt xem</span>
                             </div>
                         </div>
 
@@ -370,7 +366,7 @@ class DepMarketplace {
                 id: 2,
                 title: "Váy Tái Chế Bohemian",
                 image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=500&fit=crop",
-                story: "Từ những mảnh vải cotton organic còn sót lại, tạo nên tác phẩm nghệ thuật mới",
+                story: "Từ những mảnh vải cotton organic còn sót lại, tạo nên sản phẩm nghệ thuật mới",
                 tags: ["boho", "organic"],
                 featured: true,
                 views: 189,
@@ -390,7 +386,7 @@ class DepMarketplace {
                 id: 4,
                 title: "Áo Khoác Denim Upcycled",
                 image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=400&h=500&fit=crop",
-                story: "Biến hóa từ áo khoác denim cũ thành tác phẩm streetwear hiện đại",
+                story: "Biến hóa từ áo khoác denim cũ thành sản phẩm streetwear hiện đại",
                 tags: ["modern", "streetwear"],
                 featured: true,
                 views: 312,
@@ -534,7 +530,7 @@ class DepMarketplace {
             }
         });
         
-        Utils.showToast(`Lọc theo: ${filter === 'all' ? 'Tất cả' : filter}`, 'info');
+        // Toast notification removed as requested by user
     }
     
     bindGalleryEvents() {
@@ -583,19 +579,19 @@ class DepMarketplace {
     }
     
     editGalleryItem(itemId) {
-        Utils.showToast(`Chỉnh sửa tác phẩm ${itemId}`, 'info');
+        Utils.showToast(`Chỉnh sửa sản phẩm ${itemId}`, 'info');
         // TODO: Implement edit
     }
     
     deleteGalleryItem(itemId) {
-        if (confirm('Bạn có chắc chắn muốn xóa tác phẩm này?')) {
-            Utils.showToast('Đã xóa tác phẩm', 'success');
+        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+            Utils.showToast('Đã xóa sản phẩm', 'success');
             // TODO: Implement delete
         }
     }
     
     viewGalleryDetail(itemId) {
-        Utils.showToast(`Xem chi tiết tác phẩm ${itemId}`, 'info');
+        Utils.showToast(`Xem chi tiết sản phẩm ${itemId}`, 'info');
         // TODO: Show detail modal
     }
     
@@ -603,15 +599,310 @@ class DepMarketplace {
         // Create and show Marketplace page
         this.createPage('marketplace');
         
-        // Initialize marketplace functionality
+        // Generate sample marketplace products
         setTimeout(() => {
+            this.generateMarketplaceProducts();
             this.initMarketplaceFilters();
         }, 100);
     }
     
+    generateMarketplaceProducts() {
+        console.log('🛍️ Initializing marketplace products container...');
+        
+        const productsContainer = document.getElementById('marketplace-products');
+        if (!productsContainer) {
+            console.error('❌ Marketplace products container not found');
+            return;
+        }
+
+        // Empty marketplace - no sample products
+        productsContainer.innerHTML = `
+            <div class="empty-marketplace">
+                <div class="empty-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+                <h3>Marketplace đang được chuẩn bị</h3>
+                <p>Sản phẩm sẽ sớm được cập nhật. Vui lòng quay lại sau!</p>
+            </div>
+        `;
+
+        // Update products count
+        const countElement = document.getElementById('products-count');
+        if (countElement) {
+            countElement.textContent = '0 sản phẩm';
+        }
+        
+        console.log('✅ Marketplace products container initialized (empty)');
+    }
+
+    getTagLabel(tag) {
+        const labels = {
+            'new': 'Mới ký gửi',
+            'markdown': 'Markdown 20%',
+            'vintage': 'Vintage'
+        };
+        return labels[tag] || tag;
+    }
+
+    getConditionLabel(condition) {
+        const labels = {
+            'new': '90% mới',
+            'good': 'Tốt',
+            'vintage': 'Vintage'
+        };
+        return labels[condition] || condition;
+    }
+
+    formatPrice(price) {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(price);
+    }
+
+    bindMarketplaceEvents() {
+        // Buy now buttons
+        document.querySelectorAll('.btn-buy').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const productId = btn.getAttribute('data-product-id');
+                this.handleBuyNow(productId);
+            });
+        });
+
+        // Chat buttons
+        document.querySelectorAll('.btn-chat').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const sellerName = btn.getAttribute('data-seller');
+                this.handleChatWithSeller(sellerName);
+            });
+        });
+
+        // Product cards
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const productId = card.getAttribute('data-product-id');
+                this.showProductDetail(productId);
+            });
+        });
+    }
+
+    handleBuyNow(productId) {
+        // TODO: Implement checkout flow
+    }
+
+    handleChatWithSeller(sellerName) {
+        // TODO: Implement chat system
+    }
+
+    showProductDetail(productId) {
+        // TODO: Implement product detail modal
+    }
+    
     initMarketplaceFilters() {
-        // TODO: Add marketplace filter functionality
-        Utils.showToast('Marketplace đang phát triển...', 'info');
+        console.log('🔧 Initializing marketplace filters...');
+        
+        // Filter checkboxes
+        document.querySelectorAll('.filter-option input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                this.applyFilters();
+            });
+        });
+
+        // Size buttons
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                this.applyFilters();
+            });
+        });
+
+        // Price sliders
+        const priceMin = document.getElementById('price-min');
+        const priceMax = document.getElementById('price-max');
+        const priceMinLabel = document.getElementById('price-min-label');
+        const priceMaxLabel = document.getElementById('price-max-label');
+
+        if (priceMin && priceMax && priceMinLabel && priceMaxLabel) {
+            [priceMin, priceMax].forEach(slider => {
+                slider.addEventListener('input', () => {
+                    priceMinLabel.textContent = this.formatPrice(parseInt(priceMin.value));
+                    priceMaxLabel.textContent = this.formatPrice(parseInt(priceMax.value));
+                    this.applyFilters();
+                });
+            });
+        }
+
+        // Sort select
+        const sortSelect = document.getElementById('marketplace-sort');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', () => {
+                this.applySorting(sortSelect.value);
+            });
+        }
+
+        // Clear filters button
+        const clearBtn = document.getElementById('clear-all-filters');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                this.clearAllFilters();
+            });
+        }
+
+        console.log('✅ Marketplace filters initialized');
+    }
+
+    applyFilters() {
+        const products = document.querySelectorAll('.product-card');
+        const activeFilters = this.getActiveFilters();
+        let visibleCount = 0;
+
+        products.forEach(product => {
+            const isVisible = this.productMatchesFilters(product, activeFilters);
+            product.style.display = isVisible ? 'block' : 'none';
+            if (isVisible) visibleCount++;
+        });
+
+        // Update results count
+        const countElement = document.getElementById('products-count');
+        if (countElement) {
+            countElement.textContent = `${visibleCount} sản phẩm`;
+        }
+
+        // Active filters display removed per user request
+    }
+
+    getActiveFilters() {
+        const filters = {
+            categories: [],
+            brands: [],
+            conditions: [],
+            sizes: [],
+            priceMin: 0,
+            priceMax: 5000000
+        };
+
+        // Get checked categories
+        document.querySelectorAll('.filter-option input[value]:checked').forEach(input => {
+            const value = input.value;
+            const section = input.closest('.filter-section');
+            const title = section.querySelector('.filter-title').textContent.toLowerCase();
+
+            if (title.includes('danh mục')) {
+                filters.categories.push(value);
+            } else if (title.includes('thương hiệu')) {
+                filters.brands.push(value);
+            } else if (title.includes('tình trạng')) {
+                filters.conditions.push(value);
+            }
+        });
+
+        // Get active sizes
+        document.querySelectorAll('.size-btn.active').forEach(btn => {
+            filters.sizes.push(btn.getAttribute('data-size'));
+        });
+
+        // Get price range
+        const priceMin = document.getElementById('price-min');
+        const priceMax = document.getElementById('price-max');
+        if (priceMin && priceMax) {
+            filters.priceMin = parseInt(priceMin.value);
+            filters.priceMax = parseInt(priceMax.value);
+        }
+
+        return filters;
+    }
+
+    productMatchesFilters(product, filters) {
+        const category = product.getAttribute('data-category');
+        const brand = product.getAttribute('data-brand').toLowerCase();
+        const condition = product.getAttribute('data-condition');
+        const size = product.getAttribute('data-size');
+        const price = parseInt(product.getAttribute('data-price'));
+
+        // Check category
+        if (filters.categories.length > 0 && !filters.categories.includes(category)) {
+            return false;
+        }
+
+        // Check brand
+        if (filters.brands.length > 0 && !filters.brands.includes(brand)) {
+            return false;
+        }
+
+        // Check condition
+        if (filters.conditions.length > 0 && !filters.conditions.includes(condition)) {
+            return false;
+        }
+
+        // Check size
+        if (filters.sizes.length > 0 && !filters.sizes.includes(size)) {
+            return false;
+        }
+
+        // Check price range
+        if (price < filters.priceMin || price > filters.priceMax) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // updateActiveFiltersDisplay removed per user request
+
+    applySorting(sortBy) {
+        const container = document.getElementById('marketplace-products');
+        if (!container) return;
+
+        const products = Array.from(container.querySelectorAll('.product-card'));
+        
+        products.sort((a, b) => {
+            const priceA = parseInt(a.getAttribute('data-price'));
+            const priceB = parseInt(b.getAttribute('data-price'));
+
+            switch (sortBy) {
+                case 'price-low':
+                    return priceA - priceB;
+                case 'price-high':
+                    return priceB - priceA;
+                case 'newest':
+                default:
+                    return 0; // Keep original order for newest
+            }
+        });
+
+        // Reorder DOM elements
+        products.forEach(product => {
+            container.appendChild(product);
+        });
+    }
+
+    clearAllFilters() {
+        // Clear checkboxes
+        document.querySelectorAll('.filter-option input[type="checkbox"]').forEach(input => {
+            input.checked = false;
+        });
+
+        // Clear size buttons
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Reset price sliders
+        const priceMin = document.getElementById('price-min');
+        const priceMax = document.getElementById('price-max');
+        if (priceMin && priceMax) {
+            priceMin.value = 0;
+            priceMax.value = 5000000;
+            document.getElementById('price-min-label').textContent = '0đ';
+            document.getElementById('price-max-label').textContent = '5,000,000đ';
+        }
+
+        // Apply filters to show all products
+        this.applyFilters();
+
+        // Filter cleared silently
     }
 
     initCollectionFilters() {
@@ -645,27 +936,17 @@ class DepMarketplace {
 
     applyFilters() {
         // This would normally filter products from database
-        // For now, just show toast
-        Utils.showToast('Đang áp dụng bộ lọc...', 'info');
-        setTimeout(() => {
-            this.updateResultsCount();
-        }, 500);
+        this.updateResultsCount();
     }
 
     applySorting() {
-        Utils.showToast('Đang sắp xếp sản phẩm...', 'info');
-        setTimeout(() => {
-            this.updateResultsCount();
-        }, 500);
+        this.updateResultsCount();
     }
 
     applySearch() {
         const searchInput = document.getElementById('collection-search');
         if (searchInput && searchInput.value.length > 2) {
-            Utils.showToast(`Tìm kiếm: "${searchInput.value}"`, 'info');
-            setTimeout(() => {
-                this.updateResultsCount();
-            }, 500);
+            this.updateResultsCount();
         }
     }
 
@@ -966,11 +1247,11 @@ class DepMarketplace {
                 ],
                 style: "vintage",
                 origin: "Làm từ áo sơ mi linen cũ, thêu ren vintage",
-                description: "Một tác phẩm nghệ thuật tái chế độc đáo, được tạo ra từ chiếc áo sơ mi linen vintage. Mỗi chi tiết thêu ren đều được làm thủ công bởi các nghệ nhân có kinh nghiệm.",
+                description: "Một sản phẩm nghệ thuật tái chế độc đáo, được tạo ra từ chiếc áo sơ mi linen vintage. Mỗi chi tiết thêu ren đều được làm thủ công bởi các nghệ nhân có kinh nghiệm.",
                 material: "Linen tái chế 80%, Ren vintage 15%, Cotton organic 5%",
                 sizes: ["S", "M", "L"],
                 care: "Giặt tay với nước lạnh, phơi trong bóng râm",
-                story: "Chiếc áo này được tái sinh từ một chiếc áo sơ mi linen của thập niên 80, được phát hiện tại một cửa hàng đồ cũ ở Paris. Sau quá trình tái tạo tỉ mỉ, nó đã trở thành một tác phẩm hoàn toàn mới với phong cách vintage hiện đại.",
+                story: "Chiếc áo này được tái sinh từ một chiếc áo sơ mi linen của thập niên 80, được phát hiện tại một cửa hàng đồ cũ ở Paris. Sau quá trình tái tạo tỉ mỉ, nó đã trở thành một sản phẩm hoàn toàn mới với phong cách vintage hiện đại.",
                 isNew: true,
                 mixMatch: [2, 6] // IDs of suggested products
             },
@@ -1458,111 +1739,9 @@ class DepMarketplace {
         `;
     }
 
-    createBlogPage() {
-        return `
-            <div id="blog-page" class="page">
-                <div class="page-hero">
-                    <div class="container">
-                        <div class="page-hero-content">
-                            <h1>Blog</h1>
-                            <p class="page-subtitle">Cảm hứng thời trang bền vững</p>
-                            <p class="page-description">
-                                Khám phá những câu chuyện, mẹo phối đồ và xu hướng thời trang bền vững
-                            </p>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="blog-content">
-                    <div class="container">
-                        <div class="blog-categories">
-                            <a href="#" class="category-tag active" data-category="all">Tất cả</a>
-                            <a href="#" class="category-tag" data-category="styling">Phối đồ</a>
-                            <a href="#" class="category-tag" data-category="sustainability">Bền vững</a>
-                            <a href="#" class="category-tag" data-category="care">Chăm sóc</a>
-                            <a href="#" class="category-tag" data-category="stories">Câu chuyện</a>
-                        </div>
 
-                        <div class="blog-grid" id="blog-posts">
-                            <!-- Blog posts will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
 
-    createSupportPage() {
-        return `
-            <div id="support-page" class="page">
-                <div class="page-hero">
-                    <div class="container">
-                        <div class="page-hero-content">
-                            <h1>Hỗ trợ</h1>
-                            <p class="page-subtitle">Chúng tôi sẵn sàng giúp đỡ bạn</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="support-content">
-                    <div class="container">
-                        <div class="support-layout">
-                            <div class="support-sidebar">
-                                <div class="contact-methods">
-                                    <h3>Liên hệ trực tiếp</h3>
-                                    <div class="contact-item">
-                                        <i class="fas fa-phone"></i>
-                                        <div>
-                                            <strong>Hotline</strong>
-                                            <p>1900 1234</p>
-                                        </div>
-                                    </div>
-                                    <div class="contact-item">
-                                        <i class="fab fa-facebook-messenger"></i>
-                                        <div>
-                                            <strong>Facebook Messenger</strong>
-                                            <p>Chat ngay</p>
-                                        </div>
-                                    </div>
-                                    <div class="contact-item">
-                                        <i class="fas fa-envelope"></i>
-                                        <div>
-                                            <strong>Email</strong>
-                                            <p>support@dep.vn</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="support-main">
-                                <div class="faq-section">
-                                    <h2>Câu hỏi thường gặp</h2>
-                                    
-                                    <div class="faq-category">
-                                        <h3>Mua hàng</h3>
-                                        <div class="faq-item">
-                                            <div class="faq-question">Làm thế nào để đặt hàng?</div>
-                                            <div class="faq-answer">Bạn có thể duyệt sản phẩm, thêm vào giỏ hàng và thanh toán an toàn qua hệ thống của chúng tôi.</div>
-                                        </div>
-                                        <!-- More FAQ items -->
-                                    </div>
-
-                                    <div class="faq-category">
-                                        <h3>Ký gửi</h3>
-                                        <div class="faq-item">
-                                            <div class="faq-question">Điều kiện ký gửi sản phẩm là gì?</div>
-                                            <div class="faq-answer">Sản phẩm phải còn tình trạng tốt, có ảnh chụp rõ ràng và mô tả chi tiết.</div>
-                                        </div>
-                                        <!-- More FAQ items -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
 
     // Load Page Data Methods
     loadHomePage() {
@@ -1639,7 +1818,6 @@ class DepMarketplace {
     filterByCategory(category) {
         this.currentCategory = category;
         // Implement category filtering logic
-        Utils.showToast(`Đang lọc theo danh mục: ${category}`, 'info');
     }
 
     showSearchModal() {

@@ -7,6 +7,10 @@
     <meta name="description" content="Đẹp - Marketplace thời trang bền vững. Đẹp Collection với sản phẩm tái chế độc bản và Marketplace ký gửi minh bạch, giá hợp lý.">
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/gallery.css">
+    <link rel="stylesheet" href="styles/marketplace.css">
+    <link rel="stylesheet" href="styles/consign.css">
+    <link rel="stylesheet" href="styles/blog.css">
+    <link rel="stylesheet" href="styles/support.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/swiper/8.4.7/swiper-bundle.min.css" rel="stylesheet">
 </head>
@@ -191,7 +195,7 @@
                         <div class="category-grid">
                             <div class="category-card featured" data-page="dep-collection">
                                 <div class="category-image">
-                                    <img src="https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=300&fit=crop" alt="Bộ sưu tập Đẹp">
+                                    <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&h=400&fit=crop&crop=center" alt="Bộ sưu tập Đẹp">
                                 </div>
                                 <div class="category-content">
                                     <h3>Bộ sưu tập Đẹp</h3>
@@ -201,7 +205,7 @@
                             
                             <div class="category-card" data-category="sale">
                                 <div class="category-image">
-                                    <img src="https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=400&h=300&fit=crop" alt="Markdown hôm nay">
+                                    <img src="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=500&h=400&fit=crop&crop=center" alt="Markdown hôm nay">
                                     <span class="sale-badge">-30%</span>
                                 </div>
                                 <div class="category-content">
@@ -212,7 +216,7 @@
                             
                             <div class="category-card" data-category="tops">
                                 <div class="category-image">
-                                    <img src="https://images.unsplash.com/photo-1583743814966-8936f37f631b?w=400&h=300&fit=crop" alt="Áo">
+                                    <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=400&fit=crop&crop=center" alt="Áo">
                                 </div>
                                 <div class="category-content">
                                     <h3>Áo</h3>
@@ -222,7 +226,7 @@
                             
                             <div class="category-card" data-category="bottoms">
                                 <div class="category-image">
-                                    <img src="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=300&fit=crop" alt="Quần">
+                                    <img src="https://images.unsplash.com/photo-1542272604-787c3835535d?w=500&h=400&fit=crop&crop=center" alt="Quần">
                                 </div>
                                 <div class="category-content">
                                     <h3>Quần</h3>
@@ -232,7 +236,7 @@
                             
                             <div class="category-card" data-category="dresses">
                                 <div class="category-image">
-                                    <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=300&fit=crop" alt="Váy">
+                                    <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&h=400&fit=crop&crop=center" alt="Váy">
                                 </div>
                                 <div class="category-content">
                                     <h3>Váy</h3>
@@ -242,7 +246,7 @@
                             
                             <div class="category-card" data-category="accessories">
                                 <div class="category-image">
-                                    <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop" alt="Phụ kiện">
+                                    <img src="https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=500&h=400&fit=crop&crop=center" alt="Phụ kiện">
                                 </div>
                                 <div class="category-content">
                                     <h3>Phụ kiện</h3>
@@ -313,7 +317,7 @@
                 <div class="gallery-hero" style="padding: 80px 0; text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
                     <div class="container">
                         <h1 style="font-size: 3rem; margin-bottom: 20px; color: #2d5a5a;">Đẹp Collection</h1>
-                        <p style="font-size: 1.2rem; color: #6c757d; margin-bottom: 30px;">Trưng bày những tác phẩm tái chế độc đáo</p>
+                        <p style="font-size: 1.2rem; color: #6c757d; margin-bottom: 30px;">Trưng bày những sản phẩm tái chế độc đáo</p>
                         
                         <!-- Admin Controls -->
                         <div class="admin-controls admin-only" style="margin-bottom: 30px;">
@@ -333,30 +337,753 @@
                         <!-- Gallery Stats (Admin only) -->
                         <div class="gallery-stats admin-only" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
                             <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
-                                <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">6</span>
-                                <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Tổng tác phẩm</span>
+                                <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">0</span>
+                                <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Tổng sản phẩm</span>
                             </div>
                             <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
-                                <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">4</span>
+                                <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">0</span>
                                 <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Nổi bật</span>
-                            </div>
-                            <div class="stat-card" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center;">
-                                <span class="stat-number" style="display: block; font-size: 2.5rem; font-weight: 700; color: #28a745; margin-bottom: 5px;">1,234</span>
-                                <span class="stat-label" style="color: #6c757d; font-size: 0.9rem;">Lượt xem</span>
                             </div>
                         </div>
                         
                         <!-- Filter Tags -->
-                        <div class="gallery-filters" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap;">
-                            <button class="filter-tag active" data-filter="all" style="padding: 10px 20px; border: 2px solid #28a745; background: #28a745; color: white; border-radius: 25px; cursor: pointer;">Tất cả</button>
-                            <button class="filter-tag" data-filter="vintage" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Vintage</button>
-                            <button class="filter-tag" data-filter="modern" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Hiện đại</button>
-                            <button class="filter-tag" data-filter="boho" style="padding: 10px 20px; border: 2px solid #ddd; background: white; color: #333; border-radius: 25px; cursor: pointer;">Boho</button>
+                        <div class="gallery-filters">
+                            <button class="filter-tag active" data-filter="all">Tất cả</button>
+                            <button class="filter-tag" data-filter="vintage">Vintage</button>
+                            <button class="filter-tag" data-filter="modern">Hiện đại</button>
+                            <button class="filter-tag" data-filter="boho">Boho</button>
                         </div>
                         
                         <!-- Gallery Grid -->
                         <div class="gallery-grid" id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px;">
                             <!-- Gallery items will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marketplace Page -->
+            <div id="marketplace-page" class="page">
+                <!-- Hero Section -->
+                <div class="marketplace-hero">
+                    <div class="container">
+                        <div class="hero-content">
+                            <h1>Marketplace</h1>
+                            <p class="hero-subtitle">Hàng ký gửi mới về – Minh bạch, giá hợp lý</p>
+                            <p class="hero-description">
+                                Khám phá những món đồ thời trang chất lượng cao từ cộng đồng, 
+                                được kiểm duyệt kỹ lưỡng với giá cả hợp lý.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="marketplace-content">
+                    <div class="container">
+                        <div class="marketplace-layout">
+                            <!-- Sidebar Filters -->
+                            <aside class="marketplace-sidebar">
+                                <!-- Category Filter -->
+                                <div class="filter-section">
+                                    <h3 class="filter-title">Danh mục</h3>
+                                    <div class="filter-options">
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="tops">
+                                            <span class="checkmark"></span>
+                                            Áo
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="bottoms">
+                                            <span class="checkmark"></span>
+                                            Quần
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="dresses">
+                                            <span class="checkmark"></span>
+                                            Váy
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="accessories">
+                                            <span class="checkmark"></span>
+                                            Phụ kiện
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="shoes">
+                                            <span class="checkmark"></span>
+                                            Giày dép
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Brand Filter -->
+                                <div class="filter-section">
+                                    <h3 class="filter-title">Thương hiệu</h3>
+                                    <div class="filter-options">
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="zara">
+                                            <span class="checkmark"></span>
+                                            Zara
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="hm">
+                                            <span class="checkmark"></span>
+                                            H&M
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="uniqlo">
+                                            <span class="checkmark"></span>
+                                            Uniqlo
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="mango">
+                                            <span class="checkmark"></span>
+                                            Mango
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="other">
+                                            <span class="checkmark"></span>
+                                            Khác
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Size Filter -->
+                                <div class="filter-section">
+                                    <h3 class="filter-title">Kích thước</h3>
+                                    <div class="size-filters">
+                                        <button class="size-btn" data-size="XS">XS</button>
+                                        <button class="size-btn" data-size="S">S</button>
+                                        <button class="size-btn" data-size="M">M</button>
+                                        <button class="size-btn" data-size="L">L</button>
+                                        <button class="size-btn" data-size="XL">XL</button>
+                                        <button class="size-btn" data-size="XXL">XXL</button>
+                                    </div>
+                                </div>
+
+                                <!-- Price Filter -->
+                                <div class="filter-section">
+                                    <h3 class="filter-title">Giá</h3>
+                                    <div class="price-range">
+                                        <input type="range" id="price-min" min="0" max="5000000" value="0" class="price-slider">
+                                        <input type="range" id="price-max" min="0" max="5000000" value="5000000" class="price-slider">
+                                        <div class="price-labels">
+                                            <span id="price-min-label">0đ</span>
+                                            <span id="price-max-label">5,000,000đ</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Condition Filter -->
+                                <div class="filter-section">
+                                    <h3 class="filter-title">Tình trạng</h3>
+                                    <div class="filter-options">
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="new">
+                                            <span class="checkmark"></span>
+                                            90% mới
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="good">
+                                            <span class="checkmark"></span>
+                                            Tốt
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="vintage">
+                                            <span class="checkmark"></span>
+                                            Vintage
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="markdown">
+                                            <span class="checkmark"></span>
+                                            Markdown
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Clear Filters -->
+                                <button class="clear-filters-btn" id="clear-all-filters">
+                                    <i class="fas fa-times"></i>
+                                    Xóa tất cả bộ lọc
+                                </button>
+                            </aside>
+
+                            <!-- Main Content -->
+                            <main class="marketplace-main">
+                                <!-- Sort & Results Bar -->
+                                <div class="results-header">
+                                    <div class="results-info">
+                                        <span id="products-count">0 sản phẩm</span>
+                                    </div>
+                                    <div class="sort-controls">
+                                        <label for="marketplace-sort">Sắp xếp theo:</label>
+                                        <select id="marketplace-sort" class="sort-select">
+                                            <option value="newest">Mới nhất</option>
+                                            <option value="price-low">Giá thấp đến cao</option>
+                                            <option value="price-high">Giá cao đến thấp</option>
+                                            <option value="popular">Phổ biến nhất</option>
+                                            <option value="discount">Giảm giá nhiều</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Products Grid -->
+                                <div class="marketplace-products" id="marketplace-products">
+                                    <!-- Products will be loaded here -->
+                                </div>
+
+                                <!-- Load More Button -->
+                                <div class="load-more-section">
+                                    <button class="load-more-btn" id="load-more-products">
+                                        Xem thêm sản phẩm
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Pagination -->
+                                <div class="pagination" id="marketplace-pagination">
+                                    <!-- Pagination will be generated here -->
+                                </div>
+                            </main>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consign Page -->
+            <div id="consign-page" class="page">
+                <!-- Hero Section -->
+                <div class="consign-hero">
+                    <div class="container">
+                        <div class="hero-content">
+                            <h1>Ký gửi ngay</h1>
+                            <p class="hero-subtitle">Bán đồ của bạn dễ dàng và hiệu quả</p>
+                            <p class="hero-description">
+                                Đăng sản phẩm của bạn lên Đẹp Marketplace. Chúng tôi sẽ hỗ trợ bán và bạn nhận được phần lớn lợi nhuận.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="consign-content">
+                    <div class="container">
+                        <div class="consign-layout">
+                            <!-- Upload Form -->
+                            <div class="upload-section full-width">
+                                <div class="section-header">
+                                    <h2>Đăng sản phẩm mới</h2>
+                                    <p>Điền thông tin chi tiết để sản phẩm của bạn được nhiều người quan tâm</p>
+                                </div>
+
+                                <form class="consign-form" id="consign-form">
+                                    <!-- Image Upload Section -->
+                                    <div class="form-section">
+                                        <h3>Hình ảnh sản phẩm <span class="required">*</span></h3>
+                                        <p class="form-help">Tải lên từ 3 đến 10 ảnh. Ảnh chất lượng cao sẽ giúp sản phẩm bán nhanh hơn.</p>
+                                        
+                                        <div class="image-upload-area">
+                                            <div class="upload-zone" id="upload-zone">
+                                                <div class="upload-placeholder">
+                                                    <i class="fas fa-cloud-upload-alt"></i>
+                                                    <p>Kéo thả ảnh vào đây hoặc click để chọn</p>
+                                                    <p class="upload-note">JPG, PNG, WEBP (Max 5MB mỗi ảnh)</p>
+                                                </div>
+                                                <input type="file" id="product-images" name="images" multiple accept="image/*" style="display: none;">
+                                            </div>
+                                            
+                                            <div class="image-preview" id="image-preview">
+                                                <!-- Preview images will be shown here -->
+                                            </div>
+                                        </div>
+
+                                        <!-- Photo Guide -->
+                                        <div class="photo-guide">
+                                            <h4>💡 Hướng dẫn chụp ảnh chuẩn:</h4>
+                                            <ul>
+                                                <li>📸 Sử dụng ánh sáng tự nhiên, nền sáng</li>
+                                                <li>👕 Chụp cận cảnh và toàn cảnh sản phẩm</li>
+                                                <li>🏷️ Chụp nhãn thương hiệu và size</li>
+                                                <li>🔍 Chụp chi tiết khuyết điểm (nếu có)</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Product Details -->
+                                    <div class="form-section">
+                                        <h3>Thông tin sản phẩm</h3>
+                                        
+                                        <div class="form-group">
+                                            <label for="product-title">Tiêu đề sản phẩm <span class="required">*</span></label>
+                                            <input type="text" id="product-title" name="title" placeholder="VD: Áo sơ mi H&M size M màu trắng" maxlength="100" required>
+                                            <div class="char-count">0/100</div>
+                                        </div>
+
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="product-brand">Thương hiệu</label>
+                                                <input type="text" id="product-brand" name="brand" placeholder="VD: Zara, H&M, Uniqlo">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="product-size">Kích thước <span class="required">*</span></label>
+                                                <select id="product-size" name="size" required>
+                                                    <option value="">Chọn size</option>
+                                                    <option value="XS">XS</option>
+                                                    <option value="S">S</option>
+                                                    <option value="M">M</option>
+                                                    <option value="L">L</option>
+                                                    <option value="XL">XL</option>
+                                                    <option value="XXL">XXL</option>
+                                                    <option value="Freesize">Freesize</option>
+                                                    <option value="Other">Khác</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="product-category">Danh mục <span class="required">*</span></label>
+                                            <div class="category-tags">
+                                                <label class="tag-option">
+                                                    <input type="radio" name="category" value="tops" required>
+                                                    <span class="tag">👔 Áo</span>
+                                                </label>
+                                                <label class="tag-option">
+                                                    <input type="radio" name="category" value="bottoms" required>
+                                                    <span class="tag">👖 Quần</span>
+                                                </label>
+                                                <label class="tag-option">
+                                                    <input type="radio" name="category" value="dresses" required>
+                                                    <span class="tag">👗 Váy</span>
+                                                </label>
+                                                <label class="tag-option">
+                                                    <input type="radio" name="category" value="accessories" required>
+                                                    <span class="tag">👜 Phụ kiện</span>
+                                                </label>
+                                                <label class="tag-option">
+                                                    <input type="radio" name="category" value="shoes" required>
+                                                    <span class="tag">👠 Giày dép</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="product-condition">Tình trạng <span class="required">*</span></label>
+                                            <select id="product-condition" name="condition" required>
+                                                <option value="">Chọn tình trạng</option>
+                                                <option value="new">Mới 95-100% (chưa/mới sử dụng 1-2 lần)</option>
+                                                <option value="excellent">Xuất sắc 85-94% (sử dụng ít, không có khuyết điểm)</option>
+                                                <option value="good">Tốt 70-84% (có dấu hiệu sử dụng nhẹ)</option>
+                                                <option value="fair">Khá 50-69% (có khuyết điểm nhỏ)</option>
+                                                <option value="vintage">Vintage (hàng cũ có giá trị)</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="product-description">Mô tả chi tiết <span class="required">*</span></label>
+                                            <textarea id="product-description" name="description" rows="5" placeholder="Mô tả chi tiết về sản phẩm: chất liệu, màu sắc, kiểu dáng, tình trạng thực tế..." required></textarea>
+                                            <div class="form-help">Mô tả chi tiết giúp khách hàng hiểu rõ hơn về sản phẩm</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Pricing -->
+                                    <div class="form-section">
+                                        <h3>Giá bán</h3>
+                                        
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="desired-price">Giá mong muốn <span class="required">*</span></label>
+                                                <div class="price-input">
+                                                    <input type="number" id="desired-price" name="price" min="10000" step="1000" placeholder="0" required>
+                                                    <span class="currency">VNĐ</span>
+                                                </div>
+                                                <div class="form-help">Giá bạn muốn nhận được sau khi trừ phí dịch vụ</div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Giá bán thực tế</label>
+                                                <div class="price-breakdown">
+                                                    <div class="price-item">
+                                                        <span>Giá bán:</span>
+                                                        <span id="selling-price">0 VNĐ</span>
+                                                    </div>
+                                                    <div class="price-item">
+                                                        <span>Phí dịch vụ (15%):</span>
+                                                        <span id="service-fee">0 VNĐ</span>
+                                                    </div>
+                                                    <div class="price-item total">
+                                                        <span>Bạn nhận được:</span>
+                                                        <span id="final-amount">0 VNĐ</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- AI Price Suggestion -->
+                                        <div class="ai-suggestion">
+                                            <button type="button" class="suggest-price-btn" id="suggest-price-btn">
+                                                <i class="fas fa-robot"></i>
+                                                Gợi ý giá bằng AI
+                                            </button>
+                                            <div class="suggestion-result" id="suggestion-result" style="display: none;">
+                                                <!-- AI suggestions will appear here -->
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Submit Button -->
+                                    <div class="form-section">
+                                        <div class="form-actions">
+                                            <button type="button" class="btn btn-secondary" id="save-draft">
+                                                <i class="fas fa-save"></i>
+                                                Lưu nháp
+                                            </button>
+                                            <button type="submit" class="btn btn-primary" id="submit-product">
+                                                <i class="fas fa-paper-plane"></i>
+                                                Đăng sản phẩm
+                                            </button>
+                                        </div>
+                                        <p class="form-note">
+                                            Sản phẩm sẽ được kiểm duyệt trong vòng 24h trước khi xuất hiện trên Marketplace
+                                        </p>
+                                    </div>
+                                </form>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blog Page -->
+            <div id="blog-page" class="page">
+                <div class="blog-hero">
+                    <div class="container">
+                        <div class="hero-content">
+                            <h1>Blog Lifestyle</h1>
+                            <p class="hero-subtitle">Cảm hứng thời trang bền vững</p>
+                            <p class="hero-description">
+                                Khám phá những câu chuyện, mẹo phối đồ và xu hướng thời trang bền vững
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="blog-content">
+                    <div class="container">
+                        <!-- Blog Actions -->
+                        <div class="blog-actions">
+                            <!-- Admin Panel (Only visible to admin) -->
+                            <div class="admin-panel" id="blog-admin-panel" style="display: none;">
+                                <div class="admin-header">
+                                    <h2><i class="fas fa-cogs"></i> Quản lý Blog</h2>
+                                    <button class="btn btn-primary" id="add-blog-post-btn">
+                                        <i class="fas fa-plus"></i>
+                                        Tạo bài viết mới
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- User Blog Creation (Visible to all logged in users) -->
+                            <div class="user-blog-panel" id="user-blog-panel">
+                                <div class="user-blog-header">
+                                    <h3><i class="fas fa-pen"></i> Chia sẻ câu chuyện của bạn</h3>
+                                    <p>Chia sẻ trải nghiệm, mẹo hay và câu chuyện thời trang bền vững của bạn với cộng đồng Đẹp</p>
+                                    <button class="btn btn-secondary" id="user-write-blog-btn">
+                                        <i class="fas fa-edit"></i>
+                                        Viết blog
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blog Categories -->
+                        <div class="blog-categories">
+                            <button class="category-tag active" data-category="all">Tất cả</button>
+                            <button class="category-tag" data-category="styling">Phối đồ</button>
+                            <button class="category-tag" data-category="sustainability">Bền vững</button>
+                            <button class="category-tag" data-category="care">Chăm sóc</button>
+                            <button class="category-tag" data-category="stories">Câu chuyện</button>
+                        </div>
+
+                        <!-- Blog Posts Grid -->
+                        <div class="blog-grid" id="blog-posts">
+                            <!-- Blog posts will be loaded here -->
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="pagination" id="blog-pagination">
+                            <!-- Pagination will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blog Post Creation Modal -->
+            <div class="modal" id="blog-post-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modal-title">Tạo bài viết mới</h3>
+                        <button class="modal-close" id="close-blog-modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="blog-post-form">
+                            <div class="form-group">
+                                <label for="post-title">Tiêu đề bài viết *</label>
+                                <input type="text" id="post-title" name="title" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="post-category">Danh mục *</label>
+                                    <select id="post-category" name="category" required>
+                                        <option value="">Chọn danh mục</option>
+                                        <option value="styling">Phối đồ</option>
+                                        <option value="sustainability">Bền vững</option>
+                                        <option value="care">Chăm sóc</option>
+                                        <option value="stories">Câu chuyện</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="post-status">Trạng thái</label>
+                                    <select id="post-status" name="status">
+                                        <option value="draft">Nháp</option>
+                                        <option value="published">Xuất bản</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="post-excerpt">Mô tả ngắn *</label>
+                                <textarea id="post-excerpt" name="excerpt" rows="3" placeholder="Mô tả ngắn về bài viết..." required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="post-image">Ảnh đại diện</label>
+                                <div class="image-upload-container">
+                                    <input type="file" id="post-image" name="image" accept="image/*">
+                                    <div class="image-preview" id="post-image-preview"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="post-content">Nội dung bài viết *</label>
+                                <textarea id="post-content" name="content" rows="10" placeholder="Viết nội dung bài viết..." required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="post-tags">Tags (cách nhau bằng dấu phẩy)</label>
+                                <input type="text" id="post-tags" name="tags" placeholder="VD: thời trang, bền vững, phối đồ">
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" id="save-draft-btn">
+                                    <i class="fas fa-save"></i>
+                                    Lưu nháp
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Xuất bản
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Page -->
+            <div id="support-page" class="page">
+                <div class="support-hero">
+                    <div class="container">
+                        <div class="hero-content">
+                            <h1>Hỗ trợ khách hàng</h1>
+                            <p class="hero-subtitle">Chúng tôi luôn sẵn sàng giúp đỡ bạn</p>
+                            <p class="hero-description">
+                                Tìm câu trả lời nhanh chóng cho mọi thắc mắc về mua sắm, ký gửi và dịch vụ của chúng tôi
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="support-content">
+                    <div class="container">
+                        <div class="support-layout">
+                            <!-- Contact Methods Sidebar -->
+                            <aside class="support-sidebar">
+                                <div class="contact-methods">
+                                    <h3><i class="fas fa-headset"></i> Liên hệ trực tiếp</h3>
+                                    
+                                    <div class="contact-item">
+                                        <div class="contact-icon phone">
+                                            <i class="fas fa-phone"></i>
+                                        </div>
+                                        <div class="contact-info">
+                                            <h4>Hotline</h4>
+                                            <p class="contact-detail">1900 1234 (8:00 - 22:00)</p>
+                                            <button class="contact-btn" onclick="window.location.href='tel:19001234'">
+                                                Gọi ngay
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="contact-item">
+                                        <div class="contact-icon email">
+                                            <i class="fas fa-envelope"></i>
+                                        </div>
+                                        <div class="contact-info">
+                                            <h4>Liên hệ Email</h4>
+                                            <p class="contact-detail">support@dep.com</p>
+                                            <button class="contact-btn" onclick="window.location.href='mailto:support@dep.com'">
+                                                Gửi Email
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="contact-item">
+                                        <div class="contact-icon chat">
+                                            <i class="fas fa-comments"></i>
+                                        </div>
+                                        <div class="contact-info">
+                                            <h4>Chat trực tuyến</h4>
+                                            <p class="contact-detail">Hỗ trợ 24/7 qua chat</p>
+                                            <button class="contact-btn primary" id="start-chat-btn">
+                                                Bắt đầu chat
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="contact-item">
+                                        <div class="contact-icon messenger">
+                                            <i class="fab fa-facebook-messenger"></i>
+                                        </div>
+                                        <div class="contact-info">
+                                            <h4>Messenger</h4>
+                                            <p class="contact-detail">Chat qua Facebook</p>
+                                            <button class="contact-btn" onclick="window.open('https://m.me/dep.marketplace', '_blank')">
+                                                Messenger
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="contact-item">
+                                        <div class="contact-icon zalo">
+                                            <i class="fas fa-phone-alt"></i>
+                                        </div>
+                                        <div class="contact-info">
+                                            <h4>Zalo</h4>
+                                            <p class="contact-detail">Chat qua Zalo</p>
+                                            <button class="contact-btn" onclick="window.open('https://zalo.me/dep.marketplace', '_blank')">
+                                                Zalo
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Actions -->
+                                <div class="quick-actions">
+                                    <h3><i class="fas fa-bolt"></i> Thao tác nhanh</h3>
+                                    <div class="quick-action-item">
+                                        <button class="quick-btn" id="view-faq-btn">
+                                            <i class="fas fa-question-circle"></i>
+                                            <span>Xem FAQ</span>
+                                        </button>
+                                    </div>
+                                    <div class="quick-action-item">
+                                        <button class="quick-btn" id="consign-guide-btn">
+                                            <i class="fas fa-book"></i>
+                                            <span>Hướng dẫn ký gửi</span>
+                                        </button>
+                                    </div>
+                                    <div class="quick-action-item">
+                                        <button class="quick-btn" id="policy-btn">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <span>Chính sách</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            <!-- Main Content -->
+                            <main class="support-main">
+                                <!-- FAQ Section -->
+                                <div class="faq-section">
+                                    <div class="section-header">
+                                        <h2><i class="fas fa-question-circle"></i> Câu hỏi thường gặp</h2>
+                                    </div>
+
+                                    <!-- FAQ Categories -->
+                                    <div class="faq-categories">
+                                        <button class="faq-category-btn active" data-category="all">Tất cả</button>
+                                        <button class="faq-category-btn" data-category="buying">Mua hàng</button>
+                                        <button class="faq-category-btn" data-category="consignment">Ký gửi</button>
+                                        <button class="faq-category-btn" data-category="shipping">Vận chuyển</button>
+                                        <button class="faq-category-btn" data-category="return">Đổi trả</button>
+                                        <button class="faq-category-btn" data-category="payment">Thanh toán</button>
+                                    </div>
+
+                                    <!-- FAQ Items -->
+                                    <div class="faq-container" id="faq-container">
+                                        <!-- FAQ items will be loaded here -->
+                                    </div>
+                                </div>
+
+                                <!-- Contact Form -->
+                                <div class="contact-form-section">
+                                    <div class="section-header">
+                                        <h2><i class="fas fa-paper-plane"></i> Gửi tin nhắn cho chúng tôi</h2>
+                                        <p>Không tìm thấy câu trả lời? Liên hệ trực tiếp với chúng tôi</p>
+                                    </div>
+
+                                    <form class="support-contact-form" id="support-contact-form">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="contact-name">Họ và tên *</label>
+                                                <input type="text" id="contact-name" name="name" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="contact-email">Email *</label>
+                                                <input type="email" id="contact-email" name="email" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="contact-phone">Số điện thoại</label>
+                                                <input type="tel" id="contact-phone" name="phone">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="contact-subject">Chủ đề *</label>
+                                                <select id="contact-subject" name="subject" required>
+                                                    <option value="">Chọn chủ đề</option>
+                                                    <option value="order">Đơn hàng</option>
+                                                    <option value="consignment">Ký gửi</option>
+                                                    <option value="shipping">Vận chuyển</option>
+                                                    <option value="return">Đổi trả</option>
+                                                    <option value="payment">Thanh toán</option>
+                                                    <option value="technical">Kỹ thuật</option>
+                                                    <option value="other">Khác</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="contact-message">Nội dung tin nhắn *</label>
+                                            <textarea id="contact-message" name="message" rows="6" placeholder="Mô tả chi tiết vấn đề bạn gặp phải..." required></textarea>
+                                        </div>
+
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-paper-plane"></i>
+                                                Gửi tin nhắn
+                                            </button>
+                                            <p class="form-note">
+                                                Chúng tôi sẽ phản hồi trong vòng 24 giờ
+                                            </p>
+                                        </div>
+                                    </form>
+                                </div>
+                            </main>
                         </div>
                     </div>
                 </div>
@@ -535,6 +1262,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/swiper/8.4.7/swiper-bundle.min.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/supabase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/app.js"></script>
     <script src="js/dep-marketplace.js"></script>
@@ -542,6 +1270,22 @@
     <script src="js/products.js"></script>
     <script src="js/orders.js"></script>
     <script src="js/customers.js"></script>
+    <script src="js/consign.js"></script>
+    <script src="js/blog.js"></script>
+    <script src="js/support.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        // Initialize Blog Manager with database support
+        document.addEventListener('DOMContentLoaded', async () => {
+            const blogManager = new BlogManager();
+            
+            // Test database connection if Supabase is available
+            if (window.SupabaseConfig) {
+                setTimeout(() => {
+                    window.SupabaseConfig.testConnection();
+                }, 1000);
+            }
+        });
+    </script>
 </body>
 </html>

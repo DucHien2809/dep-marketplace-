@@ -2390,9 +2390,9 @@ table tr:hover {
 
 .filter-tag:hover,
 .filter-tag.active {
-    border-color: var(--light-green);
-    background: var(--light-green);
-    color: white;
+    border-color: #28a745 !important;
+    background: #28a745 !important;
+    color: white !important;
 }
 
 .gallery-grid {

@@ -129,13 +129,13 @@ class App {
                     window.depMarketplace.loadMarketplacePage();
                     break;
                 case 'consign':
-                    this.loadConsignmentForm();
+                    this.loadConsignPage();
                     break;
                 case 'blog':
-                    this.loadBlog();
+                    this.loadBlogPage();
                     break;
                 case 'support':
-                    this.loadSupport();
+                    this.loadSupportPage();
                     break;
                 case 'profile':
                     this.loadProfile();
@@ -148,6 +148,13 @@ class App {
                     break;
             }
         }
+    }
+
+    loadConsignPage() {
+        // Show consign page
+        this.showPage('consign');
+        
+        console.log('✅ Consign page loaded');
     }
 
     async loadData() {
@@ -450,100 +457,28 @@ class App {
         }
     }
 
-    // Blog page
-    loadBlog() {
-        console.log('Loading blog page...');
-        const mainContent = document.querySelector('.main-content');
-        if (!mainContent) return;
-        mainContent.innerHTML = `
-            <div class="page-header">
-                <h1>Blog Lifestyle</h1>
-                <p>Chia sẻ về phong cách sống bền vững</p>
-            </div>
-            <div class="blog-container">
-                <div class="blog-posts">
-                    <div class="blog-post">
-                        <div class="blog-image">
-                            <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&h=400&fit=crop" alt="Blog post">
-                        </div>
-                        <div class="blog-content">
-                            <h3>Thời trang bền vững - Xu hướng tương lai</h3>
-                            <p class="blog-date">22/12/2024</p>
-                            <p>Khám phá cách thời trang bền vững đang thay đổi ngành công nghiệp và tác động tích cực đến môi trường...</p>
-                            <a href="#" class="read-more">Đọc thêm</a>
-                        </div>
-                    </div>
-                    <div class="blog-post">
-                        <div class="blog-image">
-                            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop" alt="Blog post">
-                        </div>
-                        <div class="blog-content">
-                            <h3>Cách chọn quần áo second-hand chất lượng</h3>
-                            <p class="blog-date">20/12/2024</p>
-                            <p>Hướng dẫn chi tiết cách lựa chọn và kiểm tra chất lượng quần áo đã qua sử dụng...</p>
-                            <a href="#" class="read-more">Đọc thêm</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+    loadBlogPage() {
+        // Show blog page using the page system
+        this.showPage('blog');
+        
+        // Initialize blog manager if needed
+        if (window.blogManager) {
+            window.blogManager.loadBlogPosts();
+        }
+        
+        console.log('✅ Blog page loaded');
     }
 
-    // Support page
-    loadSupport() {
-        console.log('Loading support page...');
-        const mainContent = document.querySelector('.main-content');
-        if (!mainContent) return;
-        mainContent.innerHTML = `
-            <div class="page-header">
-                <h1>Hỗ trợ khách hàng</h1>
-                <p>Chúng tôi luôn sẵn sàng giúp đỡ bạn</p>
-            </div>
-            <div class="support-container">
-                <div class="support-cards">
-                    <div class="support-card">
-                        <i class="fas fa-question-circle"></i>
-                        <h3>Câu hỏi thường gặp</h3>
-                        <p>Tìm câu trả lời cho các câu hỏi phổ biến</p>
-                        <button class="btn btn-outline">Xem FAQ</button>
-                    </div>
-                    <div class="support-card">
-                        <i class="fas fa-envelope"></i>
-                        <h3>Liên hệ Email</h3>
-                        <p>support@dep.com</p>
-                        <button class="btn btn-outline">Gửi Email</button>
-                    </div>
-                    <div class="support-card">
-                        <i class="fas fa-phone"></i>
-                        <h3>Hotline</h3>
-                        <p>1900 1234 (8:00 - 22:00)</p>
-                        <button class="btn btn-outline">Gọi ngay</button>
-                    </div>
-                    <div class="support-card">
-                        <i class="fas fa-comments"></i>
-                        <h3>Chat trực tuyến</h3>
-                        <p>Hỗ trợ 24/7 qua chat</p>
-                        <button class="btn btn-primary">Bắt đầu chat</button>
-                    </div>
-                </div>
-                <div class="contact-form">
-                    <h3>Gửi tin nhắn cho chúng tôi</h3>
-                    <form>
-                        <input type="text" placeholder="Họ và tên" required>
-                        <input type="email" placeholder="Email" required>
-                        <select required>
-                            <option value="">Chọn chủ đề</option>
-                            <option value="order">Đơn hàng</option>
-                            <option value="consignment">Ký gửi</option>
-                            <option value="technical">Kỹ thuật</option>
-                            <option value="other">Khác</option>
-                        </select>
-                        <textarea placeholder="Nội dung tin nhắn" rows="5" required></textarea>
-                        <button type="submit" class="btn btn-primary">Gửi tin nhắn</button>
-                    </form>
-                </div>
-            </div>
-        `;
+    loadSupportPage() {
+        // Show support page using the page system
+        this.showPage('support');
+        
+        // Initialize support manager if needed
+        if (window.supportManager) {
+            window.supportManager.initializePage();
+        }
+        
+        console.log('✅ Support page loaded');
     }
 
     // Profile page  
