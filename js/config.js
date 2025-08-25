@@ -2,8 +2,7 @@
 const SUPABASE_URL = 'https://hvbgnqkwvbdzaxyamfao.supabase.co'; // Thay thế bằng URL Supabase của bạn
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2YmducWt3dmJkemF4eWFtZmFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5MTEwODIsImV4cCI6MjA3MTQ4NzA4Mn0.RulX8AIBdwPw9kB97K6zJ0m_8Vg4PNRptDrkMzh2eXY'; // Thay thế bằng Anon Key của bạn
 
-// Khởi tạo Supabase client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Khởi tạo Supabase client được thực hiện tại js/supabase-config.js để tránh xung đột toàn cục
 
 // App Configuration
 const CONFIG = {
@@ -52,6 +51,9 @@ const TABLES = {
     ORDER_ITEMS: 'order_items',
     CUSTOMERS: 'customers',
     CONSIGNMENTS: 'consignments',
+    USER_DRAFTS: 'user_drafts',
+    USER_PREFERENCES: 'user_preferences',
+    MARKETPLACE_FILTERS: 'marketplace_filters',
     BLOG_POSTS: 'blog_posts',
     GALLERY_ITEMS: 'gallery_items'
 };

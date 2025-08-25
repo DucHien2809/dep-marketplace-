@@ -7,6 +7,11 @@ class AuthManager {
     }
 
     async init() {
+        // Chờ Supabase sẵn sàng
+        if (window.SupabaseConfig && typeof window.SupabaseConfig.whenReady === 'function') {
+            await window.SupabaseConfig.whenReady();
+        }
+
         // Kiểm tra session hiện tại
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
@@ -217,6 +222,18 @@ class AuthManager {
         if (!this.currentUser) return null;
         
         try {
+            // Thử lấy từ user_preferences trước
+            const { data: prefData, error: prefError } = await supabase
+                .from('user_preferences')
+                .select('user_role, user_email')
+                .eq('user_id', this.currentUser.email)
+                .single();
+
+            if (!prefError && prefData) {
+                return { role: prefData.user_role, full_name: prefData.user_email };
+            }
+
+            // Fallback to users table
             const { data, error } = await supabase
                 .from(TABLES.USERS)
                 .select('role, full_name')
@@ -227,7 +244,8 @@ class AuthManager {
             return data;
         } catch (error) {
             console.error('Error getting user role:', error);
-            return null;
+            // Fallback to localStorage
+            return { role: localStorage.getItem('userRole') || 'user', full_name: this.currentUser.email };
         }
     }
 

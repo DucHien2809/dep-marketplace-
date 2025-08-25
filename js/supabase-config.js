@@ -8,7 +8,14 @@ const SUPABASE_CONFIG = {
 };
 
 // Khởi tạo Supabase client
-let supabase = null;
+let supabase = typeof window !== 'undefined' && window.supabase &&
+               typeof window.supabase.from === 'function'
+               ? window.supabase
+               : null;
+
+// Promise đánh dấu khi Supabase sẵn sàng
+let supabaseReadyResolve;
+const supabaseReady = new Promise((resolve) => { supabaseReadyResolve = resolve; });
 
 // Function để khởi tạo Supabase (chỉ khi có config)
 function initSupabase() {
@@ -18,14 +25,30 @@ function initSupabase() {
     }
     
     try {
-        // Import Supabase client (cần cài đặt: npm install @supabase/supabase-js)
-        if (typeof window !== 'undefined' && window.supabase) {
-            supabase = window.supabase;
-        } else {
-            console.warn('⚠️ Supabase client chưa được load. Vui lòng thêm script tag.');
+        // Kiểm tra xem Supabase library đã được load chưa
+        if (typeof window === 'undefined') {
+            console.warn('⚠️ Không có window context');
             return false;
         }
-        return true;
+
+        // Nếu đã có client hợp lệ thì không tạo lại
+        if (supabase && typeof supabase.from === 'function') {
+            window.supabase = supabase;
+            return true;
+        }
+
+        // Kiểm tra library đã được load (v2 gán factory tại window.supabase)
+        if (window.supabase && typeof window.supabase.createClient === 'function') {
+            const client = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+            supabase = client;
+            window.supabase = client;
+            console.log('✅ Supabase client đã được khởi tạo thành công');
+            if (typeof supabaseReadyResolve === 'function') supabaseReadyResolve();
+            return true;
+        }
+
+        console.warn('⚠️ Supabase library chưa được load. Vui lòng thêm script tag.');
+        return false;
     } catch (error) {
         console.error('❌ Lỗi khởi tạo Supabase:', error);
         return false;
@@ -63,5 +86,14 @@ window.SupabaseConfig = {
     init: initSupabase,
     testConnection: testSupabaseConnection,
     getClient: () => supabase,
-    isReady: () => supabase !== null
+    isReady: () => supabase !== null,
+    whenReady: () => supabase ? Promise.resolve() : supabaseReady
 };
+
+// Tự động khởi tạo khi file được load
+if (typeof window !== 'undefined' && window.supabase) {
+    // Đợi một chút để đảm bảo DOM đã sẵn sàng
+    setTimeout(() => {
+        initSupabase();
+    }, 100);
+}

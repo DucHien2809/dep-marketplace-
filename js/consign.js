@@ -248,7 +248,7 @@ class ConsignManager {
                 <p><strong>Giá đề xuất:</strong> ${this.formatCurrency(suggestions.recommendedPrice)}</p>
                 <p><strong>Khoảng giá:</strong> ${this.formatCurrency(suggestions.minPrice)} - ${this.formatCurrency(suggestions.maxPrice)}</p>
             </div>
-            <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('desired-price').value = ${suggestions.recommendedPrice}; consignManager.calculatePricing();">
+            <button type="button" class="btn btn-sm btn-primary" onclick="(function(){ const el=document.getElementById('desired-price'); if(el){ el.value=${suggestions.recommendedPrice}; el.dispatchEvent(new Event('input')); } if(window.consignManager && typeof window.consignManager.calculatePricing==='function'){ window.consignManager.calculatePricing(); } })()">
                 Áp dụng giá đề xuất
             </button>
         `;
@@ -310,15 +310,72 @@ class ConsignManager {
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang đăng...';
             submitBtn.disabled = true;
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Calculate pricing
+            const desiredPrice = parseFloat(document.getElementById('desired-price').value) || 0;
+            const sellingPrice = Math.round(desiredPrice / 0.85); // 15% service fee
+            const serviceFee = sellingPrice - desiredPrice;
+
+            // Prepare images for upload
+            const primaryImage = this.uploadedImages[0]?.url || 'https://via.placeholder.com/300x400?text=Product';
+            const gallery = this.uploadedImages.map(img => img.url);
+
+            // Get current user (Supabase v2)
+            let currentUser = { id: 'anonymous' };
+            try {
+                if (window.authManager && typeof window.authManager.getCurrentUser === 'function') {
+                    const u = window.authManager.getCurrentUser();
+                    if (u) currentUser = u;
+                } else if (window.supabase && window.supabase.auth && typeof window.supabase.auth.getUser === 'function') {
+                    const { data } = await window.supabase.auth.getUser();
+                    if (data && data.user) currentUser = data.user;
+                }
+            } catch {}
+
+            // Insert into Supabase consignments table
+            const { data, error } = await window.supabase
+                .from('consignments')
+                .insert([{
+                    user_id: currentUser.id,
+                    name: formData.title,
+                    description: formData.description,
+                    brand: (formData.brand || 'other').toLowerCase(),
+                    category: formData.category,
+                    condition: formData.condition,
+                    size: formData.size,
+                    desired_price: desiredPrice,
+                    selling_price: sellingPrice,
+                    service_fee: serviceFee,
+                    primary_image: primaryImage,
+                    gallery: gallery,
+                    seller_location: document.getElementById('seller-location')?.value || 'Chưa xác định',
+                    status: 'approved' // Sản phẩm được hiển thị ngay lập tức
+                }])
+                .select();
+
+            if (error) {
+                throw new Error(`Database error: ${error.message}`);
+            }
+
+            // Lưu thương hiệu mới vào database nếu cần
+            await this.saveBrandToDatabase(formData.brand);
 
             this.resetForm();
 
-            alert('Sản phẩm đã được đăng thành công! Chúng tôi sẽ kiểm duyệt trong vòng 24h.');
+            alert('Sản phẩm đã được đăng thành công và hiển thị ngay tại marketplace!');
+            
+            // Refresh marketplace if it's available
+            if (window.depMarketplace && typeof window.depMarketplace.generateMarketplaceProducts === 'function') {
+                window.depMarketplace.generateMarketplaceProducts();
+            }
+            
+            // Refresh brand filters if marketplace is available
+            if (window.depMarketplace && typeof window.depMarketplace.refreshBrandFilters === 'function') {
+                await window.depMarketplace.refreshBrandFilters();
+            }
 
         } catch (error) {
-            alert('Có lỗi xảy ra khi đăng sản phẩm. Vui lòng thử lại.');
+            console.error('Error submitting product:', error);
+            alert(`Có lỗi xảy ra khi đăng sản phẩm: ${error.message}. Vui lòng thử lại.`);
         } finally {
             const submitBtn = document.getElementById('submit-product');
             submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Đăng sản phẩm';
@@ -338,6 +395,44 @@ class ConsignManager {
         };
     }
 
+    async saveBrandToDatabase(brand) {
+        if (!brand) return;
+        const normalized = brand.toString().trim();
+        if (!normalized) return;
+        
+        try {
+            // Kiểm tra xem có phải thương hiệu mặc định không
+            const defaultBrands = ['zara', 'hm', 'uniqlo', 'mango'];
+            const slug = this.slugifyBrandName(normalized);
+            
+            if (!slug || defaultBrands.includes(slug)) return;
+            
+            // Gọi function trong database để tạo brand mới nếu cần
+            const { data, error } = await window.supabase
+                .rpc('create_brand_if_not_exists', { brand_name: normalized });
+            
+            if (error) {
+                console.warn('Không thể tạo thương hiệu mới:', error);
+            } else {
+                console.log('✅ Thương hiệu mới đã được lưu vào database:', normalized);
+            }
+        } catch (error) {
+            console.warn('Lỗi khi lưu thương hiệu:', error);
+        }
+    }
+
+    slugifyBrandName(brandName) {
+        if (!brandName) return '';
+        return brandName
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/\p{Diacritic}/gu, '')
+            .replace(/&/g, 'and')
+            .replace(/[^a-z0-9]+/g, '')
+            .trim();
+    }
+
     resetForm() {
         document.getElementById('consign-form').reset();
         this.uploadedImages = [];
@@ -351,24 +446,160 @@ class ConsignManager {
         });
     }
 
-    saveDraft() {
-        const formData = this.getFormData();
-        localStorage.setItem('consign_draft', JSON.stringify({
-            ...formData,
-            images: this.uploadedImages,
-            savedAt: new Date()
-        }));
-        alert('Đã lưu nháp thành công!');
+    async saveDraft() {
+        try {
+            const formData = this.getFormData();
+            const draftData = {
+                ...formData,
+                images: this.uploadedImages,
+                savedAt: new Date()
+            };
+
+            // Lưu vào database thay vì localStorage
+            const { data, error } = await window.supabase
+                .rpc('save_user_draft', {
+                    p_user_id: this.getCurrentUserId(),
+                    p_draft_type: 'consign',
+                    p_draft_data: draftData
+                });
+
+            if (error) {
+                console.warn('Không thể lưu nháp vào database:', error);
+                // Fallback to localStorage nếu database lỗi
+                localStorage.setItem('consign_draft', JSON.stringify(draftData));
+                alert('Đã lưu nháp thành công (localStorage)!');
+            } else {
+                console.log('✅ Đã lưu nháp vào database:', data);
+                alert('Đã lưu nháp thành công!');
+            }
+        } catch (error) {
+            console.warn('Lỗi khi lưu nháp:', error);
+            // Fallback to localStorage
+            const formData = this.getFormData();
+            localStorage.setItem('consign_draft', JSON.stringify({
+                ...formData,
+                images: this.uploadedImages,
+                savedAt: new Date()
+            }));
+            alert('Đã lưu nháp thành công (localStorage)!');
+        }
+    }
+
+    async loadDraft() {
+        try {
+            // Thử load từ database trước
+            const { data: draftData, error } = await window.supabase
+                .rpc('get_user_draft', {
+                    p_user_id: this.getCurrentUserId(),
+                    p_draft_type: 'consign'
+                });
+
+            if (error) {
+                console.warn('Không thể load nháp từ database:', error);
+                return this.loadDraftFromLocalStorage();
+            }
+
+            if (draftData) {
+                this.loadDraftData(draftData);
+                console.log('✅ Đã load nháp từ database');
+            } else {
+                // Fallback to localStorage
+                this.loadDraftFromLocalStorage();
+            }
+        } catch (error) {
+            console.warn('Lỗi khi load nháp:', error);
+            this.loadDraftFromLocalStorage();
+        }
+    }
+
+    loadDraftFromLocalStorage() {
+        const draftData = localStorage.getItem('consign_draft');
+        if (draftData) {
+            try {
+                const draft = JSON.parse(draftData);
+                this.loadDraftData(draft);
+                console.log('📝 Đã load nháp từ localStorage');
+            } catch (e) {
+                console.warn('Lỗi khi parse draft từ localStorage:', e);
+            }
+        }
+    }
+
+    loadDraftData(draftData) {
+        if (!draftData) return;
+
+        // Load form data
+        if (draftData.title) document.getElementById('product-title').value = draftData.title;
+        if (draftData.brand) document.getElementById('product-brand').value = draftData.brand;
+        if (draftData.size) document.getElementById('product-size').value = draftData.size;
+        if (draftData.category) {
+            document.querySelectorAll('input[name="category"]').forEach(input => {
+                input.checked = input.value === draftData.category;
+            });
+        }
+        if (draftData.condition) document.getElementById('product-condition').value = draftData.condition;
+        if (draftData.description) document.getElementById('product-description').value = draftData.description;
+        if (draftData.price) document.getElementById('desired-price').value = draftData.price;
+
+        // Load images
+        if (draftData.images && Array.isArray(draftData.images)) {
+            this.uploadedImages = draftData.images;
+            this.updateImagePreview();
+        }
+
+        // Update UI
+        this.updateCharCount();
+        this.calculatePricing();
+    }
+
+    getCurrentUserId() {
+        // Lấy user ID từ auth system hoặc tạo ID tạm thời
+        if (window.supabase && window.supabase.auth) {
+            const user = window.supabase.auth.user();
+            if (user) return user.email || user.id;
+        }
+        
+        // Fallback to localStorage hoặc tạo ID tạm thời
+        return localStorage.getItem('userEmail') || 
+               localStorage.getItem('userId') || 
+               'anonymous_' + Date.now();
     }
 
 
 }
 
-// Initialize when DOM is loaded
+// Hide number input spinners for all number inputs
+function hideNumberInputSpinners() {
+    const numberInputs = document.querySelectorAll('input[type="number"]');
+    numberInputs.forEach(input => {
+        // Remove spinners via CSS
+        input.style.webkitAppearance = 'none';
+        input.style.mozAppearance = 'textfield';
+        input.style.appearance = 'none';
+        
+        // Add padding to prevent overlap with currency
+        input.style.paddingRight = '50px';
+        
+        // Force remove spinners via JavaScript
+        if (input.style.webkitAppearance !== 'none') {
+            input.setAttribute('style', input.getAttribute('style') + '; -webkit-appearance: none; -moz-appearance: textfield; appearance: none; padding-right: 50px;');
+        }
+    });
+}
+
+// Call function when page loads
+document.addEventListener('DOMContentLoaded', hideNumberInputSpinners);
+
+// Also call when navigating to consign page
+document.addEventListener('click', (e) => {
+    if (e.target.matches('[data-page="consign"]')) {
+        setTimeout(hideNumberInputSpinners, 100);
+    }
+});
+
+// Initialize when DOM is loaded and expose globally
 let consignManager;
 document.addEventListener('DOMContentLoaded', () => {
     consignManager = new ConsignManager();
+    window.consignManager = consignManager;
 });
-
-// Export for global access
-window.consignManager = consignManager;

@@ -555,6 +555,44 @@ class BlogManager {
         console.log('✅ Đã lưu bài viết vào database:', data.id);
     }
 
+    async saveToDatabase(postData) {
+        try {
+            const dbData = {
+                title: postData.title,
+                category: postData.category,
+                excerpt: postData.excerpt,
+                content: postData.content,
+                tags: postData.tags,
+                author_id: this.getCurrentUserId(),
+                author_name: this.getCurrentUserName()
+            };
+
+            const { data, error } = await window.supabase
+                .from('blog_posts')
+                .insert([dbData])
+                .select()
+                .single();
+
+            if (error) {
+                throw error;
+            }
+
+            // Update local array with database data
+            const savedPost = {
+                ...postData,
+                id: data.id,
+                userPost: !this.isAdmin
+            };
+            
+            this.blogPosts.unshift(savedPost);
+            console.log('✅ Đã lưu bài viết vào database:', data.id);
+        } catch (error) {
+            console.warn('Không thể lưu vào database:', error);
+            // Fallback to localStorage
+            this.saveToLocalStorage(postData);
+        }
+    }
+
     saveToLocalStorage(postData) {
         // Add to blog posts array
         this.blogPosts.unshift(postData);
@@ -564,19 +602,50 @@ class BlogManager {
         console.log('📝 Đã lưu bài viết vào localStorage');
     }
 
-    saveDraft() {
-        const formData = new FormData(document.getElementById('blog-post-form'));
-        const draftData = {
-            title: formData.get('title'),
-            category: formData.get('category'),
-            excerpt: formData.get('excerpt'),
-            content: formData.get('content'),
-            tags: formData.get('tags'),
-            savedAt: new Date()
-        };
-        
-        localStorage.setItem('blog_draft', JSON.stringify(draftData));
-        alert('Đã lưu nháp thành công!');
+    async saveDraft() {
+        try {
+            const formData = new FormData(document.getElementById('blog-post-form'));
+            const draftData = {
+                title: formData.get('title'),
+                category: formData.get('category'),
+                excerpt: formData.get('excerpt'),
+                content: formData.get('content'),
+                tags: formData.get('tags'),
+                savedAt: new Date()
+            };
+
+            // Lưu vào database thay vì localStorage
+            const { data, error } = await window.supabase
+                .rpc('save_user_draft', {
+                    p_user_id: this.getCurrentUserId(),
+                    p_draft_type: 'blog',
+                    p_draft_data: draftData
+                });
+
+            if (error) {
+                console.warn('Không thể lưu nháp vào database:', error);
+                // Fallback to localStorage
+                localStorage.setItem('blog_draft', JSON.stringify(draftData));
+                alert('Đã lưu nháp thành công (localStorage)!');
+            } else {
+                console.log('✅ Đã lưu nháp vào database:', data);
+                alert('Đã lưu nháp thành công!');
+            }
+        } catch (error) {
+            console.warn('Lỗi khi lưu nháp:', error);
+            // Fallback to localStorage
+            const formData = new FormData(document.getElementById('blog-post-form'));
+            const draftData = {
+                title: formData.get('title'),
+                category: formData.get('category'),
+                excerpt: formData.get('excerpt'),
+                content: formData.get('content'),
+                tags: formData.get('tags'),
+                savedAt: new Date()
+            };
+            localStorage.setItem('blog_draft', JSON.stringify(draftData));
+            alert('Đã lưu nháp thành công (localStorage)!');
+        }
     }
 
     editPost(postId) {
@@ -593,11 +662,31 @@ class BlogManager {
 
     // Utility Methods
     getCurrentUserId() {
-        // Try to get from auth system or localStorage
-        const userId = localStorage.getItem('userId') || 
-                      localStorage.getItem('userEmail') || 
-                      'anonymous';
-        return userId;
+        // Lấy user ID từ auth system hoặc tạo ID tạm thời
+        if (window.supabase && window.supabase.auth) {
+            const user = window.supabase.auth.user();
+            if (user) return user.email || user.id;
+        }
+        
+        // Fallback to localStorage hoặc tạo ID tạm thời
+        return localStorage.getItem('userEmail') || 
+               localStorage.getItem('userId') || 
+               'anonymous_' + Date.now();
+    }
+
+    getCurrentUserName() {
+        // Lấy user name từ auth system hoặc localStorage
+        if (window.supabase && window.supabase.auth) {
+            const user = window.supabase.auth.user();
+            if (user && user.user_metadata) {
+                return user.user_metadata.full_name || user.email || 'Thành viên cộng đồng';
+            }
+        }
+        
+        // Fallback to localStorage
+        return localStorage.getItem('userName') || 
+               localStorage.getItem('userEmail') || 
+               'Thành viên cộng đồng';
     }
 
     openPostDetail(postId) {

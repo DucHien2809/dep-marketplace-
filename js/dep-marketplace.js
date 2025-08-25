@@ -11,6 +11,9 @@ class DepMarketplace {
             condition: 'all',
             brand: 'all'
         };
+        this.DEFAULT_BRANDS = ['zara', 'hm', 'uniqlo', 'mango'];
+        // Guard to avoid binding delete events multiple times
+        this._deleteEventsBound = false;
         this.init();
     }
 
@@ -26,6 +29,14 @@ class DepMarketplace {
                 e.preventDefault();
                 const page = e.target.getAttribute('data-page');
                 window.app.navigateTo(page);
+                
+                // Nếu chuyển đến marketplace, đồng bộ lại bộ lọc
+                if (page === 'marketplace') {
+                    setTimeout(async () => {
+                        console.log('🔄 Tab Marketplace được chọn, đồng bộ lại bộ lọc...');
+                        await this.syncBrandFiltersFromConsignments();
+                    }, 300);
+                }
             }
 
             if (e.target.matches('[data-category]')) {
@@ -111,6 +122,14 @@ class DepMarketplace {
         if (targetPage) {
             targetPage.classList.add('active');
             console.log(`👁️ Showing page: ${pageId}`);
+            
+            // Nếu là marketplace page, đồng bộ lại bộ lọc
+            if (pageId === 'marketplace') {
+                setTimeout(async () => {
+                    console.log('🔄 Marketplace page được hiển thị, đồng bộ lại bộ lọc...');
+                    await this.syncBrandFiltersFromConsignments();
+                }, 100);
+            }
         }
         
         // Update navigation
@@ -189,6 +208,253 @@ class DepMarketplace {
         `;
     }
 
+    // ===== Dynamic brand utilities =====
+    slugifyBrandName(brandName) {
+        if (!brandName) return '';
+        return brandName
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/\p{Diacritic}/gu, '')
+            .replace(/&/g, 'and')
+            .replace(/[^a-z0-9]+/g, '')
+            .trim();
+    }
+
+    async getAdditionalBrands() {
+        try {
+            // Load brands từ database thay vì localStorage
+            const { data: brands, error } = await window.supabase
+                .from('brands')
+                .select('name, slug, is_default')
+                .eq('is_default', false)
+                .order('name');
+            
+            if (error) {
+                console.warn('Không thể load brands từ database:', error);
+                return [];
+            }
+            
+            return brands || [];
+        } catch (e) {
+            console.warn('Lỗi khi load brands:', e);
+            return [];
+        }
+    }
+
+    async renderAdditionalBrands() {
+        // Find the "Thương hiệu" filter container in either static or dynamic markup
+        let container = null;
+        document.querySelectorAll('.filter-section').forEach(section => {
+            const title = section.querySelector('h3, .filter-title');
+            if (!container && title && /thương\s*hiệu/i.test(title.textContent)) {
+                container = section.querySelector('.filter-options');
+            }
+        });
+        if (!container) return;
+
+        const additional = await this.getAdditionalBrands();
+        if (!additional.length) return;
+
+        const existingValues = Array.from(container.querySelectorAll('input[type="checkbox"]'))
+            .map(el => el.value);
+
+        // Bỏ bộ lọc "Khác" - chỉ giữ lại 4 thương hiệu mặc định và các thương hiệu mới
+        additional.forEach(brand => {
+            if (existingValues.includes(brand.slug)) return;
+            
+            const label = document.createElement('label');
+            label.className = 'filter-option';
+            label.innerHTML = `<input type="checkbox" value="${brand.slug}"> <span class="checkmark"></span>${brand.name}`;
+            
+            // Thêm vào cuối danh sách
+            container.appendChild(label);
+            
+            // Bind change handler
+            const input = label.querySelector('input');
+            input.addEventListener('change', () => this.applyFilters());
+        });
+    }
+
+    async refreshBrandFilters() {
+        // Clear existing additional brands first
+        const container = this.getBrandFilterContainer();
+        if (!container) return;
+
+        // Remove all additional brands (keep only default ones)
+        const additionalBrands = container.querySelectorAll('label:not(:has(input[value="zara"]):not(:has(input[value="hm"]):not(:has(input[value="uniqlo"]):not(:has(input[value="mango"])))');
+        additionalBrands.forEach(brand => brand.remove());
+
+        // Re-render additional brands
+        await this.renderAdditionalBrands();
+    }
+
+    getBrandFilterContainer() {
+        console.log('🔍 Đang tìm container bộ lọc thương hiệu...');
+        let container = null;
+        
+        // Thử tìm theo nhiều cách khác nhau
+        const selectors = [
+            '.filter-section h3:contains("Thương hiệu") + .filter-options',
+            '.filter-section:has(h3:contains("Thương hiệu")) .filter-options',
+            '.filter-section h3:contains("thương hiệu") + .filter-options',
+            '.filter-section:has(h3:contains("thương hiệu")) .filter-options'
+        ];
+        
+        // Cách 1: Tìm trực tiếp bằng text content
+        const sections = document.querySelectorAll('.filter-section');
+        console.log('📋 Tìm thấy', sections.length, 'filter sections');
+        
+        sections.forEach((section, index) => {
+            const title = section.querySelector('h3, .filter-title');
+            if (title) {
+                const titleText = title.textContent.toLowerCase();
+                console.log(`📋 Section ${index + 1}: "${title.textContent}" (${titleText})`);
+                if (!container && (titleText.includes('thương hiệu') || titleText.includes('brand'))) {
+                    container = section.querySelector('.filter-options');
+                    console.log('✅ Tìm thấy container bộ lọc thương hiệu:', container);
+                }
+            }
+        });
+        
+        // Cách 2: Tìm theo data attribute nếu có
+        if (!container) {
+            container = document.querySelector('[data-filter-type="brand"] .filter-options');
+            if (container) console.log('✅ Tìm thấy container theo data attribute');
+        }
+        
+        // Cách 3: Tìm theo thứ tự (section thứ 2 thường là brand)
+        if (!container && sections.length >= 2) {
+            container = sections[1].querySelector('.filter-options');
+            if (container) console.log('✅ Tìm thấy container theo thứ tự (section 2)');
+        }
+        
+        // Cách 4: Fallback - tìm bất kỳ container nào có checkbox với value="zara"
+        if (!container) {
+            const zaraCheckbox = document.querySelector('input[value="zara"]');
+            if (zaraCheckbox) {
+                container = zaraCheckbox.closest('.filter-options');
+                if (container) console.log('✅ Tìm thấy container theo checkbox Zara');
+            }
+        }
+        
+        // Cách 5: Fallback cuối cùng - tìm bất kỳ container nào có checkbox
+        if (!container) {
+            const anyCheckbox = document.querySelector('.filter-options input[type="checkbox"]');
+            if (anyCheckbox) {
+                container = anyCheckbox.closest('.filter-options');
+                if (container) console.log('✅ Tìm thấy container theo checkbox bất kỳ');
+            }
+        }
+        
+        if (!container) {
+            console.warn('❌ Không tìm thấy container bộ lọc thương hiệu');
+            console.log('🔍 Debug: Tất cả sections:', Array.from(sections).map(s => s.innerHTML.substring(0, 100)));
+        }
+        
+        return container;
+    }
+
+    // Đồng bộ bộ lọc thương hiệu theo dữ liệu thực tế trong consignments
+    async syncBrandFiltersFromConsignments(prefetchedItems) {
+        console.log('🔄 Đang đồng bộ bộ lọc thương hiệu...');
+        const container = this.getBrandFilterContainer();
+        if (!container) {
+            console.warn('❌ Không tìm thấy container bộ lọc thương hiệu');
+            return;
+        }
+
+        try {
+            let rows = prefetchedItems || null;
+            if (!rows) {
+                console.log('📡 Fetching brands từ database...');
+                const resp = await window.supabase
+                    .from('consignments')
+                    .select('brand')
+                    .not('brand', 'is', null); // Chỉ lấy những brand không null
+                if (resp.error) throw resp.error;
+                rows = resp.data;
+                console.log('📊 Fetched brands:', rows);
+            }
+
+            console.log('📊 Dữ liệu consignments:', rows);
+
+            // Đảm bảo 4 thương hiệu mặc định luôn có mặt
+            const defaultSlugs = new Set(this.DEFAULT_BRANDS);
+            const activeExtras = new Set();
+            
+            // Lấy tất cả brands từ consignments
+            (rows || []).forEach(r => {
+                const slug = (r?.brand || '').toString().trim().toLowerCase();
+                if (!slug || defaultSlugs.has(slug)) return;
+                activeExtras.add(slug);
+            });
+
+            console.log('🏷️ Brands mặc định:', Array.from(defaultSlugs));
+            console.log('🏷️ Brands động từ consignments:', Array.from(activeExtras));
+
+            // Đảm bảo tất cả thương hiệu mặc định đều có trong UI
+            defaultSlugs.forEach(defaultSlug => {
+                const existing = container.querySelector(`input[value="${defaultSlug}"]`);
+                if (!existing) {
+                    console.log(`➕ Thêm lại thương hiệu mặc định: ${defaultSlug}`);
+                    const label = document.createElement('label');
+                    label.className = 'filter-option';
+                    
+                                         let displayName = defaultSlug;
+                     if (defaultSlug === 'hm') displayName = 'H&M';
+                     else if (defaultSlug === 'zara') displayName = 'Zara';
+                     else if (defaultSlug === 'uniqlo') displayName = 'Uniqlo';
+                     else if (defaultSlug === 'mango') displayName = 'Mango';
+                    
+                    label.innerHTML = `<input type="checkbox" value="${defaultSlug}"> <span class="checkmark"></span>${displayName}`;
+                    
+                                         // Thêm vào đầu danh sách
+                     container.appendChild(label);
+                    
+                    const input = label.querySelector('input');
+                    input.addEventListener('change', () => this.applyFilters());
+                }
+            });
+
+            // Xóa các brand động không còn sản phẩm (chỉ xóa những brand không phải mặc định)
+            const existingBrands = container.querySelectorAll('label > input[type="checkbox"]');
+            console.log('🏷️ Brands hiện tại trong UI:', Array.from(existingBrands).map(i => i.getAttribute('value')));
+
+            existingBrands.forEach(input => {
+                const value = (input.getAttribute('value') || '').toLowerCase();
+                // Chỉ xóa brand động, không xóa brand mặc định
+                if (!defaultSlugs.has(value) && !activeExtras.has(value)) {
+                    const label = input.closest('label');
+                    if (label) {
+                        console.log(`🗑️ Xóa brand động không còn sản phẩm: ${value}`);
+                        label.remove();
+                    }
+                }
+            });
+
+            // Thêm các brand mới chưa có trong UI
+            const existing = new Set(
+                Array.from(container.querySelectorAll('label > input[type="checkbox"]'))
+                    .map(i => (i.getAttribute('value') || '').toLowerCase())
+            );
+
+            activeExtras.forEach(slug => {
+                if (existing.has(slug)) return;
+                console.log(`➕ Thêm brand mới: ${slug}`);
+                const label = document.createElement('label');
+                label.className = 'filter-option';
+                label.innerHTML = `<input type="checkbox" value="${slug}"> <span class="checkmark"></span>${slug}`;
+                container.appendChild(label);
+                const input = label.querySelector('input');
+                input.addEventListener('change', () => this.applyFilters());
+            });
+
+            console.log('✅ Đồng bộ bộ lọc thương hiệu hoàn tất');
+        } catch (e) {
+            console.error('❌ Lỗi khi đồng bộ bộ lọc thương hiệu:', e);
+        }
+    }
     renderGalleryItem(item) {
         const tags = Array.isArray(item.tags) ? item.tags : [];
         
@@ -201,10 +467,10 @@ class DepMarketplace {
                     
                     <!-- Admin Controls -->
                     <div class="gallery-item-controls admin-only">
-                        <button class="btn-icon btn-edit-gallery" title="Chỉnh sửa">
+                        <button class="btn-icon btn-edit-gallery" title="Chỉnh sửa" data-action="edit" data-item-id="${item.id}">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn-icon btn-delete-gallery" title="Xóa">
+                        <button class="btn-icon btn-delete-gallery" title="Xóa" data-action="delete" data-item-id="${item.id}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -341,9 +607,7 @@ class DepMarketplace {
                         </div>
 
                         <!-- Product Grid -->
-                        <div class="product-grid" id="product-grid">
-                            ${this.generateGalleryItemsFallback()}
-                        </div>
+                        <div class="product-grid" id="product-grid"></div>
                     </div>
                 </div>
             </div>
@@ -414,52 +678,8 @@ class DepMarketplace {
             }
         ];
 
-        return sampleItems.map(item => `
-            <div class="gallery-item ${item.featured ? 'featured' : ''}" data-item-id="${item.id}" data-tags="${item.tags.join(' ')}">
-                <div class="gallery-item-image" style="background-image: url('${item.image}')">
-                    ${item.featured ? '<span class="featured-badge">Nổi bật</span>' : ''}
-                    
-                    <!-- Admin Controls -->
-                    <div class="gallery-item-controls admin-only">
-                        <button class="btn-icon btn-edit-gallery" title="Chỉnh sửa">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn-icon btn-delete-gallery" title="Xóa">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                    
-                    <!-- View Overlay -->
-                    <div class="gallery-overlay">
-                        <button class="btn-view-detail">
-                            <i class="fas fa-eye"></i>
-                            Xem chi tiết
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="gallery-item-info">
-                    <h3 class="gallery-item-title">${item.title}</h3>
-                    <p class="gallery-item-story">${item.story}</p>
-                    
-                    <div class="gallery-item-meta">
-                        <div class="gallery-tags">
-                            ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                        </div>
-                        <div class="gallery-stats">
-                            <span class="view-count">
-                                <i class="fas fa-eye"></i>
-                                ${item.views}
-                            </span>
-                            <span class="create-date admin-only">
-                                <i class="fas fa-calendar"></i>
-                                ${item.created}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        // Disable rendering of sample items
+        return '';
     }
     initGalleryFilters() {
         console.log('🔧 Setting up gallery filters...');
@@ -550,6 +770,7 @@ class DepMarketplace {
         document.querySelectorAll('.btn-edit-gallery').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                this.addRippleEffect(e.target);
                 const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
                 this.editGalleryItem(itemId);
             });
@@ -558,6 +779,7 @@ class DepMarketplace {
         document.querySelectorAll('.btn-delete-gallery').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                this.addRippleEffect(e.target);
                 const itemId = e.target.closest('.gallery-item').getAttribute('data-item-id');
                 this.deleteGalleryItem(itemId);
             });
@@ -595,44 +817,148 @@ class DepMarketplace {
         // TODO: Show detail modal
     }
     
-    loadMarketplacePage() {
+    addRippleEffect(button) {
+        const ripple = document.createElement('span');
+        ripple.classList.add('ripple');
+        
+        const rect = button.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = event.clientX - rect.left - size / 2;
+        const y = event.clientY - rect.top - size / 2;
+        
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        
+        button.appendChild(ripple);
+        
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    }
+    
+    async loadMarketplacePage() {
         // Create and show Marketplace page
         this.createPage('marketplace');
         
-        // Generate sample marketplace products
-        setTimeout(() => {
-            this.generateMarketplaceProducts();
-            this.initMarketplaceFilters();
-        }, 100);
+        // Đợi một chút để DOM được tạo hoàn toàn
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Load products immediately without artificial delay
+        await this.generateMarketplaceProducts();
+        this.initMarketplaceFilters();
+        
+        // Đồng bộ lại bộ lọc thương hiệu sau khi khởi tạo xong
+        await this.syncBrandFiltersFromConsignments();
+        
+        // Đảm bảo bộ lọc được cập nhật đầy đủ
+        setTimeout(async () => {
+            console.log('🔄 Kiểm tra lại bộ lọc để đảm bảo đầy đủ...');
+            await this.syncBrandFiltersFromConsignments();
+        }, 300);
     }
     
-    generateMarketplaceProducts() {
-        console.log('🛍️ Initializing marketplace products container...');
-        
+    async generateMarketplaceProducts() {
+        console.log('🛍️ Loading marketplace products from Supabase...');
         const productsContainer = document.getElementById('marketplace-products');
         if (!productsContainer) {
             console.error('❌ Marketplace products container not found');
             return;
         }
 
-        // Empty marketplace - no sample products
-        productsContainer.innerHTML = `
-            <div class="empty-marketplace">
-                <div class="empty-icon">
-                    <i class="fas fa-store"></i>
-                </div>
-                <h3>Marketplace đang được chuẩn bị</h3>
-                <p>Sản phẩm sẽ sớm được cập nhật. Vui lòng quay lại sau!</p>
-            </div>
-        `;
+        try {
+            // Load consignments from Supabase (show all, no approval gate)
+            const { data: consignments, error } = await window.supabase
+                .from('consignments')
+                .select('id,name,category,brand,size,condition,selling_price,primary_image,created_at,user_id')
+                .order('created_at', { ascending: false });
 
-        // Update products count
-        const countElement = document.getElementById('products-count');
-        if (countElement) {
-            countElement.textContent = '0 sản phẩm';
+            if (error) {
+                throw new Error(`Database error: ${error.message}`);
+            }
+
+            const items = consignments || [];
+
+            if (!items.length) {
+                productsContainer.innerHTML = `
+                    <div class="empty-marketplace">
+                        <div class="empty-icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <h3>Chưa có sản phẩm nào</h3>
+                        <p>Bắt đầu bằng cách <a href="#" data-page="consign">đăng sản phẩm ký gửi</a></p>
+                    </div>
+                `;
+                const countElement = document.getElementById('products-count');
+                if (countElement) countElement.textContent = '0 sản phẩm';
+                return;
+            }
+
+            const html = items.map(p => `
+                <div class="product-card" 
+                     data-product-id="${p.id}" 
+                     data-category="${p.category || ''}" 
+                     data-brand="${p.brand || 'other'}" 
+                     data-size="${p.size || ''}" 
+                     data-price="${p.selling_price || 0}">
+                    <div class="product-image">
+                        <img src="${p.primary_image}" alt="${p.name}">
+                        <div class="product-overlay">
+                            <button class="btn btn-primary add-to-cart" data-product-id="${p.id}">Thêm vào giỏ</button>
+                        </div>
+                        ${this.canDeleteProduct(p) ? `
+                            <div class="product-actions">
+                                <button class="btn btn-danger btn-sm delete-product" 
+                                        data-product-id="${p.id}" 
+                                        data-product-name="${p.name}"
+                                        title="Xóa sản phẩm">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">${p.name}</h3>
+                        <div class="product-price">
+                            <span class="current-price">${this.formatPrice(p.selling_price || 0)}</span>
+                        </div>
+                        <div class="product-meta">
+                            <span class="brand-tag">${p.brand || 'Khác'}</span>
+                            <span class="condition-tag">${this.getConditionLabel(p.condition)}</span>
+                        </div>
+                                            </div>
+                    </div>
+            `).join('');
+
+            productsContainer.innerHTML = html;
+
+            const countElement = document.getElementById('products-count');
+            if (countElement) countElement.textContent = `${items.length} sản phẩm`;
+
+            this.bindMarketplaceEvents();
+            console.log('🔄 Đang đồng bộ bộ lọc thương hiệu...');
+            // Đồng bộ bộ lọc thương hiệu theo dữ liệu thực tế từ danh sách đã fetch
+            await this.syncBrandFiltersFromConsignments(items);
+            console.log('✅ Đồng bộ bộ lọc hoàn tất, đang áp dụng filters...');
+            this.applyFilters();
+            console.log('✅ Marketplace products loaded from Supabase:', items.length);
+            
+            // Đảm bảo bộ lọc được cập nhật đầy đủ
+            setTimeout(async () => {
+                console.log('🔄 Đồng bộ lại bộ lọc để đảm bảo đầy đủ...');
+                await this.syncBrandFiltersFromConsignments();
+            }, 200);
+        } catch (error) {
+            console.error('❌ Error loading marketplace products:', error);
+            productsContainer.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Có lỗi xảy ra</h3>
+                    <p>Không thể tải danh sách sản phẩm. Vui lòng thử lại sau.</p>
+                    <button onclick="window.depMarketplace.generateMarketplaceProducts()" class="btn btn-primary">Thử lại</button>
+                </div>
+            `;
         }
-        
-        console.log('✅ Marketplace products container initialized (empty)');
     }
 
     getTagLabel(tag) {
@@ -651,6 +977,16 @@ class DepMarketplace {
             'vintage': 'Vintage'
         };
         return labels[condition] || condition;
+    }
+
+    getCategoryLabel(category) {
+        const labels = {
+            'tops': 'Áo',
+            'bottoms': 'Quần',
+            'dresses': 'Váy',
+            'accessories': 'Phụ kiện'
+        };
+        return labels[category] || category;
     }
 
     formatPrice(price) {
@@ -686,20 +1022,121 @@ class DepMarketplace {
                 this.showProductDetail(productId);
             });
         });
+
+
     }
 
     handleBuyNow(productId) {
         // TODO: Implement checkout flow
+        Utils.showToast('Chức năng mua hàng đang phát triển!', 'info');
     }
 
     handleChatWithSeller(sellerName) {
         // TODO: Implement chat system
     }
 
-    showProductDetail(productId) {
-        // TODO: Implement product detail modal
+    async showProductDetail(productId) {
+        try {
+            console.log('🔍 Showing product detail for ID:', productId);
+            
+            // Fetch product details
+            const { data: product, error } = await window.supabase
+                .from('consignments')
+                .select('*')
+                .eq('id', productId)
+                .single();
+            
+            if (error) {
+                console.error('❌ Error fetching product:', error);
+                return;
+            }
+            
+            if (!product) {
+                console.error('❌ Product not found');
+                return;
+            }
+            
+            console.log('✅ Product data:', product);
+            
+            // Create modal HTML
+            const modalHTML = this.createProductDetailModal(product);
+            
+            // Insert modal into DOM
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Get modal element
+            const modal = document.getElementById('product-detail-modal');
+            console.log('🔍 Modal in DOM:', modal);
+            console.log('🔍 Modal display style:', modal ? modal.style.display : 'N/A');
+            console.log('🔍 Modal computed style:', modal ? window.getComputedStyle(modal).display : 'N/A');
+            
+            // Initialize modal functionality
+            this.initProductDetailModal(productId);
+            
+        } catch (error) {
+            console.error('❌ Error in showProductDetail:', error);
+        }
     }
-    
+
+    createProductDetailModal(product) {
+        console.log('🔧 Creating product detail modal for:', product.name);
+        
+        return `
+            <div id="product-detail-modal" class="modal product-detail-modal">
+                <div class="modal-content product-detail-content">
+                    <div class="modal-header">
+                        <h3>${product.name}</h3>
+                        <span class="close-btn">&times;</span>
+                    </div>
+                    <div class="product-detail-body">
+                        <div class="product-images-section">
+                            <div class="main-image-container">
+                                <img src="${product.image_url || '/images/placeholder.jpg'}" 
+                                     alt="${product.name}" 
+                                     class="main-product-image">
+                                <span class="detail-condition-badge">${this.getConditionLabel(product.condition)}</span>
+                            </div>
+                        </div>
+                        <div class="product-info-section">
+                            <div class="price-section">
+                                <span class="price">${this.formatPrice(product.price)}</span>
+                            </div>
+                            <div class="product-meta-detail">
+                                <div class="meta-item">
+                                    <strong>Thương hiệu:</strong> ${product.brand || 'Không xác định'}
+                                </div>
+                                <div class="meta-item">
+                                    <strong>Tình trạng:</strong> ${this.getConditionLabel(product.condition)}
+                                </div>
+                                <div class="meta-item">
+                                    <strong>Kích thước:</strong> ${product.size || 'Không xác định'}
+                                </div>
+                                <div class="meta-item">
+                                    <strong>Màu sắc:</strong> ${product.color || 'Không xác định'}
+                                </div>
+                                <div class="meta-item">
+                                    <strong>Ngày đăng:</strong> ${new Date(product.created_at).toLocaleDateString('vi-VN')}
+                                </div>
+                            </div>
+                            <div class="product-description">
+                                <h4>Mô tả sản phẩm:</h4>
+                                <p>${product.description || 'Không có mô tả'}</p>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary" onclick="this.handleBuyNow('${product.id}')">
+                                    Mua ngay
+                                </button>
+                                <button class="btn btn-secondary" onclick="this.closeProductDetailModal()">
+                                    Đóng
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     initMarketplaceFilters() {
         console.log('🔧 Initializing marketplace filters...');
         
@@ -750,6 +1187,7 @@ class DepMarketplace {
             });
         }
 
+        // Không gọi renderAdditionalBrands() ở đây nữa vì nó sẽ được gọi sau khi load products
         console.log('✅ Marketplace filters initialized');
     }
 
@@ -1092,10 +1530,7 @@ class DepMarketplace {
                         </div>
 
                         <!-- Products Grid 4 Columns -->
-                        <div class="collection-products-grid" id="collection-products">
-                            <!-- Sample products for display -->
-                            ${this.generateSampleProducts()}
-                        </div>
+                        <div class="collection-products-grid" id="collection-products"></div>
 
                         <!-- Load More -->
                         <div class="load-more-section">
@@ -1111,99 +1546,8 @@ class DepMarketplace {
     }
 
     generateSampleProducts() {
-        const sampleProducts = [
-            {
-                id: 1,
-                name: "Áo kiểu Vintage Tái Sinh",
-                price: 450000,
-                originalPrice: 650000,
-                image: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=500&fit=crop",
-                style: "vintage",
-                origin: "Làm từ áo sơ mi linen cũ, thêu ren vintage",
-                isNew: true
-            },
-            {
-                id: 2,
-                name: "Váy Đẹp Độc Bản",
-                price: 780000,
-                originalPrice: null,
-                image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=500&fit=crop",
-                style: "độc bản",
-                origin: "Tái tạo từ vải cotton organic, phối ren cổ điển",
-                isNew: false
-            },
-            {
-                id: 3,
-                name: "Quần Jean Basic Eco",
-                price: 520000,
-                originalPrice: 720000,
-                image: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=500&fit=crop",
-                style: "basic",
-                origin: "Jean tái chế với công nghệ eco-wash",
-                isNew: true
-            },
-            {
-                id: 4,
-                name: "Túi Tote Minimalist",
-                price: 290000,
-                originalPrice: null,
-                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=500&fit=crop",
-                style: "minimalist",
-                origin: "Canvas tái chế từ bao bì cũ, thiết kế tối giản",
-                isNew: false
-            },
-            {
-                id: 5,
-                name: "Áo Sơ Mi Boho Chic",
-                price: 380000,
-                originalPrice: 560000,
-                image: "https://images.unsplash.com/photo-1583743814966-8936f37f631b?w=400&h=500&fit=crop",
-                style: "boho",
-                origin: "Từ áo sơ mi trắng cũ, thêu họa tiết dân tộc",
-                isNew: true
-            },
-            {
-                id: 6,
-                name: "Chân Váy Xoè Vintage",
-                price: 420000,
-                originalPrice: 590000,
-                image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop",
-                style: "vintage",
-                origin: "Vải tweed tái chế, may theo pattern cổ điển",
-                isNew: false
-            }
-        ];
-
-        return sampleProducts.map(product => `
-            <div class="collection-product-card" data-product-id="${product.id}" onclick="depMarketplace.showProductDetail(${product.id})">
-                <div class="product-image-container">
-                    <img src="${product.image}" alt="${product.name}" class="product-image">
-                    ${product.isNew ? '<span class="new-badge">Mới</span>' : ''}
-                    ${product.originalPrice ? '<span class="sale-badge">Sale</span>' : ''}
-                    <div class="product-overlay">
-                        <button class="quick-view-btn">
-                            <i class="fas fa-eye"></i>
-                            Xem nhanh
-                        </button>
-                    </div>
-                </div>
-                <div class="product-info">
-                    <h3 class="product-name">${product.name}</h3>
-                    <p class="product-origin">${product.origin}</p>
-                    <div class="product-price">
-                        <span class="current-price">${this.formatPrice(product.price)}</span>
-                        ${product.originalPrice ? `<span class="original-price">${this.formatPrice(product.originalPrice)}</span>` : ''}
-                    </div>
-                    <div class="product-tags">
-                        <span class="style-tag">${product.style}</span>
-                    </div>
-                    <button class="btn-add-to-cart" onclick="event.stopPropagation()">
-                        <i class="fas fa-shopping-cart"></i>
-                        Mua ngay
-                    </button>
-                </div>
-            </div>
-        `).join('');
+        // No sample products
+        return '';
     }
 
     formatPrice(price) {
@@ -1213,195 +1557,10 @@ class DepMarketplace {
         }).format(price);
     }
 
-    showProductDetail(productId) {
-        // Create and show product detail modal
-        const product = this.getProductById(productId);
-        if (!product) return;
 
-        const modalHTML = this.createProductDetailModal(product);
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        
-        // Show modal
-        const modal = document.getElementById('product-detail-modal');
-        modal.classList.add('show');
-        
-        // Initialize image gallery
-        this.initProductGallery();
-        
-        // Bind close events
-        this.bindProductDetailEvents();
-    }
 
     getProductById(id) {
-        const sampleProducts = [
-            {
-                id: 1,
-                name: "Áo kiểu Vintage Tái Sinh",
-                price: 450000,
-                originalPrice: 650000,
-                images: [
-                    "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&h=700&fit=crop",
-                    "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=600&h=700&fit=crop",
-                    "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&h=700&fit=crop",
-                    "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&h=700&fit=crop"
-                ],
-                style: "vintage",
-                origin: "Làm từ áo sơ mi linen cũ, thêu ren vintage",
-                description: "Một sản phẩm nghệ thuật tái chế độc đáo, được tạo ra từ chiếc áo sơ mi linen vintage. Mỗi chi tiết thêu ren đều được làm thủ công bởi các nghệ nhân có kinh nghiệm.",
-                material: "Linen tái chế 80%, Ren vintage 15%, Cotton organic 5%",
-                sizes: ["S", "M", "L"],
-                care: "Giặt tay với nước lạnh, phơi trong bóng râm",
-                story: "Chiếc áo này được tái sinh từ một chiếc áo sơ mi linen của thập niên 80, được phát hiện tại một cửa hàng đồ cũ ở Paris. Sau quá trình tái tạo tỉ mỉ, nó đã trở thành một sản phẩm hoàn toàn mới với phong cách vintage hiện đại.",
-                isNew: true,
-                mixMatch: [2, 6] // IDs of suggested products
-            },
-            {
-                id: 2,
-                name: "Váy Đẹp Độc Bản",
-                price: 780000,
-                originalPrice: null,
-                images: [
-                    "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=700&fit=crop",
-                    "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=700&fit=crop",
-                    "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=600&h=700&fit=crop"
-                ],
-                style: "độc bản",
-                origin: "Tái tạo từ vải cotton organic, phối ren cổ điển",
-                description: "Thiết kế độc bản không thể tìm thấy ở bất kỳ đâu khác. Được tạo ra từ những mảnh vải cotton organic chất lượng cao kết hợp với ren cổ điển.",
-                material: "Cotton organic 90%, Ren cổ điển 10%",
-                sizes: ["XS", "S", "M"],
-                care: "Máy giặt nhẹ nhàng, không sử dụng chất tẩy",
-                story: "Được thiết kế bởi team Đẹp dựa trên cảm hứng từ những bộ váy của phụ nữ Việt Nam xưa, kết hợp với xu hướng thời trang hiện đại.",
-                isNew: false,
-                mixMatch: [1, 4, 5]
-            }
-            // Add more products as needed...
-        ];
-        
-        return sampleProducts.find(p => p.id === id);
-    }
-
-    createProductDetailModal(product) {
-        return `
-            <div id="product-detail-modal" class="modal product-detail-modal">
-                <div class="modal-content product-detail-content">
-                    <div class="modal-header">
-                        <h3>${product.name}</h3>
-                        <button class="close-btn" onclick="this.closest('.modal').remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="product-detail-body">
-                        <div class="product-images-section">
-                            <div class="main-image-container">
-                                <img id="main-product-image" src="${product.images[0]}" alt="${product.name}">
-                                ${product.isNew ? '<span class="detail-new-badge">Mới</span>' : ''}
-                                ${product.originalPrice ? '<span class="detail-sale-badge">Sale</span>' : ''}
-                            </div>
-                            <div class="thumbnail-gallery">
-                                ${product.images.map((img, index) => `
-                                    <img src="${img}" alt="${product.name} - Góc ${index + 1}" 
-                                         class="thumbnail ${index === 0 ? 'active' : ''}"
-                                         onclick="depMarketplace.changeMainImage('${img}', this)">
-                                `).join('')}
-                            </div>
-                        </div>
-                        
-                        <div class="product-info-section">
-                            <div class="price-section">
-                                <span class="detail-current-price">${this.formatPrice(product.price)}</span>
-                                ${product.originalPrice ? `<span class="detail-original-price">${this.formatPrice(product.originalPrice)}</span>` : ''}
-                                ${product.originalPrice ? `<span class="discount-percent">-${Math.round((1 - product.price/product.originalPrice) * 100)}%</span>` : ''}
-                            </div>
-                            
-                            <div class="product-description">
-                                <p>${product.description}</p>
-                            </div>
-                            
-                            <div class="product-details">
-                                <div class="detail-item">
-                                    <strong>Nguồn gốc tái chế:</strong>
-                                    <p>${product.origin}</p>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <strong>Chất liệu:</strong>
-                                    <p>${product.material}</p>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <strong>Size có sẵn:</strong>
-                                    <div class="size-options">
-                                        ${product.sizes.map(size => `
-                                            <button class="size-btn" onclick="this.classList.toggle('selected')">${size}</button>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <strong>Hướng dẫn bảo quản:</strong>
-                                    <p>${product.care}</p>
-                                </div>
-                                
-                                <div class="detail-item sustainability-story">
-                                    <strong>Câu chuyện tái sinh:</strong>
-                                    <p>${product.story}</p>
-                                </div>
-                            </div>
-                            
-                            <div class="product-actions">
-                                <button class="btn-primary btn-buy-now">
-                                    <i class="fas fa-shopping-cart"></i>
-                                    Mua ngay
-                                </button>
-                                <button class="btn-secondary btn-add-cart">
-                                    <i class="fas fa-heart"></i>
-                                    Yêu thích
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mix-match-section">
-                        <h4>Kết hợp cùng sản phẩm Đẹp khác</h4>
-                        <div class="mix-match-products">
-                            ${this.generateMixMatchProducts(product.mixMatch)}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    changeMainImage(newSrc, thumbnail) {
-        document.getElementById('main-product-image').src = newSrc;
-        document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-        thumbnail.classList.add('active');
-    }
-
-    generateMixMatchProducts(productIds) {
-        if (!productIds || productIds.length === 0) return '<p>Không có gợi ý kết hợp.</p>';
-        
-        // Simplified mix match products
-        const mixMatchSamples = [
-            { id: 2, name: "Chân Váy Midi", price: 420000, image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=300&h=300&fit=crop" },
-            { id: 4, name: "Túi Tote Canvas", price: 290000, image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop" },
-            { id: 6, name: "Giày Oxford Vintage", price: 650000, image: "https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=300&h=300&fit=crop" }
-        ];
-        
-        return productIds.map(id => {
-            const product = mixMatchSamples.find(p => p.id === id) || mixMatchSamples[0];
-            return `
-                <div class="mix-match-item" onclick="depMarketplace.showProductDetail(${product.id})">
-                    <img src="${product.image}" alt="${product.name}">
-                    <div class="mix-match-info">
-                        <h5>${product.name}</h5>
-                        <span class="mix-match-price">${this.formatPrice(product.price)}</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        return null;
     }
 
     initProductGallery() {
@@ -1412,6 +1571,78 @@ class DepMarketplace {
                 mainImage.classList.toggle('zoomed');
             });
         }
+    }
+
+    initProductDetailModal(productId) {
+        const modal = document.getElementById('product-detail-modal');
+        if (!modal) {
+            console.warn('❌ Modal not found for initialization');
+            return;
+        }
+
+        console.log('🔧 Initializing product detail modal...');
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                console.log('🖱️ Clicked outside modal, closing...');
+                modal.remove();
+            }
+        });
+        
+        // ESC key to close
+        const escHandler = (e) => {
+            if (e.key === 'Escape' && modal) {
+                console.log('⌨️ ESC key pressed, closing modal...');
+                modal.remove();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+
+        // Close button functionality
+        const closeBtn = modal.querySelector('.close-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                console.log('❌ Close button clicked');
+                modal.remove();
+            });
+        }
+
+        // Add zoom functionality to main image
+        const mainImage = modal.querySelector('#main-product-image');
+        if (mainImage) {
+            mainImage.addEventListener('click', () => {
+                mainImage.classList.toggle('zoomed');
+                console.log('🔍 Image zoom toggled');
+            });
+        }
+
+        // Bind action buttons
+        const buyNowBtn = modal.querySelector('.btn-buy-now');
+        if (buyNowBtn) {
+            buyNowBtn.addEventListener('click', () => {
+                this.handleBuyNow(productId);
+            });
+        }
+
+        const addCartBtn = modal.querySelector('.btn-add-cart');
+        if (addCartBtn) {
+            addCartBtn.addEventListener('click', () => {
+                this.addToCart(productId);
+            });
+        }
+
+        const deleteBtn = modal.querySelector('.btn-delete');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', () => {
+                const productName = modal.querySelector('h3').textContent;
+                this.deleteProduct(productId, productName);
+                modal.remove();
+            });
+        }
+
+        console.log('✅ Product detail modal initialized successfully');
     }
 
     bindProductDetailEvents() {
@@ -1455,20 +1686,21 @@ class DepMarketplace {
                                 <div class="filter-section">
                                     <h3>Danh mục</h3>
                                     <div class="filter-options">
-                                        <label><input type="checkbox" value="tops"> Áo</label>
-                                        <label><input type="checkbox" value="bottoms"> Quần</label>
-                                        <label><input type="checkbox" value="dresses"> Váy</label>
-                                        <label><input type="checkbox" value="accessories"> Phụ kiện</label>
+                                        <label class="filter-option"><input type="checkbox" value="tops"> <span class="checkmark"></span>Áo</label>
+                                        <label class="filter-option"><input type="checkbox" value="bottoms"> <span class="checkmark"></span>Quần</label>
+                                        <label class="filter-option"><input type="checkbox" value="dresses"> <span class="checkmark"></span>Váy</label>
+                                        <label class="filter-option"><input type="checkbox" value="accessories"> <span class="checkmark"></span>Phụ kiện</label>
                                     </div>
                                 </div>
 
                                 <div class="filter-section">
                                     <h3>Thương hiệu</h3>
                                     <div class="filter-options">
-                                        <label><input type="checkbox" value="zara"> Zara</label>
-                                        <label><input type="checkbox" value="hm"> H&M</label>
-                                        <label><input type="checkbox" value="uniqlo"> Uniqlo</label>
-                                        <label><input type="checkbox" value="other"> Khác</label>
+                                        <label class="filter-option"><input type="checkbox" value="zara"> <span class="checkmark"></span>Zara</label>
+                                        <label class="filter-option"><input type="checkbox" value="hm"> <span class="checkmark"></span>H&M</label>
+                                        <label class="filter-option"><input type="checkbox" value="uniqlo"> <span class="checkmark"></span>Uniqlo</label>
+                                        <label class="filter-option"><input type="checkbox" value="mango"> <span class="checkmark"></span>Mango</label>
+                                        
                                     </div>
                                 </div>
 
@@ -1498,9 +1730,9 @@ class DepMarketplace {
                                 <div class="filter-section">
                                     <h3>Tình trạng</h3>
                                     <div class="filter-options">
-                                        <label><input type="checkbox" value="new"> 90% mới</label>
-                                        <label><input type="checkbox" value="good"> Tốt</label>
-                                        <label><input type="checkbox" value="vintage"> Vintage</label>
+                                        <label class="filter-option"><input type="checkbox" value="new"> <span class="checkmark"></span>90% mới</label>
+                                        <label class="filter-option"><input type="checkbox" value="good"> <span class="checkmark"></span>Tốt</label>
+                                        <label class="filter-option"><input type="checkbox" value="vintage"> <span class="checkmark"></span>Vintage</label>
                                     </div>
                                 </div>
                             </div>
@@ -1823,6 +2055,95 @@ class DepMarketplace {
     showSearchModal() {
         // Implement search modal
         Utils.showToast('Tính năng tìm kiếm đang phát triển', 'info');
+    }
+
+    // Product Management Methods
+    canDeleteProduct(product) {
+        // Kiểm tra quyền xóa sản phẩm
+        const currentUser = window.authManager?.getCurrentUser();
+        if (!currentUser) return false;
+        
+        // Admin có thể xóa tất cả sản phẩm
+        if (currentUser.role === 'admin') return true;
+        
+        // Người ký gửi chỉ có thể xóa sản phẩm của mình
+        return product.user_id === currentUser.id;
+    }
+
+    async deleteProduct(productId, productName) {
+        try {
+            // Xác nhận xóa
+            if (!confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${productName}"?`)) {
+                return;
+            }
+
+            // Xóa sản phẩm khỏi database
+            const { error } = await window.supabase
+                .from('consignments')
+                .delete()
+                .eq('id', productId);
+
+            if (error) {
+                throw new Error(`Lỗi xóa sản phẩm: ${error.message}`);
+            }
+
+            // Hiển thị thông báo thành công
+            Utils.showToast('Đã xóa sản phẩm thành công!', 'success');
+            
+            // Refresh danh sách sản phẩm
+            await this.generateMarketplaceProducts();
+            
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            Utils.showToast(`Lỗi xóa sản phẩm: ${error.message}`, 'error');
+        }
+    }
+
+    bindMarketplaceEvents() {
+        // Avoid rebinding on subsequent renders
+        if (this._deleteEventsBound) return;
+
+        // Bind delete product events (delegated, one-time)
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('.delete-product') || e.target.closest('.delete-product')) {
+                e.preventDefault();
+                const button = e.target.matches('.delete-product') ? e.target : e.target.closest('.delete-product');
+                const productId = button.getAttribute('data-product-id');
+                const productName = button.getAttribute('data-product-name');
+
+                if (!productId) return;
+
+                // Prevent rapid double clicks while deleting
+                button.disabled = true;
+                this.deleteProduct(productId, productName)
+                    .finally(async () => {
+                        button.disabled = false;
+                        // Sau khi xóa, cập nhật lại bộ lọc thương hiệu
+                        await this.syncBrandFiltersFromConsignments();
+                        this.applyFilters();
+                    });
+            }
+        });
+
+        // Bind product card click events for detail view
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                // Don't trigger if clicking on buttons or overlays
+                if (e.target.closest('.product-overlay') || 
+                    e.target.closest('.product-actions') || 
+                    e.target.closest('.btn')) {
+                    return;
+                }
+                
+                const productId = card.getAttribute('data-product-id');
+                if (productId) {
+                    console.log('🖱️ Product card clicked, showing detail for:', productId);
+                    this.showProductDetail(productId);
+                }
+            });
+        });
+
+        this._deleteEventsBound = true;
     }
 }
 

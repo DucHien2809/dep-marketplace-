@@ -13,6 +13,37 @@
     <link rel="stylesheet" href="styles/support.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/swiper/8.4.7/swiper-bundle.min.css" rel="stylesheet">
+    
+    <!-- Inline CSS to hide number input spinners -->
+    <style>
+        /* Hide all number input spinners */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-moz-inner-spin-button,
+        input[type="number"]::-moz-outer-spin-button {
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+            margin: 0 !important;
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            width: 0 !important;
+            height: 0 !important;
+            pointer-events: none !important;
+        }
+        
+        input[type="number"] {
+            -webkit-appearance: none !important;
+            -moz-appearance: textfield !important;
+            appearance: none !important;
+        }
+        
+        /* Specific styling for price inputs */
+        .price-input input[type="number"] {
+            padding-right: 50px !important;
+        }
+    </style>
 </head>
 <body>
     <!-- Loading Spinner -->
@@ -440,11 +471,7 @@
                                             <span class="checkmark"></span>
                                             Mango
                                         </label>
-                                        <label class="filter-option">
-                                            <input type="checkbox" value="other">
-                                            <span class="checkmark"></span>
-                                            Khác
-                                        </label>
+
                                     </div>
                                 </div>
 
@@ -693,7 +720,8 @@
                                             <div class="form-group">
                                                 <label for="desired-price">Giá mong muốn <span class="required">*</span></label>
                                                 <div class="price-input">
-                                                    <input type="number" id="desired-price" name="price" min="10000" step="1000" placeholder="0" required>
+                                                    <input type="number" id="desired-price" name="price" min="10000" step="1000" placeholder="0" required 
+                                                           style="-webkit-appearance: none; -moz-appearance: textfield; appearance: none; padding-right: 50px;">
                                                     <span class="currency">VNĐ</span>
                                                 </div>
                                                 <div class="form-help">Giá bạn muốn nhận được sau khi trừ phí dịch vụ</div>

@@ -19,7 +19,12 @@ class App {
         this.init();
     }
 
-    init() {
+    async init() {
+        // Chờ Supabase sẵn sàng trước khi fetch dữ liệu
+        if (window.SupabaseConfig && typeof window.SupabaseConfig.whenReady === 'function') {
+            await window.SupabaseConfig.whenReady();
+        }
+
         this.bindEvents();
         this.loadData();
     }

@@ -294,9 +294,9 @@
 }
 
 .tag-option input[type="radio"]:checked + .tag {
-    background: var(--primary-color);
+    background: #e8f5f2; /* light brand tint so text stays readable */
     border-color: var(--primary-color);
-    color: white;
+    color: var(--primary-color);
 }
 
 /* Price Input */
@@ -305,16 +305,64 @@
 }
 
 .price-input input {
-    padding-right: 50px;
+    padding-right: 80px; /* leave room for currency label */
 }
 
 .currency {
     position: absolute;
-    right: 15px;
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
     font-weight: 500;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Remove default number spinners to avoid overlap with currency */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield !important; /* Firefox */
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+/* Additional padding for number inputs to prevent overlap */
+.price-input input[type="number"] {
+    padding-right: 50px !important;
+}
+
+/* Ensure spinners are hidden in all browsers with !important */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+input[type="number"]::-moz-inner-spin-button,
+input[type="number"]::-moz-outer-spin-button {
+    -moz-appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
 }
 
 /* Price Breakdown */
@@ -422,4 +470,48 @@
     }
     
 
+}
+
+/* Global number input spinner removal - ensure all spinners are hidden */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-moz-inner-spin-button,
+input[type="number"]::-moz-outer-spin-button {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Force remove all number input styling */
+input[type="number"] {
+    -webkit-appearance: none !important;
+    -moz-appearance: textfield !important;
+    appearance: none !important;
+}
+
+/* Specific styling for the desired-price input */
+#desired-price::-webkit-outer-spin-button,
+#desired-price::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    pointer-events: none !important;
+}
+
+#desired-price {
+    -webkit-appearance: none !important;
+    -moz-appearance: textfield !important;
+    appearance: none !important;
+    padding-right: 50px !important;
 }
