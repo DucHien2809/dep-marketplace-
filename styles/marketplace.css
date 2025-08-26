@@ -104,7 +104,7 @@
     cursor: pointer;
 }
 
-.checkmark {
+.filter-checkmark {
     height: 18px;
     width: 18px;
     background-color: white;
@@ -115,16 +115,16 @@
     transition: all 0.2s ease;
 }
 
-.filter-option:hover input ~ .checkmark {
+.filter-option:hover input ~ .filter-checkmark {
     border-color: var(--primary-color);
 }
 
-.filter-option input:checked ~ .checkmark {
+.filter-option input:checked ~ .filter-checkmark {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
 }
 
-.filter-option input:checked ~ .checkmark:after {
+.filter-option input:checked ~ .filter-checkmark:after {
     content: "";
     position: absolute;
     display: block;

@@ -265,7 +265,7 @@ class DepMarketplace {
             
             const label = document.createElement('label');
             label.className = 'filter-option';
-            label.innerHTML = `<input type="checkbox" value="${brand.slug}"> <span class="checkmark"></span>${brand.name}`;
+            label.innerHTML = `<input type="checkbox" value="${brand.slug}"> <span class="filter-checkmark"></span>${brand.name}`;
             
             // Thêm vào cuối danh sách
             container.appendChild(label);
@@ -407,7 +407,7 @@ class DepMarketplace {
                      else if (defaultSlug === 'uniqlo') displayName = 'Uniqlo';
                      else if (defaultSlug === 'mango') displayName = 'Mango';
                     
-                    label.innerHTML = `<input type="checkbox" value="${defaultSlug}"> <span class="checkmark"></span>${displayName}`;
+                    label.innerHTML = `<input type="checkbox" value="${defaultSlug}"> <span class="filter-checkmark"></span>${displayName}`;
                     
                                          // Thêm vào đầu danh sách
                      container.appendChild(label);
@@ -444,7 +444,7 @@ class DepMarketplace {
                 console.log(`➕ Thêm brand mới: ${slug}`);
                 const label = document.createElement('label');
                 label.className = 'filter-option';
-                label.innerHTML = `<input type="checkbox" value="${slug}"> <span class="checkmark"></span>${slug}`;
+                label.innerHTML = `<input type="checkbox" value="${slug}"> <span class="filter-checkmark"></span>${slug}`;
                 container.appendChild(label);
                 const input = label.querySelector('input');
                 input.addEventListener('change', () => this.applyFilters());
@@ -1722,20 +1722,20 @@ class DepMarketplace {
                                 <div class="filter-section">
                                     <h3>Danh mục</h3>
                                     <div class="filter-options">
-                                        <label class="filter-option"><input type="checkbox" value="tops"> <span class="checkmark"></span>Áo</label>
-                                        <label class="filter-option"><input type="checkbox" value="bottoms"> <span class="checkmark"></span>Quần</label>
-                                        <label class="filter-option"><input type="checkbox" value="dresses"> <span class="checkmark"></span>Váy</label>
-                                        <label class="filter-option"><input type="checkbox" value="accessories"> <span class="checkmark"></span>Phụ kiện</label>
+                                                        <label class="filter-option"><input type="checkbox" value="tops"> <span class="filter-checkmark"></span>Áo</label>
+                <label class="filter-option"><input type="checkbox" value="bottoms"> <span class="filter-checkmark"></span>Quần</label>
+                <label class="filter-option"><input type="checkbox" value="dresses"> <span class="filter-checkmark"></span>Váy</label>
+                <label class="filter-option"><input type="checkbox" value="accessories"> <span class="filter-checkmark"></span>Phụ kiện</label>
                                     </div>
                                 </div>
 
                                 <div class="filter-section">
                                     <h3>Thương hiệu</h3>
                                     <div class="filter-options">
-                                        <label class="filter-option"><input type="checkbox" value="zara"> <span class="checkmark"></span>Zara</label>
-                                        <label class="filter-option"><input type="checkbox" value="hm"> <span class="checkmark"></span>H&M</label>
-                                        <label class="filter-option"><input type="checkbox" value="uniqlo"> <span class="checkmark"></span>Uniqlo</label>
-                                        <label class="filter-option"><input type="checkbox" value="mango"> <span class="checkmark"></span>Mango</label>
+                                                        <label class="filter-option"><input type="checkbox" value="zara"> <span class="filter-checkmark"></span>Zara</label>
+                <label class="filter-option"><input type="checkbox" value="hm"> <span class="filter-checkmark"></span>H&M</label>
+                <label class="filter-option"><input type="checkbox" value="uniqlo"> <span class="filter-checkmark"></span>Uniqlo</label>
+                                        <label class="filter-option"><input type="checkbox" value="mango"> <span class="filter-checkmark"></span>Mango</label>
                                         
                                     </div>
                                 </div>
@@ -1766,9 +1766,9 @@ class DepMarketplace {
                                 <div class="filter-section">
                                     <h3>Tình trạng</h3>
                                     <div class="filter-options">
-                                        <label class="filter-option"><input type="checkbox" value="new"> <span class="checkmark"></span>90% mới</label>
-                                        <label class="filter-option"><input type="checkbox" value="good"> <span class="checkmark"></span>Tốt</label>
-                                        <label class="filter-option"><input type="checkbox" value="vintage"> <span class="checkmark"></span>Vintage</label>
+                                                        <label class="filter-option"><input type="checkbox" value="new"> <span class="filter-checkmark"></span>90% mới</label>
+                <label class="filter-option"><input type="checkbox" value="good"> <span class="filter-checkmark"></span>Tốt</label>
+                <label class="filter-option"><input type="checkbox" value="vintage"> <span class="filter-checkmark"></span>Vintage</label>
                                     </div>
                                 </div>
                             </div>
