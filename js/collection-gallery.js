@@ -378,11 +378,10 @@ class CollectionGallery {
                                     <input type="text" id="item-tags" placeholder="vintage, renaissance, linen">
                                 </div>
                                 
-                                <div class="form-group featured-checkbox-group">
-                                    <label class="featured-checkbox-label">
-                                        <input type="checkbox" id="item-featured" class="featured-checkbox">
-                                        <span class="checkmark"></span>
-                                        <span class="checkbox-text">✨ Đặt làm nổi bật</span>
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="checkbox" id="item-featured">
+                                        <span>✨ Đặt làm nổi bật</span>
                                     </label>
                                 </div>
                             </div>
@@ -401,18 +400,23 @@ class CollectionGallery {
         `;
         
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-        document.getElementById('upload-gallery-modal').classList.add('show');
+        const modal = document.getElementById('upload-gallery-modal');
+        modal.classList.add('show');
         
-        // Setup drag and drop
-        this.setupImageUpload();
+        // Setup drag and drop scoped to this modal to avoid ID conflicts on the page
+        this.setupImageUpload(modal);
+
+        // No custom toggle logic needed when using native checkbox
     }
 
-    setupImageUpload() {
-        const uploadZone = document.getElementById('upload-zone');
-        const fileInput = document.getElementById('gallery-image-input');
-        
+    setupImageUpload(modal) {
+        const uploadZone = modal.querySelector('#upload-zone');
+        const fileInput = modal.querySelector('#gallery-image-input');
+        const preview = modal.querySelector('#image-preview');
+        if (!uploadZone || !fileInput || !preview) return;
+
         uploadZone.addEventListener('click', () => fileInput.click());
-        
+
         uploadZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadZone.classList.add('dragover');
@@ -425,12 +429,17 @@ class CollectionGallery {
         uploadZone.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadZone.classList.remove('dragover');
-            this.handleImageUpload(e.dataTransfer.files);
+            this.handleImageUpload(e.dataTransfer.files, preview);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            this.handleImageUpload(e.target.files, preview);
         });
     }
 
-    handleImageUpload(files) {
-        const preview = document.getElementById('image-preview');
+    handleImageUpload(files, previewEl) {
+        const preview = previewEl || document.getElementById('image-preview');
+        if (!preview) return;
         preview.innerHTML = '';
         
         Array.from(files).forEach((file, index) => {
@@ -456,7 +465,7 @@ class CollectionGallery {
         const title = document.getElementById('item-title').value.trim();
         const story = document.getElementById('item-story').value.trim();
         const tags = document.getElementById('item-tags').value.trim();
-        const featured = document.getElementById('item-featured').checked;
+        const featured = !!document.getElementById('item-featured')?.checked;
         
         // Validation
         if (!title || !story) {
@@ -464,7 +473,8 @@ class CollectionGallery {
             return;
         }
 
-        const fileInput = document.getElementById('gallery-image-input');
+        const modal = document.getElementById('upload-gallery-modal');
+        const fileInput = modal ? modal.querySelector('#gallery-image-input') : document.getElementById('gallery-image-input');
         if (!fileInput.files || fileInput.files.length === 0) {
             Utils.showToast('Vui lòng chọn ít nhất một ảnh', 'error');
             return;
@@ -790,11 +800,10 @@ class CollectionGallery {
                                     <label>Tình trạng</label>
                                     <input type="text" id="edit-condition" value="${product.condition}">
                                 </div>
-                                <div class="form-group featured-checkbox-group">
-                                    <label class="featured-checkbox-label">
-                                        <input type="checkbox" id="edit-featured" class="featured-checkbox" ${product.featured ? 'checked' : ''}>
-                                        <span class="checkmark"></span>
-                                        <span class="checkbox-text">✨ Đặt làm nổi bật</span>
+                                <div class="form-group">
+                                    <label style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="checkbox" id="edit-featured" ${product.featured ? 'checked' : ''}>
+                                        <span>✨ Đặt làm nổi bật</span>
                                     </label>
                                 </div>
                             </div>
@@ -820,6 +829,8 @@ class CollectionGallery {
         
         // Setup drag and drop for new image upload
         this.setupEditImageUpload();
+
+        // Native checkbox already handles featured selection; no extra JS needed
     }
 
     setupEditImageUpload() {

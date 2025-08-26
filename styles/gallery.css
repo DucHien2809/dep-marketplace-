@@ -962,48 +962,69 @@
 }
 
 .featured-checkbox {
-    display: none;
+    position: absolute;
+    opacity: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 0;
+    height: 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+/* Force-hide any generic checkbox styling applied within upload form */
+.featured-checkbox-group input[type="checkbox"] {
+    position: absolute !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    pointer-events: none !important;
 }
 
 .checkmark {
     position: relative;
-    width: 24px;
-    height: 24px;
+    width: 50px;
+    height: 28px;
     border: 2px solid var(--border-light);
-    border-radius: 6px;
-    background: white;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-radius: 999px;
+    background: linear-gradient(135deg, #f3f7f6, #ffffff);
+    transition: all 0.25s ease;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .checkmark::after {
     content: '';
     position: absolute;
-    left: 8px;
-    top: 4px;
-    width: 6px;
-    height: 10px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg) scale(0);
-    transition: all 0.2s ease;
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffffff, #eef7f5);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transform: translateX(0);
+    transition: transform 0.25s ease;
 }
 
-.featured-checkbox:checked + .checkmark {
+.featured-checkbox-label.active .checkmark {
     background: linear-gradient(135deg, var(--light-green), var(--accent-green));
     border-color: var(--light-green);
-    box-shadow: 0 4px 12px rgba(74, 155, 142, 0.3);
+    box-shadow: 0 6px 16px rgba(74, 155, 142, 0.35);
 }
 
-.featured-checkbox:checked + .checkmark::after {
-    transform: rotate(45deg) scale(1);
+.featured-checkbox-label.active .checkmark::after {
+    transform: translateX(22px);
+    background: #ffffff;
 }
 
 .checkbox-text {
     transition: all 0.3s ease;
 }
 
-.featured-checkbox:checked ~ .checkbox-text {
+.featured-checkbox-label.active .checkbox-text {
     color: var(--light-green);
     font-weight: 700;
 }
