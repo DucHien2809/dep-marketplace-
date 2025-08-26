@@ -509,6 +509,10 @@
     cursor: pointer;
     font-weight: 600;
     transition: background 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .btn-buy:hover {
@@ -651,14 +655,16 @@
     }
 }
 
-/* Product Delete Button Styles */
-.product-actions {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    display: flex;
-    gap: 8px;
-    z-index: 10;
+/* Product Delete Button Styles - Cải thiện thiết kế */
+.product-actions.delete-actions {
+    position: absolute !important;
+    top: 4px !important;
+    right: 4px !important;
+    display: flex !important;
+    gap: 8px !important;
+    z-index: 999 !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
 }
 
 /* Ensure product-overlay works with delete button */
@@ -680,35 +686,120 @@
     opacity: 1;
 }
 
-.product-actions .btn-danger {
-    background: #dc3545;
-    border: none;
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    transition: all 0.2s ease;
-    opacity: 0.9;
-    cursor: pointer;
+/* Nút xóa được cải thiện - Đẹp và chuyên nghiệp hơn */
+.product-actions.delete-actions .btn-danger {
+    background: linear-gradient(145deg, #ff4757, #ff3742) !important;
+    border: none !important;
+    color: white !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    max-width: 36px !important;
+    max-height: 36px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    opacity: 0.95 !important;
+    cursor: pointer !important;
+    box-shadow: 
+        0 4px 12px rgba(255, 71, 87, 0.3),
+        0 2px 6px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    text-align: center !important;
 }
 
-.product-actions .btn-danger:hover {
-    background: #c82333;
+/* Hiệu ứng shine khi hover */
+.product-actions.delete-actions .btn-danger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.product-actions.delete-actions .btn-danger:hover::before {
+    left: 100%;
+}
+
+.product-actions.delete-actions .btn-danger:hover {
+    background: linear-gradient(145deg, #ff3742, #ff2f3a);
     opacity: 1;
-    transform: scale(1.1);
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 
+        0 8px 20px rgba(255, 71, 87, 0.4),
+        0 4px 12px rgba(255, 71, 87, 0.3),
+        0 0 20px rgba(255, 71, 87, 0.2);
 }
 
-.product-actions .btn-danger:active {
+.product-actions.delete-actions .btn-danger:active {
     transform: scale(0.95);
+    box-shadow: 
+        0 2px 8px rgba(255, 71, 87, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Icon thùng rác được căn giữa hoàn hảo */
+.product-actions.delete-actions .btn-danger i {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.product-actions.delete-actions .btn-danger:hover i {
+    transform: scale(1.1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
 /* Product overlay for delete button visibility */
-.product-card:hover .product-actions .btn-danger {
-    opacity: 1;
+.product-card:hover .product-actions.delete-actions .btn-danger {
+    opacity: 1 !important;
+}
+
+/* CSS đặc biệt để override tất cả CSS khác */
+.product-card .product-actions.delete-actions {
+    position: absolute !important;
+    top: 4px !important;
+    right: 4px !important;
+    display: flex !important;
+    gap: 8px !important;
+    z-index: 999 !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    transform: none !important;
+}
+
+.product-card .product-actions.delete-actions .btn-danger {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    max-width: 36px !important;
+    max-height: 36px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
 }
 
 /* Product Detail Modal */
@@ -1155,4 +1246,39 @@ input[type="number"] {
         right: 10px;
         gap: 6px;
     }
+}
+
+/* CSS với độ ưu tiên cao nhất để đảm bảo nút xóa hoạt động đúng */
+html body .product-card .product-actions.delete-actions {
+    position: absolute !important;
+    top: 4px !important;
+    right: 4px !important;
+    display: flex !important;
+    gap: 8px !important;
+    z-index: 999 !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    transform: none !important;
+}
+
+html body .product-card .product-actions.delete-actions .btn-danger {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    max-width: 36px !important;
+    max-height: 36px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    background: linear-gradient(145deg, #ff4757, #ff3742) !important;
+    border: none !important;
+    color: white !important;
 }

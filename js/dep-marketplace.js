@@ -900,6 +900,7 @@ class DepMarketplace {
                      data-category="${p.category || ''}" 
                      data-brand="${p.brand || 'other'}" 
                      data-size="${p.size || ''}" 
+                     data-condition="${p.condition || ''}"
                      data-price="${p.selling_price || 0}">
                     <div class="product-image">
                         <img src="${p.primary_image}" alt="${p.name}">
@@ -907,7 +908,7 @@ class DepMarketplace {
                             <button class="btn btn-primary add-to-cart" data-product-id="${p.id}">Thêm vào giỏ</button>
                         </div>
                         ${this.canDeleteProduct(p) ? `
-                            <div class="product-actions">
+                            <div class="product-actions delete-actions">
                                 <button class="btn btn-danger btn-sm delete-product" 
                                         data-product-id="${p.id}" 
                                         data-product-name="${p.name}"
@@ -926,7 +927,11 @@ class DepMarketplace {
                             <span class="brand-tag">${p.brand || 'Khác'}</span>
                             <span class="condition-tag">${this.getConditionLabel(p.condition)}</span>
                         </div>
-                                            </div>
+                        <div class="product-actions">
+                            <button class="btn-buy" data-product-id="${p.id}">Mua ngay <i class="fas fa-shopping-cart"></i></button>
+                            <button class="btn-chat btn-detail" data-product-id="${p.id}">Xem chi tiết</button>
+                        </div>
+                    </div>
                     </div>
             `).join('');
 
@@ -1081,6 +1086,16 @@ class DepMarketplace {
     createProductDetailModal(product) {
         console.log('🔧 Creating product detail modal for:', product.name);
         
+        // Build images array: primary first, then gallery (deduplicated)
+        const rawImages = [
+            product.primary_image || '/images/placeholder.jpg',
+            ...((Array.isArray(product.gallery) ? product.gallery : []) || [])
+        ]
+        .filter(v => typeof v === 'string' && v.trim().length > 0)
+        .map(v => v.trim());
+
+        const allImages = Array.from(new Set(rawImages));
+
         return `
             <div id="product-detail-modal" class="modal product-detail-modal">
                 <div class="modal-content product-detail-content">
@@ -1091,44 +1106,48 @@ class DepMarketplace {
                     <div class="product-detail-body">
                         <div class="product-images-section">
                             <div class="main-image-container">
-                                <img src="${product.image_url || '/images/placeholder.jpg'}" 
+                                <img src="${allImages[0]}" 
                                      alt="${product.name}" 
-                                     class="main-product-image">
+                                     class="main-product-image" id="main-product-image">
                                 <span class="detail-condition-badge">${this.getConditionLabel(product.condition)}</span>
+                            </div>
+                            <div class="thumbnail-gallery">
+                                ${allImages.map((img, idx) => `
+                                    <img src="${img}" alt="${product.name} ${idx+1}" class="thumbnail ${idx===0 ? 'active' : ''}" data-src="${img}">
+                                `).join('')}
                             </div>
                         </div>
                         <div class="product-info-section">
-                            <div class="price-section">
-                                <span class="price">${this.formatPrice(product.price)}</span>
-                            </div>
                             <div class="product-meta-detail">
                                 <div class="meta-item">
-                                    <strong>Thương hiệu:</strong> ${product.brand || 'Không xác định'}
+                                    <strong>Tiêu đề sản phẩm:</strong> ${product.name || ''}
                                 </div>
                                 <div class="meta-item">
-                                    <strong>Tình trạng:</strong> ${this.getConditionLabel(product.condition)}
+                                    <strong>Thương hiệu:</strong> ${product.brand || 'Không xác định'}
                                 </div>
                                 <div class="meta-item">
                                     <strong>Kích thước:</strong> ${product.size || 'Không xác định'}
                                 </div>
                                 <div class="meta-item">
-                                    <strong>Màu sắc:</strong> ${product.color || 'Không xác định'}
+                                    <strong>Danh mục:</strong> ${this.getCategoryLabel(product.category) || 'Không xác định'}
                                 </div>
                                 <div class="meta-item">
-                                    <strong>Ngày đăng:</strong> ${new Date(product.created_at).toLocaleDateString('vi-VN')}
+                                    <strong>Tình trạng:</strong> ${this.getConditionLabel(product.condition)}
+                                </div>
+                                <div class="meta-item">
+                                    <strong>Giá bán:</strong> ${this.formatPrice(product.selling_price || 0)}
+                                </div>
+                                <div class="meta-item">
+                                    <strong>Mã sản phẩm:</strong> ${product.id}
                                 </div>
                             </div>
                             <div class="product-description">
-                                <h4>Mô tả sản phẩm:</h4>
+                                <h4>Mô tả chi tiết:</h4>
                                 <p>${product.description || 'Không có mô tả'}</p>
                             </div>
                             <div class="product-actions">
-                                <button class="btn btn-primary" onclick="this.handleBuyNow('${product.id}')">
-                                    Mua ngay
-                                </button>
-                                <button class="btn btn-secondary" onclick="this.closeProductDetailModal()">
-                                    Đóng
-                                </button>
+                                <button class="btn btn-primary btn-buy-now" data-product-id="${product.id}">Mua ngay <i class="fas fa-shopping-cart"></i></button>
+                                <button class="btn btn-secondary btn-close-modal">Đóng</button>
                             </div>
                         </div>
                     </div>
@@ -1353,42 +1372,42 @@ class DepMarketplace {
         const searchInput = document.getElementById('collection-search');
 
         if (categoryFilter) {
-            categoryFilter.addEventListener('change', () => this.applyFilters());
+            categoryFilter.addEventListener('change', () => this.applyCollectionFilters());
         }
         if (sizeFilter) {
-            sizeFilter.addEventListener('change', () => this.applyFilters());
+            sizeFilter.addEventListener('change', () => this.applyCollectionFilters());
         }
         if (priceFilter) {
-            priceFilter.addEventListener('change', () => this.applyFilters());
+            priceFilter.addEventListener('change', () => this.applyCollectionFilters());
         }
         if (styleFilter) {
-            styleFilter.addEventListener('change', () => this.applyFilters());
+            styleFilter.addEventListener('change', () => this.applyCollectionFilters());
         }
         if (sortFilter) {
-            sortFilter.addEventListener('change', () => this.applySorting());
+            sortFilter.addEventListener('change', () => this.applyCollectionSorting());
         }
         if (searchInput) {
-            searchInput.addEventListener('input', () => this.applySearch());
+            searchInput.addEventListener('input', () => this.applyCollectionSearch());
         }
     }
 
-    applyFilters() {
-        // This would normally filter products from database
-        this.updateResultsCount();
+    applyCollectionFilters() {
+        // This is for the separate collection page; kept minimal
+        this.updateCollectionResultsCount();
     }
 
-    applySorting() {
-        this.updateResultsCount();
+    applyCollectionSorting() {
+        this.updateCollectionResultsCount();
     }
 
-    applySearch() {
+    applyCollectionSearch() {
         const searchInput = document.getElementById('collection-search');
         if (searchInput && searchInput.value.length > 2) {
-            this.updateResultsCount();
+            this.updateCollectionResultsCount();
         }
     }
 
-    updateResultsCount() {
+    updateCollectionResultsCount() {
         const countElement = document.getElementById('collection-results-count');
         if (countElement) {
             countElement.textContent = 'Hiển thị 6 sản phẩm';
@@ -1581,6 +1600,8 @@ class DepMarketplace {
         }
 
         console.log('🔧 Initializing product detail modal...');
+        // Show modal
+        modal.classList.add('show');
 
         // Close modal when clicking outside
         modal.addEventListener('click', (e) => {
@@ -1618,18 +1639,33 @@ class DepMarketplace {
             });
         }
 
+        // Thumbnail click to swap main image
+        const thumbs = modal.querySelectorAll('.thumbnail');
+        if (thumbs && thumbs.length) {
+            thumbs.forEach(thumb => {
+                thumb.addEventListener('click', () => {
+                    const src = thumb.getAttribute('data-src') || thumb.getAttribute('src');
+                    if (src && mainImage) {
+                        mainImage.setAttribute('src', src);
+                        modal.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                        thumb.classList.add('active');
+                    }
+                });
+            });
+        }
+
         // Bind action buttons
         const buyNowBtn = modal.querySelector('.btn-buy-now');
         if (buyNowBtn) {
             buyNowBtn.addEventListener('click', () => {
-                this.handleBuyNow(productId);
+                // Do nothing per requirement
             });
         }
 
-        const addCartBtn = modal.querySelector('.btn-add-cart');
-        if (addCartBtn) {
-            addCartBtn.addEventListener('click', () => {
-                this.addToCart(productId);
+        const closeBtn2 = modal.querySelector('.btn-close-modal');
+        if (closeBtn2) {
+            closeBtn2.addEventListener('click', () => {
+                modal.remove();
             });
         }
 
@@ -2141,6 +2177,21 @@ class DepMarketplace {
                     this.showProductDetail(productId);
                 }
             });
+        });
+
+        // Delegated handlers for explicit buttons
+        document.addEventListener('click', (e) => {
+            // Xem chi tiết
+            if (e.target.matches('.btn-detail') || e.target.closest('.btn-detail')) {
+                e.preventDefault();
+                const btn = e.target.closest('.btn-detail');
+                const productId = btn.getAttribute('data-product-id');
+                if (productId) this.showProductDetail(productId);
+            }
+            // Mua ngay (không làm gì theo yêu cầu)
+            if (e.target.matches('.btn-buy') || e.target.closest('.btn-buy')) {
+                e.preventDefault();
+            }
         });
 
         this._deleteEventsBound = true;

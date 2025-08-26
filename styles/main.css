@@ -22,6 +22,8 @@ body {
     --text-dark: #2c2c2c;
     --text-light: #666666;
     --border-light: #e8e8e8;
+    /* Global primary color used across marketplace styles */
+    --primary-color: var(--primary-green);
 }
 
 .container {

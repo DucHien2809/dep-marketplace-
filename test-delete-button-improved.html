@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Nút Xóa Đã Cải Thiện</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .test-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 800px;
+        }
+
+        .test-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .demo-section {
+            margin-bottom: 40px;
+        }
+
+        .demo-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .product-card-demo {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .product-image-demo {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* CSS mới cho nút xóa - Copy từ marketplace.css đã cải thiện */
+        .product-actions.delete-actions {
+            position: absolute !important;
+            top: 4px !important;
+            right: 4px !important;
+            display: flex !important;
+            gap: 8px !important;
+            z-index: 999 !important;
+            margin: 0 !important;
+            margin-top: 0 !important;
+        }
+
+        .product-actions.delete-actions .btn-danger {
+            background: linear-gradient(145deg, #ff4757, #ff3742) !important;
+            border: none !important;
+            color: white !important;
+            width: 36px !important;
+            height: 36px !important;
+            min-width: 36px !important;
+            min-height: 36px !important;
+            max-width: 36px !important;
+            max-height: 36px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 14px !important;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            opacity: 0.95 !important;
+            cursor: pointer !important;
+            box-shadow: 
+                0 4px 12px rgba(255, 71, 87, 0.3),
+                0 2px 6px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+            flex-grow: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            line-height: 1 !important;
+            text-align: center !important;
+        }
+
+        /* Hiệu ứng shine khi hover */
+        .product-actions.delete-actions .btn-danger::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .product-actions.delete-actions .btn-danger:hover::before {
+            left: 100%;
+        }
+
+        .product-actions.delete-actions .btn-danger:hover {
+            background: linear-gradient(145deg, #ff3742, #ff2f3a);
+            opacity: 1;
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 
+                0 8px 20px rgba(255, 71, 87, 0.4),
+                0 4px 12px rgba(255, 71, 87, 0.3),
+                0 0 20px rgba(255, 71, 87, 0.2);
+        }
+
+        .product-actions.delete-actions .btn-danger:active {
+            transform: scale(0.95);
+            box-shadow: 
+                0 2px 8px rgba(255, 71, 87, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Icon thùng rác được căn giữa hoàn hảo */
+        .product-actions.delete-actions .btn-danger i {
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .product-actions.delete-actions .btn-danger:hover i {
+            transform: scale(1.1);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #ff4757;
+            text-align: left;
+        }
+
+        .feature h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        .feature p {
+            color: #666;
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .position-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #2196f3;
+            margin-bottom: 30px;
+        }
+
+        .position-info h3 {
+            color: #1976d2;
+            margin: 0 0 15px 0;
+            font-size: 1.2rem;
+        }
+
+        .position-info ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #1565c0;
+        }
+
+        .position-info li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🎯 Nút Xóa Đã Cải Thiện</h1>
+        
+        <div class="position-info">
+            <h3>📍 Vị Trí Nút Xóa</h3>
+            <ul>
+                <li><strong>Nút xóa:</strong> Nằm ở góc trên bên phải của sản phẩm (top: 4px, right: 4px)</li>
+                <li><strong>Icon thùng rác:</strong> Được căn giữa hoàn hảo trong ô nút</li>
+                <li><strong>Kích thước:</strong> 36x36px (hình tròn hoàn hảo)</li>
+                <li><strong>Z-index:</strong> 999 (luôn hiển thị trên các phần tử khác)</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3 class="demo-title">🎨 Demo Nút Xóa Trên Sản Phẩm</h3>
+            <div class="product-card-demo">
+                <div class="product-image-demo">
+                    🛍️ Sản Phẩm Demo
+                </div>
+                <div class="product-actions delete-actions">
+                    <button class="btn-danger" title="Xóa sản phẩm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <h3>✨ Thiết Kế Mới</h3>
+                <p>Gradient màu đỏ cam đẹp mắt, shadow 3D, và hiệu ứng glow khi hover</p>
+            </div>
+            <div class="feature">
+                <h3>🎭 Hiệu Ứng Mượt</h3>
+                <p>Animation shine, transform scale, và transition mượt mà với cubic-bezier</p>
+            </div>
+            <div class="feature">
+                <h3>📍 Vị Trí Tối Ưu</h3>
+                <p>Nút xóa ở góc trên bên phải, icon thùng rác căn giữa hoàn hảo</p>
+            </div>
+            <div class="feature">
+                <h3>📱 Responsive</h3>
+                <p>Tự động điều chỉnh kích thước và vị trí trên mọi thiết bị</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 12px; border-left: 4px solid #ffc107;">
+            <h4 style="margin: 0 0 10px 0; color: #856404;">💡 Lưu Ý</h4>
+            <p style="margin: 0; color: #856404; font-size: 0.9rem;">
+                Nút xóa đã được cải thiện với vị trí góc trên bên phải và icon thùng rác ở trung tâm. 
+                Thiết kế mới sử dụng gradient, shadow 3D và hiệu ứng animation mượt mà.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
