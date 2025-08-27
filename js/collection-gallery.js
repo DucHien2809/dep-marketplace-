@@ -9,22 +9,36 @@ class CollectionGallery {
     async init() {
         console.log('🎨 Initializing CollectionGallery...');
         this.bindEvents();
+        
+        // Wait for Supabase to be ready before loading data
+        if (window.SupabaseConfig && typeof window.SupabaseConfig.whenReady === 'function') {
+            console.log('⏳ Waiting for Supabase to be ready...');
+            await window.SupabaseConfig.whenReady();
+            console.log('✅ Supabase is ready');
+        }
+        
+        console.log('📊 Loading initial gallery items...');
         await this.loadGalleryItems();
+        console.log('📊 Initial gallery items loaded:', this.galleryItems.length);
+        console.log('📊 Gallery items after init:', this.galleryItems);
         
         // Clear any remaining sample data after loading
         setTimeout(() => {
+            console.log('⏰ Clearing sample data after timeout...');
             this.clearAllSampleData();
         }, 1000);
     }
 
     bindEvents() {
         console.log('🔗 Binding CollectionGallery events...');
+        console.log('🎯 Looking for elements to bind events to...');
         
         // Product management buttons
         document.addEventListener('click', (e) => {
             if (e.target.id === 'upload-product-btn' || e.target.closest('#upload-product-btn')) {
                 e.preventDefault();
                 console.log('📸 Upload product button clicked via CollectionGallery');
+                console.log('🎯 Target element:', e.target);
                 this.showUploadModal();
             }
             
@@ -52,26 +66,62 @@ class CollectionGallery {
                 this.showProductDetail(itemId);
             }
             
+            // Open detail by clicking main image
+            if (e.target.classList && e.target.classList.contains('product-image')) {
+                e.preventDefault();
+                const itemId = e.target.closest('.product-item')?.getAttribute('data-item-id');
+                if (itemId) this.showProductDetail(itemId);
+            }
+            
+            // Open detail by clicking product title
+            if (e.target.classList && e.target.classList.contains('product-title')) {
+                e.preventDefault();
+                const itemId = e.target.closest('.product-item')?.getAttribute('data-item-id');
+                if (itemId) this.showProductDetail(itemId);
+            }
+            
             if (e.target.closest('.btn-add-cart')) {
                 e.preventDefault();
                 const itemId = e.target.closest('.product-item').getAttribute('data-item-id');
                 this.addToCart(itemId);
             }
             
-            // Product filters
+            // Product filters (multi-select per type with "Tất cả" behavior)
             if (e.target.closest('.filter-btn')) {
                 e.preventDefault();
-                const filterBtn = e.target.closest('.filter-btn');
-                const filterType = filterBtn.getAttribute('data-type');
-                const filterValue = filterBtn.getAttribute('data-filter');
-                
-                // Remove active from same type filters
-                document.querySelectorAll(`.filter-btn[data-type="${filterType}"]`)
-                    .forEach(btn => btn.classList.remove('active'));
-                
-                // Add active to clicked filter
-                filterBtn.classList.add('active');
-                
+                const btn = e.target.closest('.filter-btn');
+                const type = btn.getAttribute('data-type');
+                const value = btn.getAttribute('data-filter');
+
+                const allBtn = document.querySelector(`.filter-btn[data-type="${type}"][data-filter="all"]`);
+                const isAll = value === 'all';
+
+                if (isAll) {
+                    // Selecting "all" clears others and activates itself
+                    document.querySelectorAll(`.filter-btn[data-type="${type}"]`).forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                } else {
+                    // Toggle this button
+                    btn.classList.toggle('active');
+                    // Deactivate "all"
+                    if (allBtn) allBtn.classList.remove('active');
+
+                    // If none selected, fall back to "all"
+                    const anyActive = document.querySelectorAll(`.filter-btn[data-type="${type}"]:not([data-filter="all"]).active`).length > 0;
+                    if (!anyActive && allBtn) allBtn.classList.add('active');
+                }
+
+                this.applyFilters();
+            }
+
+            // Clear all filters button
+            if (e.target.id === 'collection-clear-filters' || e.target.closest('#collection-clear-filters')) {
+                e.preventDefault();
+                ['category','style','price','size'].forEach(type => {
+                    const allBtn = document.querySelector(`.filter-btn[data-type="${type}"][data-filter="all"]`);
+                    document.querySelectorAll(`.filter-btn[data-type="${type}"]`).forEach(b => b.classList.remove('active'));
+                    if (allBtn) allBtn.classList.add('active');
+                });
                 this.applyFilters();
             }
         });
@@ -79,6 +129,8 @@ class CollectionGallery {
         // File input change
         document.addEventListener('change', (e) => {
             if (e.target.id === 'gallery-image-input') {
+                console.log('📁 File input change detected');
+                console.log('📸 Files selected:', e.target.files?.length || 0);
                 this.handleImageUpload(e.target.files);
             }
         });
@@ -105,7 +157,10 @@ class CollectionGallery {
     }
 
     createGalleryPage() {
-        return `
+        console.log('🎨 Creating gallery page...');
+        console.log('📊 Current gallery items count:', this.galleryItems?.length || 0);
+        
+        const pageHTML = `
             <div id="dep-collection-page" class="page">
                 <!-- Collection Hero -->
                 <div class="collection-hero">
@@ -178,6 +233,20 @@ class CollectionGallery {
                                     <button class="filter-btn" data-filter="over-1m" data-type="price">Trên 1M</button>
                                 </div>
                             </div>
+                            
+                            <div class="filter-section">
+                                <h4><i class="fas fa-ruler"></i> Size</h4>
+                                <div class="filter-buttons">
+                                    <button class="filter-btn active" data-filter="all" data-type="size">Tất cả</button>
+                                    <button class="filter-btn" data-filter="XS" data-type="size">XS</button>
+                                    <button class="filter-btn" data-filter="S" data-type="size">S</button>
+                                    <button class="filter-btn" data-filter="M" data-type="size">M</button>
+                                    <button class="filter-btn" data-filter="L" data-type="size">L</button>
+                                    <button class="filter-btn" data-filter="XL" data-type="size">XL</button>
+                                    <button class="filter-btn" data-filter="XXL" data-type="size">XXL</button>
+                                    <button class="filter-btn" data-filter="Freesize" data-type="size">Freesize</button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Product Grid -->
@@ -188,19 +257,40 @@ class CollectionGallery {
                 </div>
             </div>
         `;
+        
+        console.log('🎨 Gallery page HTML generated, length:', pageHTML.length);
+        return pageHTML;
     }
 
     getSampleProducts() {
+        console.log('📦 Getting sample products (returning empty array)');
         // Không còn sample products - để admin tự thêm
         return [];
     }
 
     generateProductItems() {
-        return this.getSampleProducts().map(item => this.renderProductItem(item)).join('');
+        console.log('🎨 Generating product items from sample products...');
+        const sampleProducts = this.getSampleProducts();
+        console.log('📦 Sample products count:', sampleProducts.length);
+        
+        if (sampleProducts.length === 0) {
+            console.log('📭 No sample products to render');
+            return '';
+        }
+        
+        const rendered = sampleProducts.map(item => this.renderProductItem(item)).join('');
+        console.log('✅ Product items generated, HTML length:', rendered.length);
+        return rendered;
     }
 
     generateGalleryItemsFromData() {
+        console.log('🔍 Generating gallery items from data:', this.galleryItems);
+        console.log('🔍 Gallery items type:', typeof this.galleryItems);
+        console.log('🔍 Gallery items length:', this.galleryItems?.length);
+        console.log('🔍 Gallery items is array:', Array.isArray(this.galleryItems));
+        
         if (!this.galleryItems || this.galleryItems.length === 0) {
+            console.log('📭 No gallery items found, showing empty state');
             return `
                 <div class="empty-collection">
                     <div class="empty-content">
@@ -215,10 +305,17 @@ class CollectionGallery {
                 </div>
             `;
         }
-        return this.galleryItems.map(item => this.renderGalleryItem(item)).join('');
+        
+        console.log('🎨 Rendering', this.galleryItems.length, 'gallery items');
+        
+        const renderedItems = this.galleryItems.map(item => this.renderGalleryItem(item));
+        console.log('🎨 Rendered', this.galleryItems.length, 'items');
+        return renderedItems.join('');
     }
 
     renderProductItem(item) {
+        console.log('🎨 Rendering product item:', item);
+        
         const isDbItem = !!item.created_at;
         const viewCount = item.views || 0;
         const createDate = isDbItem ? 
@@ -243,11 +340,15 @@ class CollectionGallery {
             }
         }
         
+        // Safe property access with fallbacks for missing database columns
         const material = item.material || item.chất_liệu || 'Chưa cập nhật';
         const origin = item.origin || item.nguồn_gốc || item.story || 'Chưa có thông tin nguồn gốc';
         const condition = item.condition || item.tình_trạng || 'Tái chế';
         const category = item.category || item.loại || 'khac';
         const style = item.style || item.phong_cách || 'basic';
+        
+        // Log only essential info to avoid spam
+        console.log('🎨 Rendering product:', { id: item.id, title: item.title, price, category });
         
         const priceFormatted = new Intl.NumberFormat('vi-VN').format(price);
         const originalPriceFormatted = originalPrice ? 
@@ -255,16 +356,22 @@ class CollectionGallery {
         const discount = originalPrice ? 
             Math.round((1 - price / originalPrice) * 100) : 0;
 
-        return `
+        const productHTML = `
             <div class="product-item ${item.is_featured || item.featured ? 'featured' : ''} ${item.sold ? 'sold' : ''}" 
                  data-item-id="${item.id}" 
                  data-category="${category}"
                  data-style="${style}"
-                 data-price="${price}">
+                 data-price="${price}"
+                 data-sizes="${sizes.join(',')}">
                 <div class="product-image-container">
-                    <img src="${item.image_url || item.image}" alt="${item.title || 'Sản phẩm'}" class="product-image">
+                    ${item.image_url || item.image ? 
+                        `<img src="${item.image_url || item.image}" alt="${item.title || 'Sản phẩm'}" class="product-image">` :
+                        `<div class="product-image-placeholder" style="width: 100%; height: 100%; background: #f8f9fa; display: flex; align-items: center; justify-content: center; color: #6c757d;">
+                            <i class="fas fa-image" style="font-size: 2rem;"></i>
+                        </div>`
+                    }
                     
-                    ${(item.is_featured || item.featured) ? '<span class="featured-badge">Nổi bật</span>' : ''}
+                    ${(item.is_featured || item.featured) ? '<span class="featured-badge">✨ Nổi bật</span>' : ''}
                     ${item.sold ? '<span class="sold-badge">Đã bán</span>' : ''}
                     ${discount > 0 ? `<span class="discount-badge">-${discount}%</span>` : ''}
                     
@@ -282,7 +389,7 @@ class CollectionGallery {
                     <div class="product-overlay">
                         <button class="btn-quick-view">
                             <i class="fas fa-eye"></i>
-                            Xem nhanh
+                            Xem chi tiết
                         </button>
                         <button class="btn-add-cart ${item.sold ? 'disabled' : ''}">
                             <i class="fas fa-shopping-cart"></i>
@@ -293,6 +400,7 @@ class CollectionGallery {
                 
                 <div class="product-info">
                     <h3 class="product-title">${item.title || 'Sản phẩm không có tên'}</h3>
+                    
                     <div class="product-price">
                         <span class="current-price">${priceFormatted}₫</span>
                         ${originalPriceFormatted ? `<span class="original-price">${originalPriceFormatted}₫</span>` : ''}
@@ -317,6 +425,13 @@ class CollectionGallery {
                         <p class="origin-text">${origin}</p>
                     </div>
                     
+                    <div class="product-actions">
+                        <button class="btn-mix-match">
+                            <i class="fas fa-magic"></i>
+                            Mix & Match
+                        </button>
+                    </div>
+                    
                     <div class="product-meta admin-only">
                         <span class="condition-badge">${condition}</span>
                         <span class="view-count">
@@ -327,6 +442,9 @@ class CollectionGallery {
                 </div>
             </div>
         `;
+        
+        console.log('🎨 Product HTML generated for item:', item.id);
+        return productHTML;
     }
     
     // Keep the old function for backward compatibility
@@ -334,13 +452,20 @@ class CollectionGallery {
         return this.renderProductItem(item);
     }
 
-    showUploadModal() {
+        showUploadModal() {
+        // Check if modal already exists and remove it
+        const existingModal = document.getElementById('upload-gallery-modal');
+        if (existingModal) {
+            existingModal.remove();
+            console.log('🧹 Removed existing modal');
+        }
+        
         const modalHTML = `
             <div id="upload-gallery-modal" class="modal gallery-modal">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3>Thêm Sản Phẩm Tái Chế Mới</h3>
-                        <button class="close-btn" onclick="this.closest('.modal').remove()">
+                        <button class="close-btn" onclick="collectionGallery.closeUploadModal()">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -374,8 +499,49 @@ class CollectionGallery {
                             
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>Tags (phân cách bằng dấu phẩy)</label>
-                                    <input type="text" id="item-tags" placeholder="vintage, renaissance, linen">
+                                    <label>Loại sản phẩm *</label>
+                                    <select id="item-category" required>
+                                        <option value="ao">Áo</option>
+                                        <option value="vay">Váy</option>
+                                        <option value="phu-kien">Phụ kiện</option>
+                                        <option value="khac" selected>Khác</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Phong cách</label>
+                                    <select id="item-style">
+                                        <option value="vintage">Vintage</option>
+                                        <option value="basic" selected>Basic</option>
+                                        <option value="doc-ban">Độc bản</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Giá bán (₫) *</label>
+                                    <input type="number" id="item-price" value="750000" min="0" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Size</label>
+                                    <select id="item-size">
+                                        <option value="XS">XS</option>
+                                        <option value="S">S</option>
+                                        <option value="M" selected>M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
+                                        <option value="XXL">XXL</option>
+                                        <option value="Freesize">Freesize</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Chất liệu</label>
+                                    <input type="text" id="item-material" placeholder="VD: Linen, Cotton, Denim" value="Chưa cập nhật">
                                 </div>
                                 
                                 <div class="form-group">
@@ -385,11 +551,26 @@ class CollectionGallery {
                                     </label>
                                 </div>
                             </div>
+                            
+                            <div class="form-group">
+                                <label>Nguồn gốc tái chế</label>
+                                <textarea id="item-origin" placeholder="Kể về hành trình tái sinh của sản phẩm này..." rows="2">Chưa có thông tin nguồn gốc</textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Tình trạng</label>
+                                <input type="text" id="item-condition" value="Tái chế" placeholder="VD: Tái chế, Mới, Đã sử dụng">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Tags (phân cách bằng dấu phẩy)</label>
+                                <input type="text" id="item-tags" placeholder="vintage, renaissance, linen" value="tai-che, doc-ban">
+                            </div>
                         </form>
                     </div>
                     
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Hủy</button>
+                        <button type="button" class="btn btn-secondary" onclick="collectionGallery.closeUploadModal()">Hủy</button>
                         <button type="button" class="btn btn-primary" onclick="collectionGallery.saveGalleryItem()">
                             <i class="fas fa-save"></i>
                             Lưu sản phẩm
@@ -399,53 +580,103 @@ class CollectionGallery {
             </div>
         `;
         
+        console.log('📝 Inserting modal HTML...');
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-        const modal = document.getElementById('upload-gallery-modal');
-        modal.classList.add('show');
         
-        // Setup drag and drop scoped to this modal to avoid ID conflicts on the page
-        this.setupImageUpload(modal);
-
-        // No custom toggle logic needed when using native checkbox
+        const modal = document.getElementById('upload-gallery-modal');
+        console.log('🔍 Modal element found:', !!modal);
+        
+        if (modal) {
+            modal.classList.add('show');
+            console.log('✅ Modal shown successfully');
+            
+            // Setup drag and drop scoped to this modal to avoid ID conflicts on the page
+            this.setupImageUpload(modal);
+        } else {
+            console.log('❌ Modal element not found after insertion!');
+        }
+    }
+    
+    closeUploadModal() {
+        const modal = document.getElementById('upload-gallery-modal');
+        if (modal) {
+            modal.remove();
+            console.log('✅ Upload modal closed');
+        }
     }
 
     setupImageUpload(modal) {
+        console.log('🔧 Setting up image upload for modal...');
+        
         const uploadZone = modal.querySelector('#upload-zone');
         const fileInput = modal.querySelector('#gallery-image-input');
         const preview = modal.querySelector('#image-preview');
-        if (!uploadZone || !fileInput || !preview) return;
+        
+        console.log('🔍 Upload zone found:', !!uploadZone);
+        console.log('🔍 File input found:', !!fileInput);
+        console.log('🔍 Preview found:', !!preview);
+        
+        if (!uploadZone || !fileInput || !preview) {
+            console.log('❌ Missing required elements for image upload');
+            return;
+        }
 
-        uploadZone.addEventListener('click', () => fileInput.click());
+        // Remove existing event listeners to prevent duplicates
+        const newUploadZone = uploadZone.cloneNode(true);
+        const newFileInput = fileInput.cloneNode(true);
+        uploadZone.parentNode.replaceChild(newUploadZone, uploadZone);
+        fileInput.parentNode.replaceChild(newFileInput, fileInput);
+        
+        // Get fresh references
+        const freshUploadZone = modal.querySelector('#upload-zone');
+        const freshFileInput = modal.querySelector('#gallery-image-input');
+        const freshPreview = modal.querySelector('#image-preview');
 
-        uploadZone.addEventListener('dragover', (e) => {
+        freshUploadZone.addEventListener('click', () => freshFileInput.click());
+
+        freshUploadZone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            uploadZone.classList.add('dragover');
+            freshUploadZone.classList.add('dragover');
+            console.log('📁 Drag over detected');
         });
         
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('dragover');
+        freshUploadZone.addEventListener('dragleave', () => {
+            freshUploadZone.classList.remove('dragover');
+            console.log('📁 Drag leave detected');
         });
         
-        uploadZone.addEventListener('drop', (e) => {
+        freshUploadZone.addEventListener('drop', (e) => {
             e.preventDefault();
-            uploadZone.classList.remove('dragover');
-            this.handleImageUpload(e.dataTransfer.files, preview);
+            freshUploadZone.classList.remove('dragover');
+            console.log('📁 Drop detected with', e.dataTransfer.files.length, 'files');
+            this.handleImageUpload(e.dataTransfer.files, freshPreview);
         });
 
-        fileInput.addEventListener('change', (e) => {
-            this.handleImageUpload(e.target.files, preview);
+        freshFileInput.addEventListener('change', (e) => {
+            console.log('📁 File input change detected with', e.target.files.length, 'files');
+            this.handleImageUpload(e.target.files, freshPreview);
         });
     }
 
     handleImageUpload(files, previewEl) {
+        console.log('📁 Handling image upload...');
+        console.log('📸 Files to upload:', files?.length || 0);
+        
         const preview = previewEl || document.getElementById('image-preview');
+        console.log('🖼️ Preview element found:', !!preview);
         if (!preview) return;
+        
         preview.innerHTML = '';
+        console.log('🧹 Preview cleared');
         
         Array.from(files).forEach((file, index) => {
+            console.log('📸 Processing file', index + 1, ':', file.name, file.type);
+            
             if (file.type.startsWith('image/')) {
+                console.log('✅ File is an image, creating preview...');
                 const reader = new FileReader();
                 reader.onload = (e) => {
+                    console.log('📖 File read successfully, creating preview container...');
                     const imageContainer = document.createElement('div');
                     imageContainer.className = 'image-preview-item';
                     imageContainer.innerHTML = `
@@ -455,75 +686,149 @@ class CollectionGallery {
                         </button>
                     `;
                     preview.appendChild(imageContainer);
+                    console.log('✅ Preview container added for file', index + 1);
                 };
                 reader.readAsDataURL(file);
+            } else {
+                console.log('❌ File is not an image:', file.type);
             }
         });
     }
 
     async saveGalleryItem() {
+        console.log('🚀 Starting to save gallery item...');
+        
         const title = document.getElementById('item-title').value.trim();
         const story = document.getElementById('item-story').value.trim();
+        const category = document.getElementById('item-category').value;
+        const style = document.getElementById('item-style').value;
+        const price = parseInt(document.getElementById('item-price').value) || 750000;
+        const sizeValue = document.getElementById('item-size').value;
+        const material = document.getElementById('item-material').value.trim() || 'Chưa cập nhật';
+        const origin = document.getElementById('item-origin').value.trim() || story;
+        const condition = document.getElementById('item-condition').value.trim() || 'Tái chế';
         const tags = document.getElementById('item-tags').value.trim();
         const featured = !!document.getElementById('item-featured')?.checked;
         
+        console.log('🔍 Validating form data...');
+        console.log('📝 Title:', title);
+        console.log('📖 Story:', story);
+        console.log('🏷️ Category:', category);
+        console.log('🎨 Style:', style);
+        console.log('💰 Price:', price);
+        console.log('📏 Size:', sizeValue);
+        console.log('🧵 Material:', material);
+        console.log('🌱 Origin:', origin);
+        console.log('🏷️ Condition:', condition);
+        console.log('🏷️ Tags:', tags);
+        console.log('⭐ Featured:', featured);
+        
         // Validation
-        if (!title || !story) {
-            Utils.showToast('Vui lòng điền đầy đủ thông tin', 'error');
+        if (!title || !story || !category || !price) {
+            console.log('❌ Validation failed:', { 
+                title: !!title, 
+                story: !!story, 
+                category: !!category, 
+                price: !!price 
+            });
+            Utils.showToast('Vui lòng điền đầy đủ thông tin bắt buộc (tiêu đề, câu chuyện, loại sản phẩm, giá)', 'error');
             return;
         }
 
         const modal = document.getElementById('upload-gallery-modal');
         const fileInput = modal ? modal.querySelector('#gallery-image-input') : document.getElementById('gallery-image-input');
+        console.log('📁 File input found:', !!fileInput);
+        console.log('📸 Files selected:', fileInput?.files?.length || 0);
+        
         if (!fileInput.files || fileInput.files.length === 0) {
+            console.log('❌ Validation failed: no images selected');
             Utils.showToast('Vui lòng chọn ít nhất một ảnh', 'error');
             return;
         }
+        
+        console.log('✅ Validation passed, proceeding with upload...');
 
         try {
             Utils.showLoading(true);
             
             // Upload main image
             const mainFile = fileInput.files[0];
+            console.log('📸 Uploading main image:', mainFile.name);
             const mainImageUrl = await this.uploadImage(mainFile, 'main');
+            console.log('✅ Main image uploaded:', mainImageUrl);
             
             // Upload additional images
             const additionalImages = [];
             for (let i = 1; i < fileInput.files.length && i < CONFIG.gallery.maxFiles; i++) {
+                console.log('📸 Uploading additional image:', fileInput.files[i].name);
                 const imageUrl = await this.uploadImage(fileInput.files[i], `additional-${i}`);
                 additionalImages.push(imageUrl);
+                console.log('✅ Additional image uploaded:', imageUrl);
             }
 
-            // Parse tags
+            // Parse tags and sizes
             const tagsArray = tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+            const sizesArray = [sizeValue];
 
+            // Prepare item data with values from form
+            // Only include fields that exist in the current database schema
+            const itemData = {
+                title: title,
+                story: story,
+                image_url: mainImageUrl,
+                gallery: additionalImages,
+                tags: tagsArray,
+                is_featured: featured,
+                status: 'active',
+                created_by: (await supabase.auth.getUser()).data.user?.id,
+                published_at: new Date().toISOString()
+            };
+            
+            // Add new fields if they exist in database
+            // These will be ignored if columns don't exist yet
+            const extendedData = {
+                ...itemData,
+                price: price,
+                material: material,
+                origin: origin,
+                category: category,
+                style: style,
+                sizes: sizesArray,
+                condition: condition
+            };
+            
+            console.log('💾 Saving with extended fields:', extendedData);
+            
+            console.log('💾 Saving item to database:', extendedData);
+            
             // Save to database
             const { data, error } = await supabase
                 .from(TABLES.GALLERY_ITEMS)
-                .insert([{
-                    title: title,
-                    story: story,
-                    image_url: mainImageUrl,
-                    gallery: additionalImages,
-                    tags: tagsArray,
-                    is_featured: featured,
-                    status: 'active',
-                    created_by: (await supabase.auth.getUser()).data.user?.id,
-                    published_at: new Date().toISOString()
-                }])
+                .insert([extendedData])
                 .select();
 
             if (error) throw error;
 
-            Utils.showToast('Đã lưu sản phẩm thành công!', 'success');
-            document.getElementById('upload-gallery-modal').remove();
+            console.log('✅ Gallery item saved successfully to database');
+            console.log('📊 Saved item data:', data);
             
-            // Refresh gallery
+            Utils.showToast('Đã lưu sản phẩm thành công!', 'success');
+            this.closeUploadModal();
+            
+            console.log('💾 Product saved successfully, refreshing gallery...');
+            
+            // Refresh gallery properly - only call loadGalleryItems once
+            console.log('🔄 Refreshing gallery after save...');
             await this.loadGalleryItems();
-            this.refreshGallery();
+            console.log('✅ Gallery refreshed successfully');
 
         } catch (error) {
-            console.error('Error saving gallery item:', error);
+            console.error('❌ Error saving gallery item:', error);
+            console.log('🔍 Error details:', {
+                message: error.message,
+                stack: error.stack,
+                data: error
+            });
             Utils.showToast('Có lỗi xảy ra khi lưu sản phẩm: ' + error.message, 'error');
         } finally {
             Utils.showLoading(false);
@@ -531,14 +836,26 @@ class CollectionGallery {
     }
 
     async uploadImage(file, prefix = '') {
+        console.log('📤 Starting image upload...');
+        console.log('📁 File details:', {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            prefix: prefix
+        });
+        
         // Validate file
         if (!CONFIG.gallery.allowedTypes.includes(file.type)) {
+            console.log('❌ File type not allowed:', file.type);
             throw new Error(`Định dạng file không hỗ trợ: ${file.type}`);
         }
         
         if (file.size > CONFIG.gallery.maxFileSize) {
+            console.log('❌ File too large:', file.size, '>', CONFIG.gallery.maxFileSize);
             throw new Error(`File quá lớn. Tối đa ${CONFIG.gallery.maxFileSize / 1024 / 1024}MB`);
         }
+        
+        console.log('✅ File validation passed');
 
         // Generate unique filename
         const timestamp = Date.now();
@@ -546,69 +863,91 @@ class CollectionGallery {
         const extension = file.name.split('.').pop();
         const fileName = `${prefix}-${timestamp}-${randomStr}.${extension}`;
         const filePath = `gallery/${fileName}`;
+        
+        console.log('📝 Generated file path:', filePath);
 
         // Upload to Supabase Storage
+        console.log('☁️ Uploading to Supabase Storage...');
         const { data, error } = await supabase.storage
             .from(CONFIG.storage.buckets.gallery)
             .upload(filePath, file);
 
         if (error) {
+            console.error('❌ Upload error:', error);
             throw new Error(`Lỗi upload ảnh: ${error.message}`);
         }
+        
+        console.log('✅ Upload successful, getting public URL...');
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
             .from(CONFIG.storage.buckets.gallery)
             .getPublicUrl(filePath);
-
+        
+        console.log('🔗 Public URL generated:', publicUrl);
         return publicUrl;
     }
 
     // Product management methods
     editProduct(itemId) {
         console.log('✏️ Editing product:', itemId);
+        console.log('📊 Current gallery items count:', this.galleryItems?.length || 0);
         
-        // Check if this is a sample product (number ID vs UUID)  
-        const isNumericId = !isNaN(parseInt(itemId)) && parseInt(itemId) < 1000;
-        
-        if (isNumericId) {
-            Utils.showToast('❌ Không thể chỉnh sửa sản phẩm mẫu. Vui lòng thêm sản phẩm thật!', 'warning');
-            return;
-        }
+        // All products can be edited - no more sample product restrictions
+        console.log('✅ Product can be edited');
         
         // Find product in real data only
         let product = null;
         if (this.galleryItems && this.galleryItems.length > 0) {
+            console.log('🔍 Searching for product in gallery items...');
             product = this.galleryItems.find(item => item.id == itemId);
+            console.log('🔍 Product found:', !!product);
+        } else {
+            console.log('⚠️ No gallery items available');
         }
         
         if (!product) {
+            console.log('❌ Product not found for editing');
             Utils.showToast('Không tìm thấy sản phẩm để chỉnh sửa', 'error');
             return;
         }
         
+        console.log('✅ Product found, showing edit modal...');
         this.showEditModal(product);
     }
 
     deleteProduct(itemId) {
         console.log('🗑️ Deleting product:', itemId);
+        console.log('📊 Current gallery items count:', this.galleryItems?.length || 0);
         
         // Create a more detailed confirmation modal
         const confirmDelete = this.showDeleteConfirmation(itemId);
-        if (!confirmDelete) return;
+        if (!confirmDelete) {
+            console.log('❌ Delete cancelled by user');
+            return;
+        }
+        
+        console.log('✅ Delete confirmed by user');
     }
 
     showDeleteConfirmation(itemId) {
+        console.log('🗑️ Showing delete confirmation for item:', itemId);
+        
         // Find product for confirmation
         let product = null;
         if (this.galleryItems && this.galleryItems.length > 0) {
+            console.log('🔍 Searching in gallery items...');
             product = this.galleryItems.find(item => item.id == itemId);
+            console.log('🔍 Product found in gallery items:', !!product);
         } else {
+            console.log('⚠️ No gallery items, searching in sample products...');
             const sampleProducts = this.getSampleProducts();
             product = sampleProducts.find(item => item.id == itemId);
+            console.log('🔍 Product found in sample products:', !!product);
         }
 
         const productName = product ? product.title : 'sản phẩm này';
+        console.log('📝 Product name for confirmation:', productName);
         
         const confirmModal = `
             <div id="delete-confirmation-modal" class="modal gallery-modal">
@@ -649,62 +988,78 @@ class CollectionGallery {
             </div>
         `;
         
+        console.log('📝 Inserting delete confirmation modal...');
         document.body.insertAdjacentHTML('beforeend', confirmModal);
-        document.getElementById('delete-confirmation-modal').classList.add('show');
+        
+        const modal = document.getElementById('delete-confirmation-modal');
+        if (modal) {
+            modal.classList.add('show');
+            console.log('✅ Delete confirmation modal shown');
+        } else {
+            console.log('❌ Delete confirmation modal not found after insertion!');
+        }
     }
 
     async confirmDelete(itemId) {
+        console.log('🗑️ Confirming delete for item:', itemId);
+        console.log('📊 Current gallery items count:', this.galleryItems?.length || 0);
+        
         try {
             Utils.showLoading(true);
             
-            // Check if this is a sample product (number ID vs UUID)
-            const isNumericId = !isNaN(parseInt(itemId)) && parseInt(itemId) < 1000;
+            // All products can be deleted - no more sample product restrictions
+            console.log('✅ Product can be deleted');
             
-            if (isNumericId) {
-                // This is sample data - cannot delete from database
-                console.log('Cannot delete sample product with numeric ID:', itemId);
-                Utils.showToast('❌ Không thể xóa sản phẩm mẫu. Vui lòng thêm sản phẩm thật!', 'warning');
-                document.getElementById('delete-confirmation-modal').remove();
-                return;
-            }
-            
-            // Remove from database if available and it's a real UUID
+            // Remove from database if available
             if (typeof supabase !== 'undefined' && TABLES && TABLES.GALLERY_ITEMS) {
+                console.log('🗄️ Database available, deleting from database...');
                 const { error } = await supabase
                     .from(TABLES.GALLERY_ITEMS)
                     .delete()
                     .eq('id', itemId);
                     
-                if (error) throw error;
+                if (error) {
+                    console.error('❌ Database delete error:', error);
+                    throw error;
+                }
+                
+                console.log('✅ Database delete successful');
                 
                 // Remove from local array
                 this.galleryItems = this.galleryItems.filter(item => item.id != itemId);
+                console.log('📊 Local array updated, new count:', this.galleryItems.length);
                 
                 Utils.showToast('✅ Đã xóa sản phẩm thành công!', 'success');
             } else {
+                console.log('❌ Database not available for delete');
                 Utils.showToast('❌ Không thể kết nối database để xóa sản phẩm', 'error');
             }
             
             // Close modal
             document.getElementById('delete-confirmation-modal').remove();
+            console.log('✅ Delete confirmation modal closed');
             
             // Refresh gallery
+            console.log('🔄 Refreshing gallery after delete...');
             this.refreshGallery();
             
         } catch (error) {
-            console.error('Error deleting product:', error);
+            console.error('❌ Error deleting product:', error);
             Utils.showToast('❌ Có lỗi xảy ra khi xóa sản phẩm: ' + error.message, 'error');
         } finally {
             Utils.showLoading(false);
+            console.log('🔄 Loading state cleared');
         }
     }
 
     showEditModal(product) {
         console.log('📝 Showing edit modal for:', product.title);
+        console.log('📊 Product data:', product);
         
         // Ensure sizes is array
         const sizes = Array.isArray(product.sizes) ? product.sizes : [];
-        const sizesString = sizes.join(', ');
+        const currentSize = sizes[0] || 'M';
+        console.log('📏 Sizes for edit:', sizes, '->', sizesString);
         
         const modalHTML = `
             <div id="edit-product-modal" class="modal gallery-modal">
@@ -721,8 +1076,14 @@ class CollectionGallery {
                             <!-- Current Image Display -->
                             <div class="current-image-section" style="margin-bottom: 25px;">
                                 <label style="display: block; margin-bottom: 12px; font-weight: 600; color: var(--primary-green);">Ảnh hiện tại:</label>
-                                <div class="current-image-preview" style="width: 150px; height: 200px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border-light);">
-                                    <img src="${product.image}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div class="current-image-preview" style="width: 150px; height: 200px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border-light); background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                    ${product.image_url || product.image ? 
+                                        `<img src="${product.image_url || product.image}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">` :
+                                        `<div style="text-align: center; color: #6c757d;">
+                                            <i class="fas fa-image" style="font-size: 2rem; margin-bottom: 8px; display: block;"></i>
+                                            <span style="font-size: 0.8rem;">Không có ảnh</span>
+                                        </div>`
+                                    }
                                 </div>
                                 <p style="font-size: 0.9rem; color: var(--text-light); margin-top: 8px;">
                                     <i class="fas fa-info-circle"></i> 
@@ -771,9 +1132,16 @@ class CollectionGallery {
                             
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>Sizes có sẵn</label>
-                                    <input type="text" id="edit-sizes" value="${sizesString}" placeholder="S, M, L, XL">
-                                    <small style="color: var(--text-light); font-size: 0.8rem;">Phân cách bằng dấu phẩy</small>
+                                    <label>Size</label>
+                                    <select id="edit-size">
+                                        <option value="XS" ${currentSize === 'XS' ? 'selected' : ''}>XS</option>
+                                        <option value="S" ${currentSize === 'S' ? 'selected' : ''}>S</option>
+                                        <option value="M" ${currentSize === 'M' ? 'selected' : ''}>M</option>
+                                        <option value="L" ${currentSize === 'L' ? 'selected' : ''}>L</option>
+                                        <option value="XL" ${currentSize === 'XL' ? 'selected' : ''}>XL</option>
+                                        <option value="XXL" ${currentSize === 'XXL' ? 'selected' : ''}>XXL</option>
+                                        <option value="Freesize" ${currentSize === 'Freesize' ? 'selected' : ''}>Freesize</option>
+                                    </select>
                                 </div>
                                 <div class="form-group">
                                     <label>Phong cách</label>
@@ -824,51 +1192,86 @@ class CollectionGallery {
             </div>
         `;
         
+        console.log('📝 Inserting edit modal...');
         document.body.insertAdjacentHTML('beforeend', modalHTML);
-        document.getElementById('edit-product-modal').classList.add('show');
         
-        // Setup drag and drop for new image upload
-        this.setupEditImageUpload();
+        const modal = document.getElementById('edit-product-modal');
+        if (modal) {
+            modal.classList.add('show');
+            console.log('✅ Edit modal shown successfully');
+            
+            // Setup drag and drop for new image upload
+            this.setupEditImageUpload();
+        } else {
+            console.log('❌ Edit modal not found after insertion!');
+        }
 
         // Native checkbox already handles featured selection; no extra JS needed
     }
 
     setupEditImageUpload() {
+        console.log('🔧 Setting up edit image upload...');
+        
         const uploadZone = document.getElementById('edit-upload-zone');
         const fileInput = document.getElementById('edit-image-input');
         
-        if (!uploadZone || !fileInput) return;
+        console.log('🔍 Edit upload zone found:', !!uploadZone);
+        console.log('🔍 Edit file input found:', !!fileInput);
+        
+        if (!uploadZone || !fileInput) {
+            console.log('❌ Missing required elements for edit image upload');
+            return;
+        }
         
         uploadZone.addEventListener('click', () => fileInput.click());
         
         uploadZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadZone.classList.add('dragover');
+            console.log('📁 Edit drag over detected');
         });
         
         uploadZone.addEventListener('dragleave', () => {
             uploadZone.classList.remove('dragover');
+            console.log('📁 Edit drag leave detected');
         });
         
         uploadZone.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadZone.classList.remove('dragover');
+            console.log('📁 Edit drop detected with', e.dataTransfer.files.length, 'files');
             this.handleEditImageUpload(e.dataTransfer.files);
         });
         
         fileInput.addEventListener('change', (e) => {
+            console.log('📁 Edit file input change detected with', e.target.files.length, 'files');
             this.handleEditImageUpload(e.target.files);
         });
     }
 
     handleEditImageUpload(files) {
+        console.log('📁 Handling edit image upload...');
+        console.log('📸 Files to upload:', files?.length || 0);
+        
         const preview = document.getElementById('edit-image-preview');
+        console.log('🖼️ Edit preview element found:', !!preview);
+        
+        if (!preview) {
+            console.log('❌ Edit preview element not found');
+            return;
+        }
+        
         preview.innerHTML = '';
+        console.log('🧹 Edit preview cleared');
         
         Array.from(files).forEach((file, index) => {
+            console.log('📸 Processing edit file', index + 1, ':', file.name, file.type);
+            
             if (file.type.startsWith('image/')) {
+                console.log('✅ Edit file is an image, creating preview...');
                 const reader = new FileReader();
                 reader.onload = (e) => {
+                    console.log('📖 Edit file read successfully, creating preview container...');
                     const imageContainer = document.createElement('div');
                     imageContainer.className = 'image-preview-item';
                     imageContainer.innerHTML = `
@@ -878,13 +1281,18 @@ class CollectionGallery {
                         </button>
                     `;
                     preview.appendChild(imageContainer);
+                    console.log('✅ Edit preview container added for file', index + 1);
                 };
                 reader.readAsDataURL(file);
+            } else {
+                console.log('❌ Edit file is not an image:', file.type);
             }
         });
     }
 
     async saveEditedProduct(productId) {
+        console.log('💾 Starting to save edited product:', productId);
+        
         try {
             Utils.showLoading(true);
             
@@ -901,20 +1309,36 @@ class CollectionGallery {
             const condition = document.getElementById('edit-condition').value.trim();
             const featured = document.getElementById('edit-featured').checked;
             
+            console.log('📝 Form data collected:', {
+                title, category, price, originalPrice, sizesInput, style, material, origin, condition, featured
+            });
+            
             // Validation
+            console.log('🔍 Validating form data...');
             if (!title || !category || !price || !material || !origin) {
+                console.log('❌ Validation failed:', { title: !!title, category: !!category, price: !!price, material: !!material, origin: !!origin });
                 Utils.showToast('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
                 return;
             }
             
+            console.log('✅ Validation passed');
+            
             // Parse sizes
-            const sizes = sizesInput ? sizesInput.split(',').map(s => s.trim()).filter(s => s) : [];
+            const sizes = [document.getElementById('edit-size').value];
+            console.log('📏 Size selected:', sizes[0]);
             
             // Check if new image was uploaded
             const fileInput = document.getElementById('edit-image-input');
+            console.log('📁 File input found:', !!fileInput);
+            console.log('📸 Files selected:', fileInput?.files?.length || 0);
+            
             let imageUrl = null;
             if (fileInput.files && fileInput.files.length > 0) {
+                console.log('📸 New image detected, uploading...');
                 imageUrl = await this.uploadImage(fileInput.files[0], 'edit');
+                console.log('✅ New image uploaded:', imageUrl);
+            } else {
+                console.log('📸 No new image uploaded, keeping existing');
             }
             
             const updatedData = {
@@ -931,106 +1355,272 @@ class CollectionGallery {
                 updated_at: new Date().toISOString()
             };
             
+            console.log('📝 Updated data prepared:', updatedData);
+            
             if (imageUrl) {
                 updatedData.image_url = imageUrl;
+                console.log('🖼️ Image URL added to update data');
             }
             
             // Update in database if available
             if (typeof supabase !== 'undefined' && TABLES && TABLES.GALLERY_ITEMS) {
+                console.log('🗄️ Database available, updating product...');
                 const { error } = await supabase
                     .from(TABLES.GALLERY_ITEMS)
                     .update(updatedData)
                     .eq('id', productId);
                     
-                if (error) throw error;
+                if (error) {
+                    console.error('❌ Database update error:', error);
+                    throw error;
+                }
+                
+                console.log('✅ Database update successful');
                 
                 // Update local array
                 const itemIndex = this.galleryItems.findIndex(item => item.id == productId);
                 if (itemIndex !== -1) {
                     this.galleryItems[itemIndex] = { ...this.galleryItems[itemIndex], ...updatedData };
+                    console.log('📊 Local array updated at index:', itemIndex);
+                } else {
+                    console.log('⚠️ Product not found in local array for update');
                 }
             } else {
-                console.log('Sample data - changes will not persist');
+                console.log('🚫 Database not available - changes will not persist');
             }
             
             // Close modal
             document.getElementById('edit-product-modal').remove();
+            console.log('✅ Edit modal closed');
             
             // Refresh gallery
+            console.log('🔄 Refreshing gallery after edit...');
             this.refreshGallery();
             
             Utils.showToast('✅ Đã cập nhật sản phẩm thành công!', 'success');
             
         } catch (error) {
-            console.error('Error updating product:', error);
+            console.error('❌ Error updating product:', error);
             Utils.showToast('❌ Có lỗi xảy ra khi cập nhật: ' + error.message, 'error');
         } finally {
             Utils.showLoading(false);
+            console.log('🔄 Loading state cleared');
         }
     }
 
     showProductDetail(itemId) {
-        Utils.showToast('Modal chi tiết sản phẩm đang phát triển', 'info');
+        console.log('👁️ Showing product detail for item:', itemId);
+        console.log('📊 Current gallery items count:', this.galleryItems?.length || 0);
+        
+        // Find the product
+        const product = this.galleryItems?.find(item => item.id == itemId);
+        if (!product) {
+            console.log('⚠️ Product not found for detail view');
+            Utils.showToast('Không tìm thấy sản phẩm', 'error');
+            return;
+        }
+        console.log('✅ Product found for detail view:', product.title);
+
+        // Remove existing modal if any
+        const existing = document.getElementById('collection-product-detail-modal');
+        if (existing) existing.remove();
+
+        // Create and insert modal
+        const modalHTML = this.createProductDetailModal(product);
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Initialize modal interactions
+        this.initProductDetailModal(product.id);
+
+        // Fire-and-forget: increase view count in DB
+        try {
+            if (typeof supabase !== 'undefined' && TABLES?.GALLERY_ITEMS) {
+                const currentViews = parseInt(product.views || 0) + 1;
+                product.views = currentViews;
+                supabase.from(TABLES.GALLERY_ITEMS).update({ views: currentViews }).eq('id', product.id);
+            }
+        } catch (e) {
+            console.log('ℹ️ Skip updating views:', e?.message);
+        }
+    }
+
+    createProductDetailModal(product) {
+        const price = product.price || 0;
+        const priceFormatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        const sizes = Array.isArray(product.sizes) ? product.sizes : (typeof product.sizes === 'string' ? (()=>{ try { const arr = JSON.parse(product.sizes); return Array.isArray(arr)?arr:product.sizes.split(',').map(s=>s.trim()).filter(Boolean);} catch { return product.sizes.split(',').map(s=>s.trim()).filter(Boolean);} })() : []);
+        const material = product.material || 'Chưa cập nhật';
+        const origin = product.origin || product.story || 'Chưa có thông tin nguồn gốc';
+        const condition = product.condition || 'Tái chế';
+        const category = product.category || 'khac';
+        const style = product.style || 'basic';
+        const imagesRaw = [product.image_url || product.image, ...((Array.isArray(product.gallery) ? product.gallery : []) || [])]
+            .filter(v => typeof v === 'string' && v.trim().length > 0)
+            .map(v => v.trim());
+        const images = Array.from(new Set(imagesRaw));
+        const mainImg = images[0] || 'https://via.placeholder.com/600x800?text=No+Image';
+
+        return `
+            <div id="collection-product-detail-modal" class="modal product-detail-modal">
+                <div class="modal-content product-detail-content">
+                    <div class="modal-header">
+                        <h3>${product.title || 'Chi tiết sản phẩm'}</h3>
+                        <button class="close-btn" aria-label="Đóng">&times;</button>
+                    </div>
+                    <div class="product-detail-body">
+                        <div class="product-images-section">
+                            <div class="main-image-container">
+                                <img src="${mainImg}" alt="${product.title || ''}" class="main-product-image" id="main-product-image">
+                                <span class="detail-condition-badge">${condition}</span>
+                            </div>
+                            <div class="thumbnail-gallery">
+                                ${images.map((img, idx) => `<img src="${img}" alt="${product.title || ''} ${idx+1}" class="thumbnail ${idx===0 ? 'active' : ''}" data-src="${img}">`).join('')}
+                            </div>
+                        </div>
+                        <div class="product-info-section">
+                            <div class="product-meta-detail">
+                                <div class="meta-item"><strong>Giá bán:</strong> ${priceFormatted}</div>
+                                <div class="meta-item"><strong>Danh mục:</strong> ${category}</div>
+                                <div class="meta-item"><strong>Phong cách:</strong> ${style}</div>
+                                <div class="meta-item"><strong>Chất liệu:</strong> ${material}</div>
+                                <div class="meta-item"><strong>Size:</strong> ${sizes.length? sizes.join(', ') : 'OneSize'}</div>
+                                <div class="meta-item"><strong>Tình trạng:</strong> ${condition}</div>
+                                <div class="meta-item"><strong>Mã sản phẩm:</strong> ${product.id}</div>
+                            </div>
+                            <div class="product-description">
+                                <h4>Câu chuyện/Nguồn gốc tái chế</h4>
+                                <p>${origin}</p>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary btn-buy-now" data-product-id="${product.id}">Mua ngay <i class="fas fa-shopping-cart"></i></button>
+                                <button class="btn btn-secondary btn-close-modal">Đóng</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    initProductDetailModal(productId) {
+        const modal = document.getElementById('collection-product-detail-modal');
+        if (!modal) return;
+
+        // Show modal
+        modal.classList.add('show');
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
+
+        // Close on ESC
+        const onEsc = (e) => { if (e.key === 'Escape') { modal.remove(); document.removeEventListener('keydown', onEsc); } };
+        document.addEventListener('keydown', onEsc);
+
+        // Close buttons
+        const closeBtn = modal.querySelector('.close-btn');
+        if (closeBtn) closeBtn.addEventListener('click', () => modal.remove());
+        const closeBtn2 = modal.querySelector('.btn-close-modal');
+        if (closeBtn2) closeBtn2.addEventListener('click', () => modal.remove());
+
+        // Thumbnail switching
+        const mainImage = modal.querySelector('#main-product-image');
+        const thumbs = modal.querySelectorAll('.thumbnail');
+        thumbs.forEach(thumb => {
+            thumb.addEventListener('click', () => {
+                const src = thumb.getAttribute('data-src') || thumb.getAttribute('src');
+                if (src && mainImage) {
+                    mainImage.setAttribute('src', src);
+                    modal.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+                    thumb.classList.add('active');
+                }
+            });
+        });
+
+        // Zoom main image
+        if (mainImage) {
+            mainImage.addEventListener('click', () => mainImage.classList.toggle('zoomed'));
+        }
     }
 
     addToCart(itemId) {
+        console.log('🛒 Adding item to cart:', itemId);
+        console.log('📊 Current gallery items count:', this.galleryItems?.length || 0);
+        
+        // Find the product
+        const product = this.galleryItems?.find(item => item.id == itemId);
+        if (product) {
+            console.log('✅ Product found for cart:', product.title);
+        } else {
+            console.log('⚠️ Product not found for cart');
+        }
+        
         Utils.showToast('Đã thêm vào giỏ hàng!', 'success');
     }
 
     applyFilters() {
-        const activeFilters = {
-            category: document.querySelector('.filter-btn[data-type="category"].active')?.getAttribute('data-filter') || 'all',
-            style: document.querySelector('.filter-btn[data-type="style"].active')?.getAttribute('data-filter') || 'all',
-            price: document.querySelector('.filter-btn[data-type="price"].active')?.getAttribute('data-filter') || 'all'
+        console.log('🔍 Applying filters...');
+        
+        const getValues = (type) => {
+            const selected = Array.from(document.querySelectorAll(`.filter-btn[data-type="${type}"].active`))
+                .map(b => b.getAttribute('data-filter'))
+                .filter(v => v && v !== 'all');
+            return selected.length ? selected : ['all'];
         };
+        const activeFilters = {
+            category: getValues('category'),
+            style: getValues('style'),
+            price: getValues('price'),
+            size: getValues('size')
+        };
+        
+        console.log('🎯 Active filters:', activeFilters);
 
         const products = document.querySelectorAll('.product-item');
+        console.log('📦 Found', products.length, 'products to filter');
         
         products.forEach(product => {
             let show = true;
             
-            // Filter by category
-            if (activeFilters.category !== 'all') {
+            // Filter by category (multi)
+            if (!(activeFilters.category.length === 1 && activeFilters.category[0] === 'all')) {
                 const productCategory = product.getAttribute('data-category');
-                if (productCategory !== activeFilters.category) {
-                    show = false;
-                }
+                if (!activeFilters.category.includes(productCategory)) show = false;
             }
             
-            // Filter by style
-            if (activeFilters.style !== 'all') {
+            // Filter by style (multi)
+            if (show && !(activeFilters.style.length === 1 && activeFilters.style[0] === 'all')) {
                 const productStyle = product.getAttribute('data-style');
-                if (productStyle !== activeFilters.style) {
-                    show = false;
-                }
+                if (!activeFilters.style.includes(productStyle)) show = false;
             }
             
-            // Filter by price
-            if (activeFilters.price !== 'all') {
+            // Filter by price (multi)
+            if (show && !(activeFilters.price.length === 1 && activeFilters.price[0] === 'all')) {
                 const productPrice = parseInt(product.getAttribute('data-price'));
-                let priceInRange = false;
-                
-                switch (activeFilters.price) {
-                    case 'under-500k':
-                        priceInRange = productPrice < 500000;
-                        break;
-                    case '500k-1m':
-                        priceInRange = productPrice >= 500000 && productPrice <= 1000000;
-                        break;
-                    case 'over-1m':
-                        priceInRange = productPrice > 1000000;
-                        break;
-                }
-                
-                if (!priceInRange) {
-                    show = false;
-                }
+                const checkRange = (key) => {
+                    switch (key) {
+                        case 'under-500k': return productPrice < 500000;
+                        case '500k-1m': return productPrice >= 500000 && productPrice <= 1000000;
+                        case 'over-1m': return productPrice > 1000000;
+                        default: return true;
+                    }
+                };
+                const anyMatch = activeFilters.price.some(k => checkRange(k));
+                if (!anyMatch) show = false;
+            }
+            
+            // Filter by size (multi)
+            if (show && !(activeFilters.size.length === 1 && activeFilters.size[0] === 'all')) {
+                const productSizes = (product.getAttribute('data-sizes') || '').split(',');
+                const anySize = activeFilters.size.some(sz => productSizes.includes(sz));
+                if (!anySize) show = false;
             }
             
             product.style.display = show ? 'block' : 'none';
         });
         
-        console.log('Applied filters:', activeFilters);
+        console.log('✅ Filters applied successfully');
+        console.log('🎯 Active filters:', activeFilters);
     }
 
     // Legacy methods for backward compatibility
@@ -1049,27 +1639,40 @@ class CollectionGallery {
     refreshGallery() {
         const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
         if (grid) {
-            // Always use real data or empty state
             grid.innerHTML = this.generateGalleryItemsFromData();
+            console.log('🔄 Gallery refreshed with', this.galleryItems.length, 'items');
         }
+        
+        // Update gallery stats after refresh
+        this.updateGalleryStats();
     }
 
     clearAllSampleData() {
-        // Force clear any remaining sample data
-        this.galleryItems = this.galleryItems ? this.galleryItems.filter(item => {
-            // Keep only items with UUID (database items)
-            return typeof item.id === 'string' && item.id.length > 10;
-        }) : [];
+        console.log('🧹 Starting to clear sample data...');
+        console.log('📊 Original gallery items count:', this.galleryItems?.length || 0);
+        
+        // No more sample data restrictions - all items are real
+        console.log('✅ All items are real products');
+        console.log('📊 Gallery items before refresh:', this.galleryItems);
         
         this.refreshGallery();
-        console.log('🧹 Cleared all sample data, remaining items:', this.galleryItems.length);
+        console.log('🧹 Sample data check completed, remaining items:', this.galleryItems.length);
+        console.log('📊 Gallery items after refresh:', this.galleryItems);
+        
+        // Update gallery stats after clearing sample data
+        this.updateGalleryStats();
     }
 
     async loadGalleryItems() {
+        console.log('🔄 Starting to load gallery items...');
+        console.log('🔍 Supabase available:', typeof supabase !== 'undefined');
+        console.log('📋 TABLES available:', !!TABLES);
+        console.log('🎨 GALLERY_ITEMS table:', TABLES?.GALLERY_ITEMS);
+        
         try {
             // Check if supabase is available
             if (typeof supabase === 'undefined' || !TABLES || !TABLES.GALLERY_ITEMS) {
-                console.log('Database not available - showing empty state');
+                console.log('🚫 Database not available - showing empty state');
                 this.galleryItems = [];
                 const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
                 if (grid) {
@@ -1078,37 +1681,115 @@ class CollectionGallery {
                 return [];
             }
 
+            console.log('🔍 Querying database for gallery items...');
             const { data, error } = await supabase
                 .from(TABLES.GALLERY_ITEMS)
                 .select('*')
-                .eq('status', 'active')
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Database query error:', error);
+                throw error;
+            }
 
             this.galleryItems = data || [];
-            console.log('Loaded gallery items from database:', this.galleryItems.length);
+            console.log('📊 Loaded gallery items from database:', this.galleryItems.length);
+            console.log('📋 Gallery items data:', this.galleryItems);
+            
+            // Debug: Check if items have required fields
+            if (this.galleryItems.length > 0) {
+                console.log('🔍 First item structure:', {
+                    id: this.galleryItems[0].id,
+                    title: this.galleryItems[0].title,
+                    image_url: this.galleryItems[0].image_url,
+                    created_at: this.galleryItems[0].created_at
+                });
+            }
             
             // Update UI if product grid exists
             const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
             if (grid) {
                 grid.innerHTML = this.generateGalleryItemsFromData();
+                console.log('🎨 UI updated with', this.galleryItems.length, 'items');
             }
             
+            // Update gallery stats
+            this.updateGalleryStats();
+            
+            // Return the loaded items
             return this.galleryItems;
         } catch (error) {
-            console.error('Error loading gallery items:', error);
-            console.log('Database unavailable - showing empty state');
+            console.error('❌ Error loading gallery items:', error);
+            console.log('🚫 Database unavailable - showing empty state');
             
             // Show empty state instead of sample data
             this.galleryItems = [];
             const grid = document.getElementById('product-grid') || document.getElementById('gallery-grid');
             if (grid) {
                 grid.innerHTML = this.generateGalleryItemsFromData();
+                console.log('🎨 UI updated with empty state');
             }
             
             return [];
         }
+    }
+
+    // Add method to refresh gallery when page becomes active
+    async refreshGalleryOnPageActive() {
+        console.log('🔄 Refreshing gallery on page active...');
+        if (this.galleryItems.length === 0) {
+            console.log('📊 No gallery items found, reloading from database...');
+            await this.loadGalleryItems();
+        } else {
+            console.log('📊 Gallery items already loaded, refreshing display...');
+            this.updateGalleryUI();
+        }
+        
+        // Update gallery stats
+        this.updateGalleryStats();
+    }
+
+    // New method to update gallery UI consistently
+    updateGalleryUI() {
+        console.log('🎨 Updating gallery UI with', this.galleryItems.length, 'items');
+        
+        // Try to find the gallery grid in multiple possible locations
+        const galleryGrid = document.getElementById('gallery-grid') || 
+                           document.getElementById('product-grid') || 
+                           document.querySelector('.gallery-grid');
+        
+        if (galleryGrid) {
+            galleryGrid.innerHTML = this.generateGalleryItemsFromData();
+            console.log('✅ Gallery UI updated successfully');
+        } else {
+            console.log('⚠️ Gallery grid not found, UI update skipped');
+        }
+        
+        // Update gallery stats
+        this.updateGalleryStats();
+    }
+
+    // Add method to update gallery statistics
+    updateGalleryStats() {
+        console.log('📊 Updating gallery stats...');
+        
+        const totalItemsElement = document.getElementById('total-items');
+        const featuredItemsElement = document.getElementById('featured-items');
+        
+        if (totalItemsElement) {
+            totalItemsElement.textContent = this.galleryItems.length;
+            console.log('✅ Total items updated:', this.galleryItems.length);
+        }
+        
+        if (featuredItemsElement) {
+            const featuredCount = this.galleryItems.filter(item => 
+                item.is_featured || item.featured
+            ).length;
+            featuredItemsElement.textContent = featuredCount;
+            console.log('✅ Featured items updated:', featuredCount);
+        }
+        
+        console.log('📊 Gallery stats updated successfully');
     }
 }
 

@@ -153,6 +153,12 @@
     border-radius: 2px;
 }
 
+.filter-section h4 i {
+    color: var(--light-green);
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
 .filter-buttons {
     display: flex;
     gap: 12px;
@@ -1392,4 +1398,73 @@
         width: 5px;
         height: 8px;
     }
+}
+
+/* Product Actions */
+.product-actions {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.btn-mix-match {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(155, 89, 182, 0.3);
+    font-size: 0.95rem;
+}
+
+.btn-mix-match:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(155, 89, 182, 0.4);
+    background: linear-gradient(135deg, #8e44ad, #7d3c98);
+}
+
+.btn-mix-match i {
+    font-size: 1.1rem;
+}
+
+/* Product Image Placeholder */
+.product-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.product-image-placeholder:hover {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.product-image-placeholder i {
+    font-size: 2rem;
+    opacity: 0.7;
+}
+
+/* Current Image Preview in Edit Modal */
+.current-image-preview {
+    position: relative;
+    overflow: hidden;
+}
+
+.current-image-preview img {
+    transition: transform 0.3s ease;
+}
+
+.current-image-preview:hover img {
+    transform: scale(1.05);
 }

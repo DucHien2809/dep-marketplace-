@@ -154,11 +154,12 @@ class DepMarketplace {
         // Initialize filter events
         this.initGalleryFilters();
         
-        // Only load sample items if CollectionGallery hasn't already loaded database items
-        if (window.collectionGallery && window.collectionGallery.galleryItems && window.collectionGallery.galleryItems.length > 0) {
-            console.log('📊 CollectionGallery already loaded database items, skipping fallback');
+        // Always refresh gallery content when page becomes active
+        if (window.collectionGallery && typeof window.collectionGallery.refreshGalleryOnPageActive === 'function') {
+            console.log('🔄 Refreshing gallery content via CollectionGallery...');
+            window.collectionGallery.refreshGalleryOnPageActive();
         } else {
-            console.log('📊 Loading sample gallery items as fallback');
+            console.log('⚠️ CollectionGallery not available, loading sample items as fallback');
             this.loadSampleGalleryItems();
         }
         
@@ -684,20 +685,25 @@ class DepMarketplace {
     initGalleryFilters() {
         console.log('🔧 Setting up gallery filters...');
         
-        // Filter by product attributes
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        // Filter by product attributes (only scope to marketplace if ever present)
+        // Avoid interfering with Đẹp Collection filters handled by CollectionGallery
+        document.querySelectorAll('#marketplace-page .filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const filterBtn = e.target;
+                // Ensure button behavior and stable reference
+                e.preventDefault();
+                const filterBtn = e.currentTarget;
                 const filterType = filterBtn.getAttribute('data-type');
                 const filterValue = filterBtn.getAttribute('data-filter');
-                
+
+                if (!filterType || !filterValue) return;
+
                 // Remove active from same type filters
                 document.querySelectorAll(`.filter-btn[data-type="${filterType}"]`)
                     .forEach(b => b.classList.remove('active'));
-                
+
                 // Add active to clicked filter
                 filterBtn.classList.add('active');
-                
+
                 // Apply filters (delegate to CollectionGallery if available)
                 if (window.collectionGallery && window.collectionGallery.applyFilters) {
                     window.collectionGallery.applyFilters();
