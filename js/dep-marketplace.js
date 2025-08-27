@@ -876,7 +876,7 @@ class DepMarketplace {
             // Load consignments from Supabase (show all, no approval gate)
             const { data: consignments, error } = await window.supabase
                 .from('consignments')
-                .select('id,name,category,brand,size,condition,selling_price,primary_image,created_at,user_id')
+                .select('id,name,category,brand,size,condition,gender,selling_price,primary_image,created_at,user_id')
                 .order('created_at', { ascending: false });
 
             if (error) {
@@ -907,6 +907,7 @@ class DepMarketplace {
                      data-brand="${p.brand || 'other'}" 
                      data-size="${p.size || ''}" 
                      data-condition="${p.condition || ''}"
+                     data-gender="${(p.gender && p.gender.trim()) ? p.gender : 'unknown'}"
                      data-price="${p.selling_price || 0}">
                     <div class="product-image">
                         <img src="${p.primary_image}" alt="${p.name}">
@@ -998,6 +999,19 @@ class DepMarketplace {
             'accessories': 'Phụ kiện'
         };
         return labels[category] || category;
+    }
+
+    getGenderLabel(gender) {
+        const labels = {
+            'male': 'Nam',
+            'female': 'Nữ',
+            'unknown': 'Không xác định',
+            '': 'Không xác định',
+            null: 'Không xác định',
+            undefined: 'Không xác định'
+        };
+        const key = (gender || '').toString().toLowerCase();
+        return labels[key] || 'Không xác định';
     }
 
     formatPrice(price) {
@@ -1135,6 +1149,9 @@ class DepMarketplace {
                                     <strong>Kích thước:</strong> ${product.size || 'Không xác định'}
                                 </div>
                                 <div class="meta-item">
+                                    <strong>Giới tính:</strong> ${this.getGenderLabel(product.gender)}
+                                </div>
+                                <div class="meta-item">
                                     <strong>Danh mục:</strong> ${this.getCategoryLabel(product.category) || 'Không xác định'}
                                 </div>
                                 <div class="meta-item">
@@ -1242,6 +1259,7 @@ class DepMarketplace {
             brands: [],
             conditions: [],
             sizes: [],
+            genders: [],
             priceMin: 0,
             priceMax: 5000000
         };
@@ -1258,6 +1276,8 @@ class DepMarketplace {
                 filters.brands.push(value);
             } else if (title.includes('tình trạng')) {
                 filters.conditions.push(value);
+            } else if (title.includes('giới tính')) {
+                filters.genders.push(value);
             }
         });
 
@@ -1282,6 +1302,7 @@ class DepMarketplace {
         const brand = product.getAttribute('data-brand').toLowerCase();
         const condition = product.getAttribute('data-condition');
         const size = product.getAttribute('data-size');
+        const gender = product.getAttribute('data-gender');
         const price = parseInt(product.getAttribute('data-price'));
 
         // Check category
@@ -1301,6 +1322,11 @@ class DepMarketplace {
 
         // Check size
         if (filters.sizes.length > 0 && !filters.sizes.includes(size)) {
+            return false;
+        }
+
+        // Check gender
+        if (filters.genders.length > 0 && !filters.genders.includes(gender)) {
             return false;
         }
 
@@ -1342,7 +1368,7 @@ class DepMarketplace {
     }
 
     clearAllFilters() {
-        // Clear checkboxes
+        // Clear checkboxes (including gender filter)
         document.querySelectorAll('.filter-option input[type="checkbox"]').forEach(input => {
             input.checked = false;
         });

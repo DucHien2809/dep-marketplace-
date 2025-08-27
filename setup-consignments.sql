@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS consignments (
     category TEXT NOT NULL,
     condition TEXT NOT NULL,
     size TEXT NOT NULL,
+    gender TEXT CHECK (gender IN ('male','female')),
     
     -- Pricing
     desired_price DECIMAL(12,2) NOT NULL CHECK (desired_price >= 0), -- Giá người bán muốn nhận
@@ -48,6 +49,7 @@ CREATE INDEX IF NOT EXISTS idx_consignments_status ON consignments(status);
 CREATE INDEX IF NOT EXISTS idx_consignments_category ON consignments(category);
 CREATE INDEX IF NOT EXISTS idx_consignments_brand ON consignments(brand);
 CREATE INDEX IF NOT EXISTS idx_consignments_condition ON consignments(condition);
+CREATE INDEX IF NOT EXISTS idx_consignments_gender ON consignments(gender);
 CREATE INDEX IF NOT EXISTS idx_consignments_created_at ON consignments(created_at);
 CREATE INDEX IF NOT EXISTS idx_consignments_selling_price ON consignments(selling_price);
 

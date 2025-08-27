@@ -572,6 +572,28 @@
                                     </div>
                                 </div>
 
+                                <!-- Gender Filter -->
+                                <div class="filter-section">
+                                    <h3 class="filter-title">Giới tính</h3>
+                                    <div class="filter-options">
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="unknown">
+                                            <span class="filter-checkmark"></span>
+                                            Không xác định
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="male">
+                                            <span class="filter-checkmark"></span>
+                                            Nam
+                                        </label>
+                                        <label class="filter-option">
+                                            <input type="checkbox" value="female">
+                                            <span class="filter-checkmark"></span>
+                                            Nữ
+                                        </label>
+                                    </div>
+                                </div>
+
                                 <!-- Clear Filters -->
                                 <button class="clear-filters-btn" id="clear-all-filters">
                                     <i class="fas fa-times"></i>
@@ -707,6 +729,14 @@
                                                     <option value="XXL">XXL</option>
                                                     <option value="Freesize">Freesize</option>
                                                     <option value="Other">Khác</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="product-gender">Giới tính</label>
+                                                <select id="product-gender" name="gender">
+                                                    <option value="">Không xác định</option>
+                                                    <option value="male">Nam</option>
+                                                    <option value="female">Nữ</option>
                                                 </select>
                                             </div>
                                         </div>
