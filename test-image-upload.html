@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Image Upload - Collection Gallery</title>
+    <link rel="stylesheet" href="styles/gallery.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .test-section h3 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .test-instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .test-instructions h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .test-instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .test-instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🧪 Test Image Upload Logic</h1>
+        
+        <div class="test-section">
+            <h3>📋 Hướng dẫn test</h3>
+            <div class="test-instructions">
+                <h4>Test Case 1: Upload từng ảnh một</h4>
+                <ul>
+                    <li>Click "Upload Product" để mở modal</li>
+                    <li>Chọn 1 ảnh → ảnh sẽ hiển thị trong preview</li>
+                    <li>Chọn thêm 1 ảnh khác → ảnh mới sẽ được thêm vào (không thay thế)</li>
+                    <li>Lặp lại để test việc thêm nhiều ảnh</li>
+                </ul>
+                
+                <h4>Test Case 2: Upload nhiều ảnh cùng lúc</h4>
+                <ul>
+                    <li>Giữ Ctrl (hoặc Cmd trên Mac) và chọn nhiều ảnh</li>
+                    <li>Ảnh sẽ thay thế toàn bộ preview cũ</li>
+                </ul>
+                
+                <h4>Test Case 3: Xóa ảnh</h4>
+                <ul>
+                    <li>Click nút X (đỏ) trên từng ảnh để xóa</li>
+                    <li>Click "Xóa tất cả" để xóa toàn bộ</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 Kết quả mong đợi</h3>
+            <ul>
+                <li>✅ Upload từng ảnh một: ảnh mới được thêm vào, không thay thế ảnh cũ</li>
+                <li>✅ Upload nhiều ảnh cùng lúc: thay thế toàn bộ preview</li>
+                <li>✅ Hiển thị số lượng ảnh hiện tại</li>
+                <li>✅ Nút "Xóa tất cả" hoạt động</li>
+                <li>✅ Validation số lượng ảnh tối đa (5 ảnh)</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚀 Bắt đầu test</h3>
+            <button id="upload-product-btn" class="btn btn-primary">
+                <i class="fas fa-upload"></i>
+                Upload Product
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/collection-gallery.js"></script>
+    
+    <script>
+        // Initialize collection gallery for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 Test page loaded');
+            
+            // Create a mock collection gallery instance for testing
+            if (typeof CollectionGallery !== 'undefined') {
+                window.collectionGallery = new CollectionGallery();
+                console.log('✅ CollectionGallery initialized for testing');
+            } else {
+                console.error('❌ CollectionGallery not found');
+            }
+        });
+    </script>
+</body>
+</html>

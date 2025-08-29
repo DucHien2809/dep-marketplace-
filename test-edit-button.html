@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Edit Button - Collection Gallery</title>
+    <link rel="stylesheet" href="styles/gallery.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .test-section h3 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .test-instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .test-instructions h4 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .test-instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .test-instructions li {
+            margin-bottom: 8px;
+        }
+        .debug-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .debug-info h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .debug-log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🧪 Test Edit Button - Collection Gallery</h1>
+        
+        <div class="test-section">
+            <h3>📋 Hướng dẫn test</h3>
+            <div class="test-instructions">
+                <h4>Test Case: Nút chỉnh sửa sản phẩm</h4>
+                <ul>
+                    <li>Click "Upload Product" để tạo một sản phẩm mẫu</li>
+                    <li>Điền thông tin và lưu sản phẩm</li>
+                    <li>Click nút "Chỉnh sửa" (✏️) trên sản phẩm vừa tạo</li>
+                    <li>Modal chỉnh sửa sẽ hiện ra</li>
+                </ul>
+                
+                <h4>Debug Information</h4>
+                <ul>
+                    <li>Mở Console (F12) để xem log</li>
+                    <li>Kiểm tra xem có lỗi JavaScript nào không</li>
+                    <li>Xem log khi click nút edit</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 Kết quả mong đợi</h3>
+            <ul>
+                <li>✅ Nút "Chỉnh sửa" hiển thị trên mỗi sản phẩm</li>
+                <li>✅ Click vào nút sẽ mở modal chỉnh sửa</li>
+                <li>✅ Modal hiển thị thông tin sản phẩm hiện tại</li>
+                <li>✅ Form chỉnh sửa hoạt động bình thường</li>
+                <li>✅ Không có lỗi JavaScript trong console</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔍 Debug Information</h3>
+            <div class="debug-info">
+                <h4>Console Logs</h4>
+                <p>Mở Developer Tools (F12) và xem Console tab để theo dõi:</p>
+                <ul>
+                    <li>Event click được trigger</li>
+                    <li>Item ID được lấy</li>
+                    <li>Product data được tìm thấy</li>
+                    <li>Modal được tạo và hiển thị</li>
+                </ul>
+            </div>
+            
+            <div class="debug-info">
+                <h4>Common Issues</h4>
+                <ul>
+                    <li><strong>Nút không click được:</strong> Kiểm tra CSS z-index và pointer-events</li>
+                    <li><strong>Modal không hiện:</strong> Kiểm tra JavaScript errors</li>
+                    <li><strong>Data không load:</strong> Kiểm tra product data structure</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚀 Bắt đầu test</h3>
+            <button id="upload-product-btn" class="btn btn-primary">
+                <i class="fas fa-upload"></i>
+                Upload Product
+            </button>
+            
+            <button id="test-edit-btn" class="btn btn-secondary" style="margin-left: 10px;">
+                <i class="fas fa-edit"></i>
+                Test Edit Button
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Debug Log</h3>
+            <div class="debug-log" id="debug-log">
+                <div>Debug log sẽ hiển thị ở đây...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/collection-gallery.js"></script>
+    
+    <script>
+        // Initialize collection gallery for testing
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 Test Edit Button page loaded');
+            
+            // Create a mock collection gallery instance for testing
+            if (typeof CollectionGallery !== 'undefined') {
+                window.collectionGallery = new CollectionGallery();
+                console.log('✅ CollectionGallery initialized for testing');
+            } else {
+                console.error('❌ CollectionGallery not found');
+            }
+            
+            // Test edit button functionality
+            document.getElementById('test-edit-btn').addEventListener('click', function() {
+                console.log('🧪 Test edit button clicked');
+                
+                // Create a mock product for testing
+                const mockProduct = {
+                    id: 'test-edit-123',
+                    title: 'Sản phẩm test chỉnh sửa',
+                    category: 'ao',
+                    price: 500000,
+                    style: 'vintage',
+                    material: 'Cotton',
+                    origin: 'Tái chế từ áo cũ',
+                    condition: 'Tái chế',
+                    sizes: ['M'],
+                    image_url: 'https://via.placeholder.com/300x400?text=Test+Product'
+                };
+                
+                console.log('🧪 Mock product created:', mockProduct);
+                
+                // Try to show edit modal
+                if (window.collectionGallery && typeof window.collectionGallery.showEditModal === 'function') {
+                    console.log('🧪 Calling showEditModal...');
+                    window.collectionGallery.showEditModal(mockProduct);
+                } else {
+                    console.error('❌ showEditModal method not found');
+                }
+            });
+            
+            // Add debug logging
+            const originalConsoleLog = console.log;
+            console.log = function(...args) {
+                originalConsoleLog.apply(console, args);
+                
+                // Add to debug log
+                const debugLog = document.getElementById('debug-log');
+                if (debugLog) {
+                    const logEntry = document.createElement('div');
+                    logEntry.textContent = new Date().toLocaleTimeString() + ': ' + args.join(' ');
+                    logEntry.style.borderBottom = '1px solid #dee2e6';
+                    logEntry.style.paddingBottom = '5px';
+                    logEntry.style.marginBottom = '5px';
+                    debugLog.appendChild(logEntry);
+                    
+                    // Keep only last 20 entries
+                    while (debugLog.children.length > 20) {
+                        debugLog.removeChild(debugLog.firstChild);
+                    }
+                }
+            };
+        });
+    </script>
+</body>
+</html>

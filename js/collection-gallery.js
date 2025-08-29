@@ -50,7 +50,11 @@ class CollectionGallery {
             
             if (e.target.closest('.btn-edit-product')) {
                 e.preventDefault();
+                console.log('🔍 Edit button clicked!');
                 const itemId = e.target.closest('.product-item').getAttribute('data-item-id');
+                console.log('🔍 Item ID:', itemId);
+                console.log('🔍 Target element:', e.target);
+                console.log('🔍 Closest product-item:', e.target.closest('.product-item'));
                 this.editProduct(itemId);
             }
             
@@ -666,8 +670,33 @@ class CollectionGallery {
         console.log('🖼️ Preview element found:', !!preview);
         if (!preview) return;
         
-        preview.innerHTML = '';
-        console.log('🧹 Preview cleared');
+        // Check if this is a single file upload (additive) or multiple file upload (replace)
+        const isSingleFileUpload = files.length === 1;
+        const existingImages = preview.querySelectorAll('.image-preview-item');
+        
+        // Check maximum image limit
+        const maxImages = CONFIG.gallery?.maxFiles || 5;
+        if (existingImages.length + files.length > maxImages) {
+            Utils.showToast(`Bạn chỉ có thể upload tối đa ${maxImages} ảnh. Hiện tại đã có ${existingImages.length} ảnh.`, 'warning');
+            return;
+        }
+        
+        // If it's a single file upload and we already have images, add to existing
+        // If it's multiple files or first upload, clear and replace
+        if (isSingleFileUpload && existingImages.length > 0) {
+            console.log('📸 Single file upload detected, adding to existing images...');
+            // Don't clear preview, just add new image
+        } else {
+            console.log('📸 Multiple files or first upload detected, clearing preview...');
+            preview.innerHTML = `
+                <div class="preview-controls" style="display: none;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.querySelector('.collection-gallery').clearAllImages()">
+                        <i class="fas fa-trash"></i> Xóa tất cả
+                    </button>
+                    <span class="image-count">0 ảnh</span>
+                </div>
+            `;
+        }
         
         Array.from(files).forEach((file, index) => {
             console.log('📸 Processing file', index + 1, ':', file.name, file.type);
@@ -680,19 +709,68 @@ class CollectionGallery {
                     const imageContainer = document.createElement('div');
                     imageContainer.className = 'image-preview-item';
                     imageContainer.innerHTML = `
-                        <img src="${e.target.result}" alt="Preview ${index + 1}">
-                        <button class="remove-image" onclick="this.parentElement.remove()">
+                        <img src="${e.target.result}" alt="Preview ${existingImages.length + index + 1}">
+                        <button class="remove-image" onclick="this.parentElement.remove(); document.querySelector('.collection-gallery').updatePreviewControls();">
                             <i class="fas fa-times"></i>
                         </button>
                     `;
                     preview.appendChild(imageContainer);
                     console.log('✅ Preview container added for file', index + 1);
+                    
+                    // Update controls visibility and count
+                    this.updatePreviewControls();
                 };
                 reader.readAsDataURL(file);
             } else {
                 console.log('❌ File is not an image:', file.type);
+                Utils.showToast('Chỉ hỗ trợ file ảnh (JPG, PNG, WEBP)', 'error');
             }
         });
+    }
+
+    updatePreviewControls() {
+        const preview = document.getElementById('image-preview');
+        if (!preview) return;
+        
+        const controls = preview.querySelector('.preview-controls');
+        const imageCount = preview.querySelector('.image-count');
+        const images = preview.querySelectorAll('.image-preview-item');
+        
+        if (controls && imageCount) {
+            if (images.length > 0) {
+                controls.style.display = 'flex';
+                controls.style.justifyContent = 'space-between';
+                controls.style.alignItems = 'center';
+                controls.style.marginBottom = '10px';
+                controls.style.padding = '8px';
+                controls.style.backgroundColor = '#f8f9fa';
+                controls.style.borderRadius = '4px';
+                imageCount.textContent = `${images.length} ảnh`;
+            } else {
+                controls.style.display = 'none';
+            }
+        }
+    }
+
+    clearAllImages() {
+        const preview = document.getElementById('image-preview');
+        if (!preview) return;
+        
+        // Clear all images but keep the controls structure
+        const images = preview.querySelectorAll('.image-preview-item');
+        images.forEach(img => img.remove());
+        
+        // Update controls
+        this.updatePreviewControls();
+        
+        // Clear file input
+        const fileInput = document.getElementById('gallery-image-input');
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        
+        console.log('🧹 All images cleared');
+        Utils.showToast('Đã xóa tất cả ảnh', 'info');
     }
 
     async saveGalleryItem() {
@@ -737,33 +815,81 @@ class CollectionGallery {
 
         const modal = document.getElementById('upload-gallery-modal');
         const fileInput = modal ? modal.querySelector('#gallery-image-input') : document.getElementById('gallery-image-input');
+        const preview = modal ? modal.querySelector('#image-preview') : document.getElementById('image-preview');
         console.log('📁 File input found:', !!fileInput);
         console.log('📸 Files selected:', fileInput?.files?.length || 0);
+        console.log('🖼️ Preview found:', !!preview);
         
-        if (!fileInput.files || fileInput.files.length === 0) {
+        // Check if we have images in preview (for incremental uploads) or in file input
+        const previewImages = preview ? preview.querySelectorAll('.image-preview-item img') : [];
+        const hasPreviewImages = previewImages.length > 0;
+        const hasFileInputImages = fileInput?.files && fileInput.files.length > 0;
+        
+        if (!hasPreviewImages && !hasFileInputImages) {
             console.log('❌ Validation failed: no images selected');
             Utils.showToast('Vui lòng chọn ít nhất một ảnh', 'error');
             return;
         }
         
         console.log('✅ Validation passed, proceeding with upload...');
+        console.log('📸 Preview images count:', previewImages.length);
+        console.log('📸 File input images count:', fileInput?.files?.length || 0);
 
         try {
             Utils.showLoading(true);
             
-            // Upload main image
-            const mainFile = fileInput.files[0];
-            console.log('📸 Uploading main image:', mainFile.name);
-            const mainImageUrl = await this.uploadImage(mainFile, 'main');
-            console.log('✅ Main image uploaded:', mainImageUrl);
+            let mainImageUrl;
+            let additionalImages = [];
             
-            // Upload additional images
-            const additionalImages = [];
-            for (let i = 1; i < fileInput.files.length && i < CONFIG.gallery.maxFiles; i++) {
-                console.log('📸 Uploading additional image:', fileInput.files[i].name);
-                const imageUrl = await this.uploadImage(fileInput.files[i], `additional-${i}`);
-                additionalImages.push(imageUrl);
-                console.log('✅ Additional image uploaded:', imageUrl);
+            if (hasPreviewImages) {
+                // Use images from preview (for incremental uploads)
+                console.log('📸 Using images from preview for upload...');
+                
+                // Convert preview images to files for upload
+                const imagePromises = Array.from(previewImages).map(async (img, index) => {
+                    try {
+                        // Convert data URL to blob/file
+                        const response = await fetch(img.src);
+                        const blob = await response.blob();
+                        const file = new File([blob], `image-${index + 1}.jpg`, { type: blob.type });
+                        
+                        if (index === 0) {
+                            // Main image
+                            console.log('📸 Uploading main image from preview:', file.name);
+                            mainImageUrl = await this.uploadImage(file, 'main');
+                            console.log('✅ Main image uploaded:', mainImageUrl);
+                        } else {
+                            // Additional image
+                            console.log('📸 Uploading additional image from preview:', file.name);
+                            const imageUrl = await this.uploadImage(file, `additional-${index}`);
+                            additionalImages.push(imageUrl);
+                            console.log('✅ Additional image uploaded:', imageUrl);
+                        }
+                    } catch (error) {
+                        console.error('❌ Error processing preview image:', error);
+                        throw error;
+                    }
+                });
+                
+                await Promise.all(imagePromises);
+                
+            } else {
+                // Use images from file input (for bulk uploads)
+                console.log('📸 Using images from file input for upload...');
+                
+                // Upload main image
+                const mainFile = fileInput.files[0];
+                console.log('📸 Uploading main image:', mainFile.name);
+                mainImageUrl = await this.uploadImage(mainFile, 'main');
+                console.log('✅ Main image uploaded:', mainImageUrl);
+                
+                // Upload additional images
+                for (let i = 1; i < fileInput.files.length && i < CONFIG.gallery.maxFiles; i++) {
+                    console.log('📸 Uploading additional image:', fileInput.files[i].name);
+                    const imageUrl = await this.uploadImage(fileInput.files[i], `additional-${i}`);
+                    additionalImages.push(imageUrl);
+                    console.log('✅ Additional image uploaded:', imageUrl);
+                }
             }
 
             // Parse tags and sizes
@@ -1059,7 +1185,7 @@ class CollectionGallery {
         // Ensure sizes is array
         const sizes = Array.isArray(product.sizes) ? product.sizes : [];
         const currentSize = sizes[0] || 'M';
-        console.log('📏 Sizes for edit:', sizes, '->', sizesString);
+        console.log('📏 Sizes for edit:', sizes, '->', currentSize);
         
         const modalHTML = `
             <div id="edit-product-modal" class="modal gallery-modal">
@@ -1261,8 +1387,19 @@ class CollectionGallery {
             return;
         }
         
-        preview.innerHTML = '';
-        console.log('🧹 Edit preview cleared');
+        // Check if this is a single file upload (additive) or multiple file upload (replace)
+        const isSingleFileUpload = files.length === 1;
+        const existingImages = preview.querySelectorAll('.image-preview-item');
+        
+        // If it's a single file upload and we already have images, add to existing
+        // If it's multiple files or first upload, clear and replace
+        if (isSingleFileUpload && existingImages.length > 0) {
+            console.log('📸 Edit: Single file upload detected, adding to existing images...');
+            // Don't clear preview, just add new image
+        } else {
+            console.log('📸 Edit: Multiple files or first upload detected, clearing preview...');
+            preview.innerHTML = '';
+        }
         
         Array.from(files).forEach((file, index) => {
             console.log('📸 Processing edit file', index + 1, ':', file.name, file.type);
@@ -1275,7 +1412,7 @@ class CollectionGallery {
                     const imageContainer = document.createElement('div');
                     imageContainer.className = 'image-preview-item';
                     imageContainer.innerHTML = `
-                        <img src="${e.target.result}" alt="New preview ${index + 1}">
+                        <img src="${e.target.result}" alt="New preview ${existingImages.length + index + 1}">
                         <button class="remove-image" onclick="this.parentElement.remove()">
                             <i class="fas fa-times"></i>
                         </button>
