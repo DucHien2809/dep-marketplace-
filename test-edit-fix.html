@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Edit Fix - Collection Gallery</title>
+    <link rel="stylesheet" href="styles/gallery.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            color: #495057;
+            margin-top: 0;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+        .status-success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .status-warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🔧 Test Edit Fix - Collection Gallery</h1>
+            <p>Kiểm tra các lỗi đã được sửa trong form cập nhật sản phẩm</p>
+        </div>
+
+        <div class="test-section">
+            <h3>✅ Lỗi đã được sửa</h3>
+            <ul>
+                <li><span class="status-success">ID mismatch: edit-sizes → edit-size</span></li>
+                <li><span class="status-success">Tên cột: featured → is_featured</span></li>
+                <li><span class="status-success">Tên cột: originalPrice → original_price</span></li>
+                <li><span class="status-success">Thêm kiểm tra null cho tất cả form elements</span></li>
+                <li><span class="status-success">Thêm kiểm tra bảo vệ cho file input</span></li>
+                <li><span class="status-success">Cải thiện xử lý lỗi và thông báo</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Các cột cần thêm vào database</h3>
+            <p>Chạy file <code>add-missing-columns.sql</code> trong Supabase SQL Editor để thêm các cột còn thiếu:</p>
+            <div class="code-block">
+-- Các cột cần thêm:
+- price (INTEGER) - Giá bán
+- original_price (INTEGER) - Giá gốc  
+- category (TEXT) - Loại sản phẩm
+- style (TEXT) - Phong cách
+- sizes (JSONB) - Kích thước
+- material (TEXT) - Chất liệu
+- origin (TEXT) - Nguồn gốc tái chế
+- condition (TEXT) - Tình trạng
+            </div>
+        </div>
+
+        <div classtest-section">
+            <h3>🔍 Kiểm tra form elements</h3>
+            <p>Tất cả các element trong form cập nhật đều đã được kiểm tra:</p>
+            <ul>
+                <li><code>edit-title</code> ✅</li>
+                <li><code>edit-category</code> ✅</li>
+                <li><code>edit-price</code> ✅</li>
+                <li><code>edit-original-price</code> ✅</li>
+                <li><code>edit-size</code> ✅</li>
+                <li><code>edit-style</code> ✅</li>
+                <li><code>edit-material</code> ✅</li>
+                <li><code>edit-origin</code> ✅</li>
+                <li><code>edit-condition</code> ✅</li>
+                <li><code>edit-featured</code> ✅</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Cách sử dụng</h3>
+            <ol>
+                <li>Chạy file <code>add-missing-columns.sql</code> trong Supabase SQL Editor</li>
+                <li>Refresh trang web</li>
+                <li>Thử cập nhật một sản phẩm</li>
+                <li>Kiểm tra console để xem log</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Lưu ý quan trọng</h3>
+            <ul>
+                <li><span class="status-warning">Phải chạy SQL để thêm cột trước khi test</span></li>
+                <li><span class="status-success">Tất cả lỗi JavaScript đã được sửa</span></li>
+                <li><span class="status-success">Form validation đã được cải thiện</span></li>
+                <li><span class="status-success">Error handling đã được tối ưu</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 Liên kết</h3>
+            <a href="index.html" class="btn">Quay về trang chính</a>
+            <a href="add-missing-columns.sql" class="btn btn-success">Xem SQL thêm cột</a>
+            <a href="add-featured-column.sql" class="btn btn-warning">Xem SQL thêm featured</a>
+        </div>
+    </div>
+</body>
+</html>

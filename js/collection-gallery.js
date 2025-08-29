@@ -328,7 +328,7 @@ class CollectionGallery {
         
         // Safety checks for properties
         const price = item.price || item.giá || 750000; // Default price if not available
-        const originalPrice = item.originalPrice || item.original_price || item.giá_gốc || null;
+        const originalPrice = item.original_price || item.originalPrice || item.giá_gốc || null;
         
         // Handle sizes - can be array, string, or undefined
         let sizes = [];
@@ -361,7 +361,7 @@ class CollectionGallery {
             Math.round((1 - price / originalPrice) * 100) : 0;
 
         const productHTML = `
-            <div class="product-item ${item.is_featured || item.featured ? 'featured' : ''} ${item.sold ? 'sold' : ''}" 
+            <div class="product-item ${item.is_featured ? 'featured' : ''} ${item.sold ? 'sold' : ''}" 
                  data-item-id="${item.id}" 
                  data-category="${category}"
                  data-style="${style}"
@@ -375,7 +375,7 @@ class CollectionGallery {
                         </div>`
                     }
                     
-                    ${(item.is_featured || item.featured) ? '<span class="featured-badge">✨ Nổi bật</span>' : ''}
+                    ${item.is_featured ? '<span class="featured-badge">✨ Nổi bật</span>' : ''}
                     ${item.sold ? '<span class="sold-badge">Đã bán</span>' : ''}
                     ${discount > 0 ? `<span class="discount-badge">-${discount}%</span>` : ''}
                     
@@ -904,7 +904,7 @@ class CollectionGallery {
                 image_url: mainImageUrl,
                 gallery: additionalImages,
                 tags: tagsArray,
-                is_featured: featured,
+                is_featured: featured, // Đã đúng tên cột
                 status: 'active',
                 created_by: (await supabase.auth.getUser()).data.user?.id,
                 published_at: new Date().toISOString()
@@ -1250,10 +1250,10 @@ class CollectionGallery {
                                     <label>Giá bán (₫) *</label>
                                     <input type="number" id="edit-price" value="${product.price}" min="0" required>
                                 </div>
-                                <div class="form-group">
-                                    <label>Giá gốc (₫)</label>
-                                    <input type="number" id="edit-original-price" value="${product.originalPrice || ''}" min="0">
-                                </div>
+                                                                 <div class="form-group">
+                                     <label>Giá gốc (₫)</label>
+                                     <input type="number" id="edit-original-price" value="${product.original_price || ''}" min="0">
+                                 </div>
                             </div>
                             
                             <div class="form-row">
@@ -1296,7 +1296,7 @@ class CollectionGallery {
                                 </div>
                                 <div class="form-group">
                                     <label style="display: flex; align-items: center; gap: 10px;">
-                                        <input type="checkbox" id="edit-featured" ${product.featured ? 'checked' : ''}>
+                                        <input type="checkbox" id="edit-featured" ${product.is_featured ? 'checked' : ''}>
                                         <span>✨ Đặt làm nổi bật</span>
                                     </label>
                                 </div>
@@ -1430,21 +1430,57 @@ class CollectionGallery {
     async saveEditedProduct(productId) {
         console.log('💾 Starting to save edited product:', productId);
         
+        // Prevent multiple calls
+        if (this.isSaving) {
+            console.log('⚠️ Already saving, ignoring duplicate call');
+            return;
+        }
+        
+        this.isSaving = true;
+        
         try {
             Utils.showLoading(true);
             
-            // Get form data
-            const title = document.getElementById('edit-title').value.trim();
-            const category = document.getElementById('edit-category').value;
-            const price = parseInt(document.getElementById('edit-price').value);
-            const originalPrice = document.getElementById('edit-original-price').value ? 
-                parseInt(document.getElementById('edit-original-price').value) : null;
-            const sizesInput = document.getElementById('edit-sizes').value.trim();
-            const style = document.getElementById('edit-style').value;
-            const material = document.getElementById('edit-material').value.trim();
-            const origin = document.getElementById('edit-origin').value.trim();
-            const condition = document.getElementById('edit-condition').value.trim();
-            const featured = document.getElementById('edit-featured').checked;
+            // Get form data with null checks
+            const titleElement = document.getElementById('edit-title');
+            const categoryElement = document.getElementById('edit-category');
+            const priceElement = document.getElementById('edit-price');
+            const originalPriceElement = document.getElementById('edit-original-price');
+            const sizeElement = document.getElementById('edit-size');
+            const styleElement = document.getElementById('edit-style');
+            const materialElement = document.getElementById('edit-material');
+            const originElement = document.getElementById('edit-origin');
+            const conditionElement = document.getElementById('edit-condition');
+            const featuredElement = document.getElementById('edit-featured');
+            
+            // Check if all required elements exist
+            if (!titleElement || !categoryElement || !priceElement || !sizeElement || !styleElement || !materialElement || !originElement || !conditionElement || !featuredElement) {
+                console.error('❌ Missing form elements:', {
+                    title: !!titleElement,
+                    category: !!categoryElement,
+                    price: !!priceElement,
+                    size: !!sizeElement,
+                    style: !!styleElement,
+                    material: !!materialElement,
+                    origin: !!originElement,
+                    condition: !!conditionElement,
+                    featured: !!featuredElement
+                });
+                Utils.showToast('Lỗi: Form không đầy đủ, vui lòng thử lại', 'error');
+                return;
+            }
+            
+            const title = titleElement.value.trim();
+            const category = categoryElement.value;
+            const price = parseInt(priceElement.value);
+            const originalPrice = originalPriceElement.value ? 
+                parseInt(originalPriceElement.value) : null;
+            const sizesInput = sizeElement.value.trim();
+            const style = styleElement.value;
+            const material = materialElement.value.trim();
+            const origin = originElement.value.trim();
+            const condition = conditionElement.value.trim();
+            const featured = featuredElement.checked;
             
             console.log('📝 Form data collected:', {
                 title, category, price, originalPrice, sizesInput, style, material, origin, condition, featured
@@ -1470,7 +1506,7 @@ class CollectionGallery {
             console.log('📸 Files selected:', fileInput?.files?.length || 0);
             
             let imageUrl = null;
-            if (fileInput.files && fileInput.files.length > 0) {
+            if (fileInput && fileInput.files && fileInput.files.length > 0) {
                 console.log('📸 New image detected, uploading...');
                 imageUrl = await this.uploadImage(fileInput.files[0], 'edit');
                 console.log('✅ New image uploaded:', imageUrl);
@@ -1482,13 +1518,13 @@ class CollectionGallery {
                 title,
                 category,
                 price,
-                originalPrice,
+                original_price: originalPrice, // Sửa từ 'originalPrice' thành 'original_price'
                 sizes,
                 style,
                 material,
                 origin,
                 condition,
-                featured,
+                is_featured: featured, // Sửa từ 'featured' thành 'is_featured'
                 updated_at: new Date().toISOString()
             };
             
@@ -1527,20 +1563,41 @@ class CollectionGallery {
             }
             
             // Close modal
-            document.getElementById('edit-product-modal').remove();
-            console.log('✅ Edit modal closed');
+            const modal = document.getElementById('edit-product-modal');
+            if (modal) {
+                modal.remove();
+                console.log('✅ Edit modal closed');
+            } else {
+                console.log('⚠️ Edit modal not found for removal');
+            }
             
             // Refresh gallery
             console.log('🔄 Refreshing gallery after edit...');
-            this.refreshGallery();
+            try {
+                this.refreshGallery();
+            } catch (refreshError) {
+                console.error('⚠️ Error refreshing gallery:', refreshError);
+                // Continue execution even if refresh fails
+            }
             
+            // Show success message only once
+            console.log('✅ Showing success toast...');
             Utils.showToast('✅ Đã cập nhật sản phẩm thành công!', 'success');
             
         } catch (error) {
             console.error('❌ Error updating product:', error);
-            Utils.showToast('❌ Có lỗi xảy ra khi cập nhật: ' + error.message, 'error');
+            let errorMessage = 'Có lỗi xảy ra khi cập nhật';
+            
+            if (error.message) {
+                errorMessage += ': ' + error.message;
+            } else if (error.toString) {
+                errorMessage += ': ' + error.toString();
+            }
+            
+            Utils.showToast('❌ ' + errorMessage, 'error');
         } finally {
             Utils.showLoading(false);
+            this.isSaving = false; // Reset saving flag
             console.log('🔄 Loading state cleared');
         }
     }
@@ -1920,7 +1977,7 @@ class CollectionGallery {
         
         if (featuredItemsElement) {
             const featuredCount = this.galleryItems.filter(item => 
-                item.is_featured || item.featured
+                item.is_featured
             ).length;
             featuredItemsElement.textContent = featuredCount;
             console.log('✅ Featured items updated:', featuredCount);
