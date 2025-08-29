@@ -48,7 +48,7 @@ class SupportManager {
                 id: 5,
                 category: 'consignment',
                 question: 'Phí ký gửi là bao nhiêu?',
-                answer: 'Đẹp thu phí dịch vụ 15% trên giá bán thành công. Bạn sẽ nhận được 85% giá trị đơn hàng. Chúng tôi không thu phí đăng sản phẩm hoặc phí ẩn nào khác.'
+                answer: 'Đẹp thu phí dịch vụ 10% trên giá bán thành công. Bạn sẽ nhận được 90% giá trị đơn hàng. Chúng tôi không thu phí đăng sản phẩm hoặc phí ẩn nào khác.'
             },
             {
                 id: 6,
@@ -299,7 +299,7 @@ Bạn có thể bắt đầu ký gửi ngay tại trang "Ký gửi ngay".`);
 • Hoàn tiền trong 3-5 ngày làm việc
 
 💼 CHÍNH SÁCH KÝ GỬI:
-• Phí dịch vụ 15% trên giá bán
+• Phí dịch vụ 10% trên giá bán
 • Sản phẩm được niêm yết 60 ngày
 • Hỗ trợ tư vấn giá bán tối ưu
 

@@ -171,7 +171,7 @@ class ConsignManager {
         if (!priceInput || !sellingPrice || !serviceFee || !finalAmount) return;
 
         const desiredPrice = parseFloat(priceInput.value) || 0;
-        const sellPrice = Math.round(desiredPrice / 0.85); // 15% service fee
+        const sellPrice = Math.round(desiredPrice / 0.90); // 10% service fee
         const fee = sellPrice - desiredPrice;
 
         sellingPrice.textContent = this.formatCurrency(sellPrice);
@@ -312,7 +312,7 @@ class ConsignManager {
 
             // Calculate pricing
             const desiredPrice = parseFloat(document.getElementById('desired-price').value) || 0;
-            const sellingPrice = Math.round(desiredPrice / 0.85); // 15% service fee
+            const sellingPrice = Math.round(desiredPrice / 0.90); // 10% service fee
             const serviceFee = sellingPrice - desiredPrice;
 
             // Prepare images for upload
